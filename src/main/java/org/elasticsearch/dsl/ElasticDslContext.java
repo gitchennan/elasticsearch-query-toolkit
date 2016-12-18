@@ -1,5 +1,6 @@
 package org.elasticsearch.dsl;
 
+import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.ElasticMockClient;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -23,12 +24,18 @@ public class ElasticDslContext {
     private List<String> types;
     /*查询索引别名*/
     private String queryAs;
-    /*SQL的where条件*/
-    private BoolFilterBuilder filterBuilder;
-    /*SQL的order by条件*/
-    private List<SortBuilder> sortBuilderList;
     /*查询字段列表*/
     private List<String> queryFieldList;
+    /*SQL的where条件*/
+    private transient BoolFilterBuilder filterBuilder;
+    /*SQL的order by条件*/
+    private transient List<SortBuilder> sortBuilderList;
+    /*SQL*/
+    private transient SQLQueryExpr queryExpr;
+
+    public ElasticDslContext(SQLQueryExpr queryExpr) {
+        this.queryExpr = queryExpr;
+    }
 
     public void addSort(SortBuilder sortBuilder) {
         if (sortBuilder != null) {
@@ -92,6 +99,10 @@ public class ElasticDslContext {
 
     public void setQueryAs(String queryAs) {
         this.queryAs = queryAs;
+    }
+
+    public SQLQueryExpr getQueryExpr() {
+        return queryExpr;
     }
 
     public String toDsl() {

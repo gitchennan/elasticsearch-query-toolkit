@@ -36,11 +36,11 @@ public class ElasticSql2DslParser {
 
     private void check(ElasticSqlExprParser sqlExprParser, SQLExpr sqlQueryExpr) {
         if (sqlExprParser.getLexer().token() != Token.EOF) {
-            throw new ElasticSql2DslException("Sql last token is not EOF");
+            throw new ElasticSql2DslException("[syntax error] Sql last token is not EOF");
         }
 
         if (!(sqlQueryExpr instanceof SQLQueryExpr)) {
-            throw new ElasticSql2DslException("Sql is not select sql");
+            throw new ElasticSql2DslException("[syntax error] Sql is not select sql");
         }
     }
 

@@ -49,7 +49,9 @@ public class SqlParserTest extends TestCase {
         //String sql = "select * from book b where price+1 < 2"; //SQLBinaryOpExpr
         //String sql = "select * from book b where c in (1,2,3)";    //SQLInListExpr
         //String sql = "select * from book b where c not in (1,2,3)"; //SQLInListExpr
-        String sql = "select * from book b where c between 1 and 3"; //SQLBetweenExpr
+        //String sql = "select * from book b where c between 1 and 3"; //SQLBetweenExpr
+
+        String sql = "select * from book bk where a + 1 > b"; //SQLBetweenExpr
 
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser(sql);
         ElasticDslContext dslContext = sql2DslParser.parse();
