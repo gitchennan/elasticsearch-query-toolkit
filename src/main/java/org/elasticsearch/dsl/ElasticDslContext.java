@@ -123,7 +123,7 @@ public class ElasticDslContext {
         }
 
         if (filterBuilder != null && filterBuilder.hasClauses()) {
-            requestBuilder.setQuery(QueryBuilders.filteredQuery(null, filterBuilder));
+            requestBuilder.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), filterBuilder));
         } else {
             requestBuilder.setQuery(QueryBuilders.matchAllQuery());
         }

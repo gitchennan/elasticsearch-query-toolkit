@@ -1,9 +1,11 @@
-package org.elasticsearch.dsl;
+package org.elasticsearch.dsl.parser;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import com.alibaba.druid.sql.parser.Token;
 import org.elasticsearch.common.lang3.StringUtils;
+import org.elasticsearch.dsl.ElasticDslBuilder;
+import org.elasticsearch.dsl.ElasticDslContext;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.sql.ElasticSqlExprParser;
 

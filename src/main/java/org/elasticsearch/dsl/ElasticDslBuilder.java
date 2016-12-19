@@ -19,13 +19,13 @@ public class ElasticDslBuilder {
     //SQL解析器的顺序不能改变
     private static final List<ElasticSqlParser> sqlParseProcessors = ImmutableList.of(
             //解析SQL指定的索引和文档类型
-            QueryIndexParser::parseQueryIndicesAndTypes,
-            //解析SQL查询索引别名
-            QueryAsAliasParser::parseQueryAsAlias,
+            QueryFromParser::parseQueryIndicesAndTypes,
             //解析SQL查询指定的where条件
-            FilterConditionParser::parseFilterCondition,
+            QueryWhereConditionParser::parseFilterCondition,
+            //解析SQL排序条件
+            QueryOrderConditionParser::parseOrderCondition,
             //解析SQL查询指定的字段
-            SelectFieldListParser::parseSelectFieldList
+            QuerySelectFieldListParser::parseSelectFieldList
 
     );
 
