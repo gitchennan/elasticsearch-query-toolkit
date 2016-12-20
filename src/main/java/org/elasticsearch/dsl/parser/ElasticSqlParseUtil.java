@@ -49,11 +49,9 @@ public class ElasticSqlParseUtil {
     }
 
     public static boolean isValidBinOperator(SQLBinaryOperator binaryOperator) {
-        return binaryOperator == SQLBinaryOperator.BooleanAnd
-                || binaryOperator == SQLBinaryOperator.Equality
+        return binaryOperator == SQLBinaryOperator.Equality
                 || binaryOperator == SQLBinaryOperator.NotEqual
                 || binaryOperator == SQLBinaryOperator.LessThanOrGreater
-                || binaryOperator == SQLBinaryOperator.BooleanOr
                 || binaryOperator == SQLBinaryOperator.GreaterThan
                 || binaryOperator == SQLBinaryOperator.GreaterThanOrEqual
                 || binaryOperator == SQLBinaryOperator.LessThan

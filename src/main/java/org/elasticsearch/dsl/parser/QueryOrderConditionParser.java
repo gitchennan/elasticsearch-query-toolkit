@@ -17,8 +17,9 @@ import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
 import java.util.List;
 
-public class QueryOrderConditionParser {
-    public static void parseOrderCondition(ElasticDslContext dslContext) {
+public class QueryOrderConditionParser implements ElasticSqlParser {
+    @Override
+    public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();
         SQLOrderBy sqlOrderBy = queryBlock.getOrderBy();
         if (sqlOrderBy != null && CollectionUtils.isNotEmpty(sqlOrderBy.getItems())) {
@@ -31,7 +32,7 @@ public class QueryOrderConditionParser {
         }
     }
 
-    private static SortBuilder parseOrderCondition(SQLSelectOrderByItem orderByItem, String queryAs) {
+    private SortBuilder parseOrderCondition(SQLSelectOrderByItem orderByItem, String queryAs) {
         if (orderByItem.getExpr() instanceof SQLPropertyExpr || orderByItem.getExpr() instanceof SQLIdentifierExpr) {
             return parseCondition(orderByItem.getExpr(), queryAs, idfName -> {
                 if (SQLOrderingSpecification.ASC == orderByItem.getType()) {
@@ -64,7 +65,7 @@ public class QueryOrderConditionParser {
         throw new ElasticSql2DslException("[syntax error] ElasticSql cannot support sort type: " + orderByItem.getExpr().getClass());
     }
 
-    private static void checkNvlMethod(SQLMethodInvokeExpr nvlInvokeExpr) {
+    private void checkNvlMethod(SQLMethodInvokeExpr nvlInvokeExpr) {
         if (!"nvl".equalsIgnoreCase(nvlInvokeExpr.getMethodName())) {
             throw new ElasticSql2DslException("[syntax error] ElasticSql sort condition only support nvl method invoke");
         }
@@ -98,7 +99,7 @@ public class QueryOrderConditionParser {
         }
     }
 
-    private static SortBuilder parseCondition(SQLExpr sqlExpr, String queryAs, ConditionSortBuilder sortBuilder) {
+    private SortBuilder parseCondition(SQLExpr sqlExpr, String queryAs, ConditionSortBuilder sortBuilder) {
         List<SortBuilder> tmpSortList = Lists.newLinkedList();
         ElasticSqlIdfParser.parseSqlIdentifier(sqlExpr, queryAs, idfName -> {
             FieldSortBuilder originalSort = sortBuilder.buildSort(idfName);

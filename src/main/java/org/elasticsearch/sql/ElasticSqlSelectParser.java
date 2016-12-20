@@ -1,7 +1,8 @@
 package org.elasticsearch.sql;
 
 import com.alibaba.druid.sql.ast.SQLSetQuantifier;
-import com.alibaba.druid.sql.ast.statement.SQLSelectQuery;
+import com.alibaba.druid.sql.ast.statement.*;
+import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.SQLExprParser;
 import com.alibaba.druid.sql.parser.SQLSelectParser;
 import com.alibaba.druid.sql.parser.Token;
@@ -55,5 +56,21 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
         }
 
         return queryRest(queryBlock);
+    }
+
+    @Override
+    public SQLTableSource parseTableSource() {
+        if (lexer.token() != Token.IDENTIFIER) {
+            throw new ParserException("[syntax error] from table source should be a identifier");
+        }
+
+        SQLExprTableSource tableReference = new SQLExprTableSource();
+        parseTableSourceQueryTableExpr(tableReference);
+        SQLTableSource tableSrc = parseTableSourceRest(tableReference);
+        if (lexer.hasComment() && lexer.isKeepComments()) {
+            tableSrc.addAfterComment(lexer.readAndResetComments());
+        }
+
+        return tableSrc;
     }
 }

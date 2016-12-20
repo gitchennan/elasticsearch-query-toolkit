@@ -16,26 +16,28 @@ public class ElasticDslBuilder {
         this.queryExpr = queryExpr;
     }
 
-    //SQL解析器的顺序不能改变
-    private static final List<ElasticSqlParser> sqlParseProcessors = ImmutableList.of(
-            //解析SQL指定的索引和文档类型
-            QueryFromParser::parseQueryIndicesAndTypes,
-            //解析SQL查询指定的where条件
-            QueryWhereConditionParser::parseFilterCondition,
-            //解析SQL排序条件
-            QueryOrderConditionParser::parseOrderCondition,
-            //解析SQL查询指定的字段
-            QuerySelectFieldListParser::parseSelectFieldList
-
-    );
+    private List<ElasticSqlParser> buildSqlParserChain() {
+        //SQL解析器的顺序不能改变
+        return ImmutableList.of(
+                //解析SQL指定的索引和文档类型
+                new QueryFromParser(),
+                //解析SQL查询指定的where条件
+                new QueryWhereConditionParser(),
+                //解析SQL排序条件
+                new QueryOrderConditionParser(),
+                //解析SQL查询指定的字段
+                new QuerySelectFieldListParser(),
+                //解析SQL的分页条数
+                new QueryLimitSizeParser()
+        );
+    }
 
     public ElasticDslContext build() {
         ElasticDslContext dslContext = new ElasticDslContext(queryExpr);
         if (queryExpr.getSubQuery().getQuery() instanceof ElasticSqlSelectQueryBlock) {
-            sqlParseProcessors.stream().forEach(sqlParser -> sqlParser.parse(dslContext));
+            buildSqlParserChain().stream().forEach(sqlParser -> sqlParser.parse(dslContext));
             return dslContext;
         }
         throw new ElasticSql2DslException("[syntax error] ElasticSql only support Select Sql, but get: " + queryExpr.getSubQuery().getQuery().getClass());
     }
-
 }

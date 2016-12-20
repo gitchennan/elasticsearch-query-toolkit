@@ -4,6 +4,7 @@ import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.ElasticMockClient;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -17,7 +18,7 @@ public class ElasticDslContext {
     /*取数开始位置*/
     private int from = 0;
     /*取数大小*/
-    private int size = 100;
+    private int size = 15;
     /*查询索引*/
     private List<String> indices;
     /*查询文档类*/
@@ -105,8 +106,16 @@ public class ElasticDslContext {
         return queryExpr;
     }
 
+    public String toDsl(Client client) {
+        return toRequest(client).toString();
+    }
+
     public String toDsl() {
-        SearchRequestBuilder requestBuilder = new SearchRequestBuilder(ElasticMockClient.get());
+        return toDsl(ElasticMockClient.get());
+    }
+
+    public SearchRequestBuilder toRequest(Client client) {
+        SearchRequestBuilder requestBuilder = new SearchRequestBuilder(client);
 
         if (size > 100) {
             requestBuilder.setFrom(from).setSize(100);
@@ -135,8 +144,7 @@ public class ElasticDslContext {
         if (CollectionUtils.isNotEmpty(queryFieldList)) {
             requestBuilder.setFetchSource(queryFieldList.toArray(new String[queryFieldList.size()]), null);
         }
-
-        return requestBuilder.toString();
+        return requestBuilder;
     }
 
     @Override

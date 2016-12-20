@@ -6,10 +6,12 @@ import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
 import java.util.List;
 
-public class QuerySelectFieldListParser {
+public class QuerySelectFieldListParser implements ElasticSqlParser {
+
     public static final String SQL_FIELD_MATCH_ALL = "*";
 
-    public static void parseSelectFieldList(ElasticDslContext dslContext) {
+    @Override
+    public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();
 
         List<String> selectFields = Lists.newLinkedList();
