@@ -39,7 +39,7 @@ public class SqlParserTest {
 
     @Test
     public void testParseSelectFieldMatchAll_01() {
-        String sql = "select * from book where c = 1";
+        String sql = "select * from lib.av as b where c = 1 and updated_at > date('yyyy-MM-dd', '2016-10-22')";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser(sql);
         ElasticDslContext dslContext = sql2DslParser.parse();
 
@@ -81,7 +81,7 @@ public class SqlParserTest {
 
     @Test
     public void testParseNestCondition() {
-        String sql = "select id,bookStatus,updatedAt,bookClassifications from book/basic dd where"
+        String sql = "select id,bookStatus,updatedAt,bookClassifications from book.basic dd where"
                 + " bookCategory = '802'"
                 + " and bookClassifications.classificationId > 0"
                 + " order by id desc,nvl(bookClassifications.sortNo, 999, 'min') asc";
@@ -91,4 +91,5 @@ public class SqlParserTest {
 
         System.out.println(dslContext.toString());
     }
+    
 }

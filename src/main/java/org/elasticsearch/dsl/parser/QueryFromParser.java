@@ -1,8 +1,7 @@
 package org.elasticsearch.dsl.parser;
 
-import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
-import com.alibaba.druid.sql.ast.expr.SQLBinaryOperator;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
 import com.google.common.collect.ImmutableList;
 import org.elasticsearch.dsl.ElasticDslContext;
@@ -18,22 +17,20 @@ public class QueryFromParser implements ElasticSqlParser {
             dslContext.setQueryAs(tableSource.getAlias());
 
             if (tableSource.getExpr() instanceof SQLIdentifierExpr) {
-                dslContext.setIndices(ImmutableList.of(((SQLIdentifierExpr) tableSource.getExpr()).getName()));
+                dslContext.setIndex(((SQLIdentifierExpr) tableSource.getExpr()).getName());
                 return;
             }
-            if (tableSource.getExpr() instanceof SQLBinaryOpExpr) {
-                SQLBinaryOpExpr idxExpr = (SQLBinaryOpExpr) tableSource.getExpr();
+            if (tableSource.getExpr() instanceof SQLPropertyExpr) {
+                SQLPropertyExpr idxExpr = (SQLPropertyExpr) tableSource.getExpr();
 
-                if (!(idxExpr.getLeft() instanceof SQLIdentifierExpr)
-                        || !(idxExpr.getRight() instanceof SQLIdentifierExpr)
-                        || idxExpr.getOperator() != SQLBinaryOperator.Divide) {
-                    throw new ElasticSql2DslException("[syntax error] From table should like [index]/[type]");
+                if (!(idxExpr.getOwner() instanceof SQLIdentifierExpr)) {
+                    throw new ElasticSql2DslException("[syntax error] From table should like [index].[type]");
                 }
-                dslContext.setIndices(ImmutableList.of(((SQLIdentifierExpr) idxExpr.getLeft()).getName()));
-                dslContext.setTypes(ImmutableList.of(((SQLIdentifierExpr) idxExpr.getRight()).getName()));
+                dslContext.setIndex(((SQLIdentifierExpr) idxExpr.getOwner()).getName());
+                dslContext.setType(idxExpr.getName());
                 return;
             }
         }
-        throw new ElasticSql2DslException("[syntax error] From table source should be [SQLExprTableSource],but get: " + queryBlock.getFrom().getClass());
+        throw new ElasticSql2DslException("[syntax error] From table should like [index].[type]");
     }
 }

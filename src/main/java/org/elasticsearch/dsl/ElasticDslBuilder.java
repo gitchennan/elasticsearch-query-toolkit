@@ -7,6 +7,7 @@ import org.elasticsearch.dsl.parser.*;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ElasticDslBuilder {
 
@@ -33,9 +34,14 @@ public class ElasticDslBuilder {
     }
 
     public ElasticDslContext build() {
-        ElasticDslContext dslContext = new ElasticDslContext(queryExpr);
+        final ElasticDslContext dslContext = new ElasticDslContext(queryExpr);
         if (queryExpr.getSubQuery().getQuery() instanceof ElasticSqlSelectQueryBlock) {
-            buildSqlParserChain().stream().forEach(sqlParser -> sqlParser.parse(dslContext));
+            buildSqlParserChain().stream().forEach(new Consumer<ElasticSqlParser>() {
+                @Override
+                public void accept(ElasticSqlParser sqlParser) {
+                    sqlParser.parse(dslContext);
+                }
+            });
             return dslContext;
         }
         throw new ElasticSql2DslException("[syntax error] ElasticSql only support Select Sql, but get: " + queryExpr.getSubQuery().getQuery().getClass());

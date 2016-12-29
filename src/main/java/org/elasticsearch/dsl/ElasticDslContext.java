@@ -2,6 +2,7 @@ package org.elasticsearch.dsl;
 
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.ElasticMockClient;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
@@ -13,6 +14,7 @@ import org.elasticsearch.utils.GsonHelper;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ElasticDslContext {
     /*取数开始位置*/
@@ -20,9 +22,9 @@ public class ElasticDslContext {
     /*取数大小*/
     private int size = 15;
     /*查询索引*/
-    private List<String> indices;
+    private String index;
     /*查询文档类*/
-    private List<String> types;
+    private String type;
     /*查询索引别名*/
     private String queryAs;
     /*查询字段列表*/
@@ -62,20 +64,20 @@ public class ElasticDslContext {
         this.queryFieldList = queryFieldList;
     }
 
-    public List<String> getIndices() {
-        return indices;
+    public String getIndex() {
+        return index;
     }
 
-    public void setIndices(List<String> indices) {
-        this.indices = indices;
+    public void setIndex(String index) {
+        this.index = index;
     }
 
-    public List<String> getTypes() {
-        return types;
+    public String getType() {
+        return type;
     }
 
-    public void setTypes(List<String> types) {
-        this.types = types;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public int getFrom() {
@@ -115,7 +117,7 @@ public class ElasticDslContext {
     }
 
     public SearchRequestBuilder toRequest(Client client) {
-        SearchRequestBuilder requestBuilder = new SearchRequestBuilder(client);
+        final SearchRequestBuilder requestBuilder = new SearchRequestBuilder(client);
 
         if (size > 100) {
             requestBuilder.setFrom(from).setSize(100);
@@ -123,12 +125,12 @@ public class ElasticDslContext {
             requestBuilder.setFrom(from).setSize(size);
         }
 
-        if (CollectionUtils.isNotEmpty(indices)) {
-            requestBuilder.setIndices(indices.toArray(new String[indices.size()]));
+        if (StringUtils.isNotBlank(index)) {
+            requestBuilder.setIndices(index);
         }
 
-        if (CollectionUtils.isNotEmpty(types)) {
-            requestBuilder.setTypes(types.toArray(new String[types.size()]));
+        if (StringUtils.isNotBlank(type)) {
+            requestBuilder.setTypes(type);
         }
 
         if (filterBuilder != null && filterBuilder.hasClauses()) {
@@ -138,7 +140,12 @@ public class ElasticDslContext {
         }
 
         if (CollectionUtils.isNotEmpty(sortBuilderList)) {
-            sortBuilderList.stream().forEach(requestBuilder::addSort);
+            sortBuilderList.stream().forEach(new Consumer<SortBuilder>() {
+                @Override
+                public void accept(SortBuilder sortBuilder) {
+                    requestBuilder.addSort(sortBuilder);
+                }
+            });
         }
 
         if (CollectionUtils.isNotEmpty(queryFieldList)) {
