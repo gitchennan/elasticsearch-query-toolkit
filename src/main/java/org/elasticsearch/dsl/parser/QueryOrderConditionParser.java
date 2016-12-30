@@ -8,7 +8,9 @@ import com.alibaba.druid.sql.ast.statement.SQLSelectOrderByItem;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.dsl.ElasticDslContext;
+import org.elasticsearch.dsl.ElasticSqlParseUtil;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
+import org.elasticsearch.dsl.parser.helper.ElasticSqlIdentifierHelper;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -17,22 +19,22 @@ import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
 import java.util.List;
 
-public class QueryOrderConditionParser implements ElasticSqlParser {
+public class QueryOrderConditionParser implements QueryParser {
     @Override
     public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();
         SQLOrderBy sqlOrderBy = queryBlock.getOrderBy();
         if (sqlOrderBy != null && CollectionUtils.isNotEmpty(sqlOrderBy.getItems())) {
             for (SQLSelectOrderByItem orderByItem : sqlOrderBy.getItems()) {
-                SortBuilder orderBy = parseOrderCondition(orderByItem, dslContext.getQueryAs());
+                SortBuilder orderBy = parseOrderCondition(orderByItem, dslContext.getParseResult().getQueryAs(), dslContext.getSqlArgs());
                 if (orderBy != null) {
-                    dslContext.addSort(orderBy);
+                    dslContext.getParseResult().addSort(orderBy);
                 }
             }
         }
     }
 
-    private SortBuilder parseOrderCondition(final SQLSelectOrderByItem orderByItem, String queryAs) {
+    private SortBuilder parseOrderCondition(final SQLSelectOrderByItem orderByItem, String queryAs, Object[] sqlArgs) {
         if (orderByItem.getExpr() instanceof SQLPropertyExpr || orderByItem.getExpr() instanceof SQLIdentifierExpr) {
             return parseCondition(orderByItem.getExpr(), queryAs, new ConditionSortBuilder() {
                 @Override
@@ -49,7 +51,7 @@ public class QueryOrderConditionParser implements ElasticSqlParser {
             final SQLMethodInvokeExpr methodInvokeExpr = (SQLMethodInvokeExpr) orderByItem.getExpr();
             checkNvlMethod(methodInvokeExpr);
 
-            final Object valueArg = ElasticSqlParseUtil.transferSqlArg(methodInvokeExpr.getParameters().get(1));
+            final Object valueArg = ElasticSqlParseUtil.transferSqlArg(methodInvokeExpr.getParameters().get(1), sqlArgs);
             return parseCondition(methodInvokeExpr.getParameters().get(0), queryAs, new ConditionSortBuilder() {
                 @Override
                 public FieldSortBuilder buildSort(String idfName) {
@@ -107,13 +109,13 @@ public class QueryOrderConditionParser implements ElasticSqlParser {
 
     private SortBuilder parseCondition(SQLExpr sqlExpr, String queryAs, final ConditionSortBuilder sortBuilder) {
         final List<SortBuilder> tmpSortList = Lists.newLinkedList();
-        ElasticSqlIdfParser.parseSqlIdentifier(sqlExpr, queryAs, new ElasticSqlIdfParser.ElasticSqlTopIdfFunc() {
+        ElasticSqlIdentifierHelper.parseSqlIdentifier(sqlExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlTopIdfFunc() {
             @Override
             public void parse(String idfName) {
                 FieldSortBuilder originalSort = sortBuilder.buildSort(idfName);
                 tmpSortList.add(originalSort);
             }
-        }, new ElasticSqlIdfParser.ElasticSqlNestIdfFunc() {
+        }, new ElasticSqlIdentifierHelper.ElasticSqlNestIdfFunc() {
             @Override
             public void parse(String nestPath, String idfName) {
                 FieldSortBuilder originalSort = sortBuilder.buildSort(idfName);

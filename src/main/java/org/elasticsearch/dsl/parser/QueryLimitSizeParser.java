@@ -5,7 +5,7 @@ import org.elasticsearch.dsl.ElasticDslContext;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
-public class QueryLimitSizeParser implements ElasticSqlParser {
+public class QueryLimitSizeParser implements QueryParser {
     @Override
     public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();
@@ -13,15 +13,15 @@ public class QueryLimitSizeParser implements ElasticSqlParser {
             if (!(queryBlock.getLimit().getOffset() instanceof SQLIntegerExpr)) {
                 throw new ElasticSql2DslException("[syntax error] Sql limit expr offset should be a non-negative number");
             }
-            dslContext.setFrom(((SQLIntegerExpr) queryBlock.getLimit().getOffset()).getNumber().intValue());
+            dslContext.getParseResult().setFrom(((SQLIntegerExpr) queryBlock.getLimit().getOffset()).getNumber().intValue());
 
             if (!(queryBlock.getLimit().getRowCount() instanceof SQLIntegerExpr)) {
                 throw new ElasticSql2DslException("[syntax error] Sql limit expr row count should be a non-negative number");
             }
-            dslContext.setSize(((SQLIntegerExpr) queryBlock.getLimit().getRowCount()).getNumber().intValue());
+            dslContext.getParseResult().setSize(((SQLIntegerExpr) queryBlock.getLimit().getRowCount()).getNumber().intValue());
         } else {
-            dslContext.setFrom(0);
-            dslContext.setSize(15);
+            dslContext.getParseResult().setFrom(0);
+            dslContext.getParseResult().setSize(15);
         }
     }
 }

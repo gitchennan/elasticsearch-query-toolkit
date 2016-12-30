@@ -1,4 +1,4 @@
-package org.elasticsearch.dsl.parser;
+package org.elasticsearch.dsl.parser.helper;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
@@ -6,7 +6,7 @@ import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.utils.StringUtils;
 
-public class ElasticSqlIdfParser {
+public class ElasticSqlIdentifierHelper {
 
     public static void parseSqlIdentifier(SQLExpr idfSqlExpr, String queryAsAlias, ElasticSqlTopIdfFunc topIdfFunc, ElasticSqlNestIdfFunc nestIdfFunc) {
         if (idfSqlExpr instanceof SQLIdentifierExpr) {
