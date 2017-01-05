@@ -3,7 +3,10 @@ package org.elasticsearch.dsl.parser;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLOrderBy;
 import com.alibaba.druid.sql.ast.SQLOrderingSpecification;
-import com.alibaba.druid.sql.ast.expr.*;
+import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.statement.SQLSelectOrderByItem;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
@@ -11,6 +14,7 @@ import org.elasticsearch.dsl.ElasticDslContext;
 import org.elasticsearch.dsl.ElasticSqlParseUtil;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlIdentifierHelper;
+import org.elasticsearch.dsl.parser.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -49,77 +53,58 @@ public class QueryOrderConditionParser implements QueryParser {
         }
         if (orderByItem.getExpr() instanceof SQLMethodInvokeExpr) {
             final SQLMethodInvokeExpr methodInvokeExpr = (SQLMethodInvokeExpr) orderByItem.getExpr();
-            checkNvlMethod(methodInvokeExpr);
+            //nvl method
+            if (ElasticSqlMethodInvokeHelper.NVL_METHOD.equalsIgnoreCase(methodInvokeExpr.getMethodName())) {
+                ElasticSqlMethodInvokeHelper.checkNvlMethod(methodInvokeExpr);
+                final Object valueArg = ElasticSqlParseUtil.transferSqlArg(methodInvokeExpr.getParameters().get(1), sqlArgs);
+                return parseCondition(methodInvokeExpr.getParameters().get(0), queryAs, new ConditionSortBuilder() {
+                    @Override
+                    public FieldSortBuilder buildSort(String idfName) {
+                        FieldSortBuilder fieldSortBuilder = null;
+                        if (SQLOrderingSpecification.ASC == orderByItem.getType()) {
+                            fieldSortBuilder = SortBuilders.fieldSort(idfName).order(SortOrder.ASC).missing(valueArg);
+                        } else {
+                            fieldSortBuilder = SortBuilders.fieldSort(idfName).order(SortOrder.DESC).missing(valueArg);
+                        }
+                        if (methodInvokeExpr.getParameters().size() == 3) {
+                            SQLExpr sortModArg = methodInvokeExpr.getParameters().get(2);
+                            String sortModeText = ((SQLCharExpr) sortModArg).getText();
+                            fieldSortBuilder.sortMode(SortOption.get(sortModeText).mode());
+                        }
+                        return fieldSortBuilder;
+                    }
+                });
+            }
 
-            final Object valueArg = ElasticSqlParseUtil.transferSqlArg(methodInvokeExpr.getParameters().get(1), sqlArgs);
-            return parseCondition(methodInvokeExpr.getParameters().get(0), queryAs, new ConditionSortBuilder() {
-                @Override
-                public FieldSortBuilder buildSort(String idfName) {
-                    FieldSortBuilder fieldSortBuilder = null;
-                    if (SQLOrderingSpecification.ASC == orderByItem.getType()) {
-                        fieldSortBuilder = SortBuilders.fieldSort(idfName).order(SortOrder.ASC).missing(valueArg);
-                    } else {
-                        fieldSortBuilder = SortBuilders.fieldSort(idfName).order(SortOrder.DESC).missing(valueArg);
+            //nested或者inner doc类型
+            if (ElasticSqlMethodInvokeHelper.NESTED_DOC_METHOD.equalsIgnoreCase(methodInvokeExpr.getMethodName())
+                    || ElasticSqlMethodInvokeHelper.INNER_DOC_METHOD.equalsIgnoreCase(methodInvokeExpr.getMethodName())) {
+                return parseCondition(methodInvokeExpr, queryAs, new ConditionSortBuilder() {
+                    @Override
+                    public FieldSortBuilder buildSort(String idfName) {
+                        return SortBuilders.fieldSort(idfName).order(
+                                SQLOrderingSpecification.ASC == orderByItem.getType() ? SortOrder.ASC : SortOrder.DESC
+                        );
                     }
-                    if (methodInvokeExpr.getParameters().size() == 3) {
-                        SQLExpr sortModArg = methodInvokeExpr.getParameters().get(2);
-                        String sortModeText = ((SQLCharExpr) sortModArg).getText();
-                        fieldSortBuilder.sortMode(SortOption.get(sortModeText).mode());
-                    }
-                    return fieldSortBuilder;
-                }
-            });
+                });
+            }
         }
         throw new ElasticSql2DslException("[syntax error] ElasticSql cannot support sort type: " + orderByItem.getExpr().getClass());
     }
 
-    private void checkNvlMethod(SQLMethodInvokeExpr nvlInvokeExpr) {
-        if (!"nvl".equalsIgnoreCase(nvlInvokeExpr.getMethodName())) {
-            throw new ElasticSql2DslException("[syntax error] ElasticSql sort condition only support nvl method invoke");
-        }
-
-        if (CollectionUtils.isEmpty(nvlInvokeExpr.getParameters()) || nvlInvokeExpr.getParameters().size() > 3) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There is no %s args method named nvl",
-                    nvlInvokeExpr.getParameters() != null ? nvlInvokeExpr.getParameters().size() : 0));
-        }
-
-        SQLExpr fieldArg = nvlInvokeExpr.getParameters().get(0);
-        SQLExpr valueArg = nvlInvokeExpr.getParameters().get(1);
-
-        if (!(fieldArg instanceof SQLPropertyExpr) && !(fieldArg instanceof SQLIdentifierExpr)) {
-            throw new ElasticSql2DslException("[syntax error] The first arg of nvl method should be field param name");
-        }
-
-        if (!(valueArg instanceof SQLCharExpr) && !(valueArg instanceof SQLIntegerExpr) && !(valueArg instanceof SQLNumberExpr)) {
-            throw new ElasticSql2DslException("[syntax error] The second arg of nvl method should be number or string");
-        }
-
-        if (nvlInvokeExpr.getParameters().size() == 3) {
-            SQLExpr sortModArg = nvlInvokeExpr.getParameters().get(2);
-            if (!(sortModArg instanceof SQLCharExpr)) {
-                throw new ElasticSql2DslException("[syntax error] The third arg of nvl method should be string");
-            }
-            String sortModeText = ((SQLCharExpr) sortModArg).getText();
-            if (!SortOption.AVG.mode().equalsIgnoreCase(sortModeText) && !SortOption.MIN.mode().equalsIgnoreCase(sortModeText)
-                    && !SortOption.MAX.mode().equalsIgnoreCase(sortModeText) && !SortOption.SUM.mode().equalsIgnoreCase(sortModeText)) {
-                throw new ElasticSql2DslException("[syntax error] The third arg of nvl method should be one of the string[min,max,avg,sum]");
-            }
-        }
-    }
-
     private SortBuilder parseCondition(SQLExpr sqlExpr, String queryAs, final ConditionSortBuilder sortBuilder) {
         final List<SortBuilder> tmpSortList = Lists.newLinkedList();
-        ElasticSqlIdentifierHelper.parseSqlIdentifier(sqlExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlTopIdfFunc() {
+        ElasticSqlIdentifierHelper.parseSqlIdentifier(sqlExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlSinglePropertyFunc() {
             @Override
-            public void parse(String idfName) {
-                FieldSortBuilder originalSort = sortBuilder.buildSort(idfName);
+            public void parse(String propertyName) {
+                FieldSortBuilder originalSort = sortBuilder.buildSort(propertyName);
                 tmpSortList.add(originalSort);
             }
-        }, new ElasticSqlIdentifierHelper.ElasticSqlNestIdfFunc() {
+        }, new ElasticSqlIdentifierHelper.ElasticSqlPathPropertyFunc() {
             @Override
-            public void parse(String nestPath, String idfName) {
-                FieldSortBuilder originalSort = sortBuilder.buildSort(idfName);
-                originalSort.setNestedPath(nestPath);
+            public void parse(String propertyPath, String propertyName) {
+                FieldSortBuilder originalSort = sortBuilder.buildSort(propertyName);
+                originalSort.setNestedPath(propertyPath);
                 tmpSortList.add(originalSort);
             }
         });

@@ -1,10 +1,10 @@
 package org.elasticsearch.sql;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.parser.Lexer;
-import com.alibaba.druid.sql.parser.SQLExprParser;
-import com.alibaba.druid.sql.parser.SQLSelectParser;
-import com.alibaba.druid.sql.parser.Token;
+import com.alibaba.druid.sql.parser.*;
+import com.google.common.collect.Lists;
+
+import java.util.List;
 
 public class ElasticSqlExprParser extends SQLExprParser {
 
@@ -43,6 +43,24 @@ public class ElasticSqlExprParser extends SQLExprParser {
             return limit;
         }
 
+        return null;
+    }
+
+    public ElasticSqlSelectQueryBlock.Routing parseRoutingBy() {
+        if(lexer.token() == Token.INDEX && "ROUTING".equalsIgnoreCase(lexer.stringVal())) {
+            lexer.nextToken();
+
+            accept(Token.BY);
+
+            List<SQLExpr> routingValues = Lists.newLinkedList();
+            routingValues.add(this.expr());
+
+            while(lexer.token() == (Token.COMMA)) {
+                lexer.nextToken();
+                routingValues.add(this.expr());
+            }
+            return new ElasticSqlSelectQueryBlock.Routing(routingValues);
+        }
         return null;
     }
 }

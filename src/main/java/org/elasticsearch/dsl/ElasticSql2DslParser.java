@@ -89,6 +89,8 @@ public class ElasticSql2DslParser {
                 new QueryWhereConditionParser(),
                 //解析SQL排序条件
                 new QueryOrderConditionParser(),
+                //解析路由参数
+                new QueryRoutingValParser(),
                 //解析SQL查询指定的字段
                 new QuerySelectFieldListParser(),
                 //解析SQL的分页条数

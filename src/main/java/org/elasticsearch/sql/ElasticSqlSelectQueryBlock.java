@@ -5,11 +5,16 @@ import com.alibaba.druid.sql.ast.SQLObject;
 import com.alibaba.druid.sql.ast.SQLObjectImpl;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.visitor.SQLASTVisitor;
+import org.apache.commons.collections.CollectionUtils;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 public class ElasticSqlSelectQueryBlock extends SQLSelectQueryBlock implements SQLObject {
     /*DSL: from to*/
     private Limit limit;
 
+    private Routing routing;
 
     public Limit getLimit() {
         return limit;
@@ -19,15 +24,40 @@ public class ElasticSqlSelectQueryBlock extends SQLSelectQueryBlock implements S
         this.limit = limit;
     }
 
+    public Routing getRouting() {
+        return routing;
+    }
+
+    public void setRouting(Routing routing) {
+        this.routing = routing;
+    }
+
+    public static class Routing extends SQLObjectImpl {
+        private List<SQLExpr> routingValues;
+
+        public Routing(List<SQLExpr> routingValues) {
+            this.routingValues = routingValues;
+            if (CollectionUtils.isNotEmpty(routingValues)) {
+                routingValues.stream().forEach(new Consumer<SQLExpr>() {
+                    @Override
+                    public void accept(SQLExpr sqlExpr) {
+                        sqlExpr.setParent(ElasticSqlSelectQueryBlock.Routing.this);
+                    }
+                });
+            }
+        }
+
+        @Override
+        protected void accept0(SQLASTVisitor visitor) {
+            throw new UnsupportedOperationException("ElasticSql un-support method : accept0(SQLASTVisitor visitor)");
+        }
+
+        public List<SQLExpr> getRoutingValues() {
+            return routingValues;
+        }
+    }
+
     public static class Limit extends SQLObjectImpl {
-        public Limit() {
-
-        }
-
-        public Limit(SQLExpr rowCount) {
-            this.setRowCount(rowCount);
-        }
-
         private SQLExpr rowCount;
         private SQLExpr offset;
 

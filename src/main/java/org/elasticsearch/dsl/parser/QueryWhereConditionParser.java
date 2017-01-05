@@ -94,11 +94,6 @@ public class QueryWhereConditionParser implements QueryParser {
             final SQLBinaryOperator binaryOperator = sqlBinOpExpr.getOperator();
 
             if (ElasticSqlParseUtil.isValidBinOperator(binaryOperator)) {
-                //以下是二元运算,左边必须是变量
-                if (!(sqlBinOpExpr.getLeft() instanceof SQLPropertyExpr || sqlBinOpExpr.getLeft() instanceof SQLIdentifierExpr)) {
-                    throw new ElasticSql2DslException("[syntax error] Binary operation expr left part should be a param name");
-                }
-
                 //EQ NEQ
                 if (SQLBinaryOperator.Equality == binaryOperator || SQLBinaryOperator.LessThanOrGreater == binaryOperator || SQLBinaryOperator.NotEqual == binaryOperator) {
                     final Object targetVal = ElasticSqlParseUtil.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
@@ -192,17 +187,17 @@ public class QueryWhereConditionParser implements QueryParser {
 
     private FilterBuilder parseCondition(SQLExpr sqlExpr, String queryAs, final ConditionFilterBuilder filterBuilder) {
         final List<FilterBuilder> tmpFilterList = Lists.newLinkedList();
-        ElasticSqlIdentifierHelper.parseSqlIdentifier(sqlExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlTopIdfFunc() {
+        ElasticSqlIdentifierHelper.parseSqlIdentifier(sqlExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlSinglePropertyFunc() {
             @Override
-            public void parse(String idfName) {
-                FilterBuilder originalFilter = filterBuilder.buildFilter(idfName);
+            public void parse(String propertyName) {
+                FilterBuilder originalFilter = filterBuilder.buildFilter(propertyName);
                 tmpFilterList.add(originalFilter);
             }
-        }, new ElasticSqlIdentifierHelper.ElasticSqlNestIdfFunc() {
+        }, new ElasticSqlIdentifierHelper.ElasticSqlPathPropertyFunc() {
             @Override
-            public void parse(String nestPath, String idfName) {
-                FilterBuilder originalFilter = filterBuilder.buildFilter(idfName);
-                FilterBuilder nestFilter = FilterBuilders.nestedFilter(nestPath, originalFilter);
+            public void parse(String propertyPath, String propertyName) {
+                FilterBuilder originalFilter = filterBuilder.buildFilter(propertyName);
+                FilterBuilder nestFilter = FilterBuilders.nestedFilter(propertyPath, originalFilter);
                 tmpFilterList.add(nestFilter);
             }
         });

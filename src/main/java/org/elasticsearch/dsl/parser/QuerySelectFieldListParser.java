@@ -18,17 +18,17 @@ public class QuerySelectFieldListParser implements QueryParser {
 
         final List<String> selectFields = Lists.newLinkedList();
         for (SQLSelectItem selectField : queryBlock.getSelectList()) {
-            ElasticSqlIdentifierHelper.parseSqlIdentifier(selectField.getExpr(), dslContext.getParseResult().getQueryAs(), new ElasticSqlIdentifierHelper.ElasticSqlTopIdfFunc() {
+            ElasticSqlIdentifierHelper.parseSqlIdentifier(selectField.getExpr(), dslContext.getParseResult().getQueryAs(), new ElasticSqlIdentifierHelper.ElasticSqlSinglePropertyFunc() {
                 @Override
-                public void parse(String idfName) {
-                    if (!SQL_FIELD_MATCH_ALL.equals(idfName)) {
-                        selectFields.add(idfName);
+                public void parse(String propertyName) {
+                    if (!SQL_FIELD_MATCH_ALL.equals(propertyName)) {
+                        selectFields.add(propertyName);
                     }
                 }
-            }, new ElasticSqlIdentifierHelper.ElasticSqlNestIdfFunc() {
+            }, new ElasticSqlIdentifierHelper.ElasticSqlPathPropertyFunc() {
                 @Override
-                public void parse(String nestPath, String idfName) {
-                    selectFields.add(String.format("%s.%s", nestPath, idfName));
+                public void parse(String propertyPath, String propertyName) {
+                    selectFields.add(String.format("%s.%s", propertyPath, propertyName));
                 }
             });
         }

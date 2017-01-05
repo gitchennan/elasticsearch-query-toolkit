@@ -1,7 +1,10 @@
 package org.elasticsearch.sql;
 
 import com.alibaba.druid.sql.ast.SQLSetQuantifier;
-import com.alibaba.druid.sql.ast.statement.*;
+import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
+import com.alibaba.druid.sql.ast.statement.SQLJoinTableSource;
+import com.alibaba.druid.sql.ast.statement.SQLSelectQuery;
+import com.alibaba.druid.sql.ast.statement.SQLTableSource;
 import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.SQLExprParser;
 import com.alibaba.druid.sql.parser.SQLSelectParser;
@@ -15,6 +18,10 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
 
     public ElasticSqlSelectQueryBlock.Limit parseLimit() {
         return ((ElasticSqlExprParser) this.exprParser).parseLimit();
+    }
+
+    public ElasticSqlSelectQueryBlock.Routing parseRoutingBy() {
+        return ((ElasticSqlExprParser) this.exprParser).parseRoutingBy();
     }
 
     @Override
@@ -50,6 +57,10 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
         parseWhere(queryBlock);
         parseGroupBy(queryBlock);
         queryBlock.setOrderBy(this.exprParser.parseOrderBy());
+
+        if (lexer.token() == Token.INDEX && "ROUTING".equalsIgnoreCase(lexer.stringVal())) {
+            queryBlock.setRouting(parseRoutingBy());
+        }
 
         if (lexer.token() == Token.LIMIT) {
             queryBlock.setLimit(parseLimit());

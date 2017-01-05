@@ -4,6 +4,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlDateParseHelper;
+import org.elasticsearch.dsl.parser.helper.ElasticSqlMethodInvokeHelper;
 
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class ElasticSqlParseUtil {
 
             //解析date函数
             if (ElasticSqlDateParseHelper.isDateMethod(methodExpr)) {
-                ElasticSqlDateParseHelper.checkDateMethod(methodExpr);
+                ElasticSqlMethodInvokeHelper.checkDateMethod(methodExpr);
                 String patternArg = (String) ElasticSqlParseUtil.transferSqlArg(methodExpr.getParameters().get(0), sqlArgs);
                 String timeValArg = (String) ElasticSqlParseUtil.transferSqlArg(methodExpr.getParameters().get(1), sqlArgs);
                 return ElasticSqlDateParseHelper.formatDefaultEsDate(patternArg, timeValArg);

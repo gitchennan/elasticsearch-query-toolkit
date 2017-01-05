@@ -1,10 +1,6 @@
 package org.elasticsearch.dsl.parser.helper;
 
-import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
-import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
-import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 
 import java.text.ParseException;
@@ -52,7 +48,6 @@ public class ElasticSqlDateParseHelper {
             String getPatternString() {
                 return "yyyy-MM-dd";
             }
-
         };
 
         abstract Pattern getPattern();
@@ -61,7 +56,7 @@ public class ElasticSqlDateParseHelper {
     }
 
     public static boolean isDateMethod(SQLMethodInvokeExpr dateMethodExpr) {
-        return "date".equalsIgnoreCase(dateMethodExpr.getMethodName());
+        return ElasticSqlMethodInvokeHelper.DATE_METHOD.equalsIgnoreCase(dateMethodExpr.getMethodName());
     }
 
     public static boolean isDateArgStringValue(String date) {
@@ -107,28 +102,6 @@ public class ElasticSqlDateParseHelper {
             return dateFormat.format(date);
         } catch (ParseException pex) {
             throw new ElasticSql2DslException("[syntax error] Parse time arg error: " + timeValArg);
-        }
-    }
-
-    public static void checkDateMethod(SQLMethodInvokeExpr dateInvokeExpr) {
-        if (!"date".equalsIgnoreCase(dateInvokeExpr.getMethodName())) {
-            throw new ElasticSql2DslException("[syntax error] ElasticSql not support method:" + dateInvokeExpr.getMethodName());
-        }
-
-        if (CollectionUtils.isEmpty(dateInvokeExpr.getParameters()) || dateInvokeExpr.getParameters().size() != 2) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There is no %s args method named nvl",
-                    dateInvokeExpr.getParameters() != null ? dateInvokeExpr.getParameters().size() : 0));
-        }
-
-        SQLExpr patternArg = dateInvokeExpr.getParameters().get(0);
-        SQLExpr timeValArg = dateInvokeExpr.getParameters().get(1);
-
-        if (!(patternArg instanceof SQLCharExpr) && !(patternArg instanceof SQLVariantRefExpr)) {
-            throw new ElasticSql2DslException("[syntax error] The first arg of date method should be a time pattern");
-        }
-
-        if (!(timeValArg instanceof SQLCharExpr) && !(timeValArg instanceof SQLVariantRefExpr)) {
-            throw new ElasticSql2DslException("[syntax error] The second arg of date method should be a string of time");
         }
     }
 }

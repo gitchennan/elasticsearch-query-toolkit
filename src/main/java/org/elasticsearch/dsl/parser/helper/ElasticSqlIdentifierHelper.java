@@ -2,49 +2,121 @@ package org.elasticsearch.dsl.parser.helper;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.utils.StringUtils;
 
 public class ElasticSqlIdentifierHelper {
 
-    public static void parseSqlIdentifier(SQLExpr idfSqlExpr, String queryAsAlias, ElasticSqlTopIdfFunc topIdfFunc, ElasticSqlNestIdfFunc nestIdfFunc) {
-        if (idfSqlExpr instanceof SQLIdentifierExpr) {
-            topIdfFunc.parse(((SQLIdentifierExpr) idfSqlExpr).getName());
-        }
-        if (idfSqlExpr instanceof SQLPropertyExpr) {
-            SQLPropertyExpr propertyExpr = (SQLPropertyExpr) idfSqlExpr;
+    /**
+     * 字段标识符处理
+     *
+     * @param propertyNameExpr   待处理字段表达式
+     * @param queryAsAlias       文档类型别名
+     * @param singlePropertyFunc 非内嵌类型处理策略(inner/property)
+     * @param pathPropertyFunc   内嵌类型处理逻辑(nested)
+     */
+    public static void parseSqlIdentifier(final SQLExpr propertyNameExpr, final String queryAsAlias,
+                                          final ElasticSqlSinglePropertyFunc singlePropertyFunc, final ElasticSqlPathPropertyFunc pathPropertyFunc) {
+        if (propertyNameExpr instanceof SQLMethodInvokeExpr) {
+            //如果指定是inner doc类型
+            SQLMethodInvokeExpr innerObjExpr = (SQLMethodInvokeExpr) propertyNameExpr;
+            if ("inner_doc".equalsIgnoreCase(innerObjExpr.getMethodName())) {
+                ElasticSqlMethodInvokeHelper.checkInnerDocMethod(innerObjExpr);
 
-            if (propertyExpr.getOwner() instanceof SQLPropertyExpr) {
-                SQLPropertyExpr ownerPropertyExpr = (SQLPropertyExpr) propertyExpr.getOwner();
-                if (!(ownerPropertyExpr.getOwner() instanceof SQLIdentifierExpr)) {
-                    throw new ElasticSql2DslException("[syntax error] Select field ref level should <= 3");
-                }
-                SQLIdentifierExpr superOwnerIdfExpr = (SQLIdentifierExpr) ownerPropertyExpr.getOwner();
-                if (StringUtils.isNotBlank(queryAsAlias) && queryAsAlias.equalsIgnoreCase(superOwnerIdfExpr.getName())) {
-                    nestIdfFunc.parse(ownerPropertyExpr.getName(), propertyExpr.getName());
+                ElasticSqlIdentifierHelper.parseSqlIdf(innerObjExpr.getParameters().get(0), queryAsAlias, new ElasticSqlSinglePropertyFunc() {
+                    @Override
+                    public void parse(String propertyName) {
+                        throw new ElasticSql2DslException("[syntax error] The arg of method inner_doc must contain property reference path");
+                    }
+                }, new ElasticSqlPathPropertyFunc() {
+                    @Override
+                    public void parse(String propertyPath, String propertyName) {
+                        singlePropertyFunc.parse(String.format("%s.%s", propertyPath, propertyName));
+                    }
+                });
+                return;
+            }
+
+            //如果执行是nested doc类型
+            if ("nested_doc".equalsIgnoreCase(innerObjExpr.getMethodName())) {
+                ElasticSqlMethodInvokeHelper.checkNestedDocMethod(innerObjExpr);
+
+                ElasticSqlIdentifierHelper.parseSqlIdf(innerObjExpr.getParameters().get(0), queryAsAlias, new ElasticSqlSinglePropertyFunc() {
+                    @Override
+                    public void parse(String propertyName) {
+                        throw new ElasticSql2DslException("[syntax error] The arg of method nested_doc must contain property reference path");
+                    }
+                }, new ElasticSqlPathPropertyFunc() {
+                    @Override
+                    public void parse(String propertyPath, String propertyName) {
+                        pathPropertyFunc.parse(propertyPath, propertyName);
+                    }
+                });
+                return;
+            }
+
+            throw new ElasticSql2DslException("[syntax error] ElasticSql identifier method only support nested_doc and inner_doc");
+        }
+
+        //默认按照inner doc或者property name来处理
+        ElasticSqlIdentifierHelper.parseSqlIdf(propertyNameExpr, queryAsAlias, new ElasticSqlSinglePropertyFunc() {
+            @Override
+            public void parse(String propertyName) {
+                singlePropertyFunc.parse(propertyName);
+            }
+        }, new ElasticSqlPathPropertyFunc() {
+            @Override
+            public void parse(String propertyPath, String propertyName) {
+                singlePropertyFunc.parse(String.format("%s.%s", propertyPath, propertyName));
+            }
+        });
+    }
+
+    private static void parseSqlIdf(final SQLExpr propertyNameExpr, final String queryAsAlias,
+                                    final ElasticSqlSinglePropertyFunc singlePropertyFunc, final ElasticSqlPathPropertyFunc pathPropertyFunc) {
+        //如果标识符直接返回
+        if (propertyNameExpr instanceof SQLIdentifierExpr) {
+            singlePropertyFunc.parse(((SQLIdentifierExpr) propertyNameExpr).getName());
+        }
+
+        if (propertyNameExpr instanceof SQLPropertyExpr) {
+            SQLPropertyExpr propertyExpr = (SQLPropertyExpr) propertyNameExpr;
+            StringBuffer ownerIdfNameBuilder = new StringBuffer();
+            propertyExpr.getOwner().output(ownerIdfNameBuilder);
+
+            if (StringUtils.isNotBlank(queryAsAlias)) {
+                String ownerIdf = ownerIdfNameBuilder.toString();
+
+                if (StringUtils.startsWithIgnoreCase(ownerIdf, queryAsAlias)) {
+                    if (ownerIdf.length() > queryAsAlias.length()) {
+                        //别名+path+属性名
+                        pathPropertyFunc.parse(ownerIdf.substring(queryAsAlias.length() + 1, ownerIdf.length()), propertyExpr.getName());
+                    } else if (queryAsAlias.equalsIgnoreCase(ownerIdf)) {
+                        //别名+属性名
+                        singlePropertyFunc.parse(propertyExpr.getName());
+                    }
                 } else {
-                    throw new ElasticSql2DslException("[syntax error] Select field qualifier not support: " + superOwnerIdfExpr.getName());
+                    //使用别名,但不以别名开头
+                    pathPropertyFunc.parse(ownerIdfNameBuilder.toString(), propertyExpr.getName());
                 }
-            } else if (propertyExpr.getOwner() instanceof SQLIdentifierExpr) {
-                SQLIdentifierExpr ownerIdfExpr = (SQLIdentifierExpr) propertyExpr.getOwner();
-                if (StringUtils.isNotBlank(queryAsAlias) && queryAsAlias.equalsIgnoreCase(ownerIdfExpr.getName())) {
-                    topIdfFunc.parse(propertyExpr.getName());
-                } else {
-                    nestIdfFunc.parse(ownerIdfExpr.getName(), propertyExpr.getName());
-                }
+            } else {
+                //如果使用未使用别名
+                pathPropertyFunc.parse(ownerIdfNameBuilder.toString(), propertyExpr.getName());
             }
         }
     }
 
+
     @FunctionalInterface
-    public interface ElasticSqlTopIdfFunc {
-        void parse(String idfName);
+    public interface ElasticSqlSinglePropertyFunc {
+        void parse(String propertyName);
     }
 
     @FunctionalInterface
-    public interface ElasticSqlNestIdfFunc {
-        void parse(String nestPath, String idfName);
+    public interface ElasticSqlPathPropertyFunc {
+        void parse(String propertyPath, String propertyName);
     }
 
 }

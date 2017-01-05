@@ -1,5 +1,6 @@
-package org.elasticsearch;
+package org.elasticsearch.util;
 
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.*;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
