@@ -167,6 +167,6 @@ public class ElasticSqlParseResult {
     @Override
     public String toString() {
         String ptn = "index:%s,type:%s,query_as:%s,from:%s,size:%s,routing:%s,dsl:%s";
-        return String.format(ptn, index, type, queryAs, from, size, routingBy.toString(), toDsl());
+        return String.format(ptn, index, type, queryAs, from, size, routingBy != null ? routingBy.toString() : "[]", toDsl());
     }
 }
