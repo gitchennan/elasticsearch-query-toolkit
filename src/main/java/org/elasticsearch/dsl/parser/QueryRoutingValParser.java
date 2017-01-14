@@ -7,12 +7,20 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.dsl.ElasticDslContext;
 import org.elasticsearch.dsl.ElasticSqlParseUtil;
+import org.elasticsearch.dsl.ParseActionListener;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
 import java.util.List;
 
 public class QueryRoutingValParser implements QueryParser {
+
+    private ParseActionListener parseActionListener;
+
+    public QueryRoutingValParser(ParseActionListener parseActionListener) {
+        this.parseActionListener = parseActionListener;
+    }
+
     @Override
     public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();

@@ -4,10 +4,18 @@ import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
 import org.elasticsearch.dsl.ElasticDslContext;
+import org.elasticsearch.dsl.ParseActionListener;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
 public class QueryFromParser implements QueryParser {
+
+    private ParseActionListener parseActionListener;
+
+    public QueryFromParser(ParseActionListener parseActionListener) {
+        this.parseActionListener = parseActionListener;
+    }
+
     @Override
     public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();

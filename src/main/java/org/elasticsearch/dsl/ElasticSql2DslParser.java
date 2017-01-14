@@ -17,27 +17,19 @@ import java.util.function.Consumer;
 
 public class ElasticSql2DslParser {
 
-    /**
-     * 执行sql到dsl转换
-     *
-     * @param sql 待解析sql
-     * @return 解析结果
-     * @throws ElasticSql2DslException 当解析出现语法错误时抛出
-     */
     public ElasticSqlParseResult parse(String sql) throws ElasticSql2DslException {
-        return parse(sql, null);
+        return parse(sql, null, new ParseActionListenerAdapter());
     }
 
+    public ElasticSqlParseResult parse(String sql, ParseActionListener parseActionListener) throws ElasticSql2DslException {
+        return parse(sql, null, parseActionListener);
+    }
 
-    /**
-     * 执行sql到dsl转换
-     *
-     * @param sql     待解析sql
-     * @param sqlArgs sql动态参数
-     * @return 解析结果
-     * @throws ElasticSql2DslException 当解析出现语法错误时抛出
-     */
     public ElasticSqlParseResult parse(String sql, Object[] sqlArgs) throws ElasticSql2DslException {
+        return parse(sql, sqlArgs, new ParseActionListenerAdapter());
+    }
+
+    public ElasticSqlParseResult parse(String sql, Object[] sqlArgs, ParseActionListener parseActionListener) throws ElasticSql2DslException {
         SQLQueryExpr queryExpr = null;
         try {
             ElasticSqlExprParser elasticSqlExprParser = new ElasticSqlExprParser(sql);
@@ -50,7 +42,7 @@ public class ElasticSql2DslParser {
 
         final ElasticDslContext elasticDslContext = new ElasticDslContext(queryExpr, sqlArgs);
         if (queryExpr.getSubQuery().getQuery() instanceof ElasticSqlSelectQueryBlock) {
-            buildSqlParserChain().stream().forEach(new Consumer<QueryParser>() {
+            buildSqlParserChain(parseActionListener).stream().forEach(new Consumer<QueryParser>() {
                 @Override
                 public void accept(QueryParser sqlParser) {
                     sqlParser.parse(elasticDslContext);
@@ -80,21 +72,21 @@ public class ElasticSql2DslParser {
         }
     }
 
-    private List<QueryParser> buildSqlParserChain() {
+    private List<QueryParser> buildSqlParserChain(ParseActionListener parseActionListener) {
         //SQL解析器的顺序不能改变
         return ImmutableList.of(
                 //解析SQL指定的索引和文档类型
-                new QueryFromParser(),
+                new QueryFromParser(parseActionListener),
                 //解析SQL查询指定的where条件
-                new QueryWhereConditionParser(),
+                new QueryWhereConditionParser(parseActionListener),
                 //解析SQL排序条件
-                new QueryOrderConditionParser(),
+                new QueryOrderConditionParser(parseActionListener),
                 //解析路由参数
-                new QueryRoutingValParser(),
+                new QueryRoutingValParser(parseActionListener),
                 //解析SQL查询指定的字段
-                new QuerySelectFieldListParser(),
+                new QuerySelectFieldListParser(parseActionListener),
                 //解析SQL的分页条数
-                new QueryLimitSizeParser()
+                new QueryLimitSizeParser(parseActionListener)
         );
     }
 }

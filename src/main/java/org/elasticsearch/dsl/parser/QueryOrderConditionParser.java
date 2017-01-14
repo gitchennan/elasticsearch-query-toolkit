@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.dsl.ElasticDslContext;
 import org.elasticsearch.dsl.ElasticSqlParseUtil;
+import org.elasticsearch.dsl.ParseActionListener;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlIdentifierHelper;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlMethodInvokeHelper;
@@ -24,6 +25,13 @@ import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 import java.util.List;
 
 public class QueryOrderConditionParser implements QueryParser {
+
+    private ParseActionListener parseActionListener;
+
+    public QueryOrderConditionParser(ParseActionListener parseActionListener) {
+        this.parseActionListener = parseActionListener;
+    }
+
     @Override
     public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();

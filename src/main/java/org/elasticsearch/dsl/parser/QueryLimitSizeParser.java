@@ -5,10 +5,18 @@ import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
 import org.elasticsearch.dsl.ElasticDslContext;
 import org.elasticsearch.dsl.ElasticSqlParseUtil;
+import org.elasticsearch.dsl.ParseActionListener;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
 public class QueryLimitSizeParser implements QueryParser {
+
+    private ParseActionListener parseActionListener;
+
+    public QueryLimitSizeParser(ParseActionListener parseActionListener) {
+        this.parseActionListener = parseActionListener;
+    }
+
     @Override
     public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();

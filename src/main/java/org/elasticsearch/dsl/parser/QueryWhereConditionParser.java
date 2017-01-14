@@ -4,10 +4,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
-import org.elasticsearch.dsl.ElasticDslContext;
-import org.elasticsearch.dsl.ElasticSqlParseUtil;
-import org.elasticsearch.dsl.SQLConditionOperator;
-import org.elasticsearch.dsl.SQLIdentifierType;
+import org.elasticsearch.dsl.*;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlIdentifierHelper;
 import org.elasticsearch.index.query.BoolFilterBuilder;
@@ -19,6 +16,13 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class QueryWhereConditionParser implements QueryParser {
+
+    private ParseActionListener parseActionListener;
+
+    public QueryWhereConditionParser(ParseActionListener parseActionListener) {
+        this.parseActionListener = parseActionListener;
+    }
+
     @Override
     public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();
@@ -209,7 +213,7 @@ public class QueryWhereConditionParser implements QueryParser {
         final List<FilterBuilder> conditionCollector = Lists.newLinkedList();
         final Object[] pRightParamValues = rightParamValues;
         final SQLConditionOperator pOperator = operator;
-        SQLIdentifierType idfType = ElasticSqlIdentifierHelper.parseSqlIdentifier(leftIdentifierExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlSinglePropertyFunc() {
+        ElasticSqlIdentifier sqlIdentifier = ElasticSqlIdentifierHelper.parseSqlIdentifier(leftIdentifierExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlSinglePropertyFunc() {
             @Override
             public void parse(String propertyName) {
                 FilterBuilder originalFilter = filterBuilder.buildFilter(propertyName, pOperator, pRightParamValues);
@@ -224,19 +228,27 @@ public class QueryWhereConditionParser implements QueryParser {
             }
         });
         if (CollectionUtils.isNotEmpty(conditionCollector)) {
-            //todo invoke listener
-            onAtomConditionParse("", rightParamValues, idfType, operator);
+            onAtomConditionParse(sqlIdentifier, rightParamValues, operator);
             return conditionCollector.get(0);
         }
         return null;
     }
 
-    public void onAtomConditionParse(String paramName, Object[] paramValues, SQLIdentifierType paramPropertyType, SQLConditionOperator operator) {
-
+    private void onAtomConditionParse(ElasticSqlIdentifier sqlIdentifier, Object[] paramValues, SQLConditionOperator operator) {
+        try {
+            parseActionListener.onAtomConditionParse(sqlIdentifier, paramValues, operator);
+        } catch (Exception ex) {
+            try {
+                parseActionListener.onFailure(ex);
+            } catch (Exception exp) {
+                //ignore;
+            }
+        }
     }
 
-    private abstract class ConditionFilterBuilder {
-        public abstract FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues);
+    @FunctionalInterface
+    private interface ConditionFilterBuilder {
+        FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues);
     }
 
     private class SqlCondition {
