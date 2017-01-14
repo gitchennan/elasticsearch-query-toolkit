@@ -5,12 +5,10 @@ import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolFilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.util.ElasticMockClient;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -30,25 +28,9 @@ public class ElasticSqlParseResult {
     /*查询字段列表*/
     private List<String> queryFieldList;
     /*SQL的where条件*/
-    private transient BoolFilterBuilder filterBuilder;
+    private transient BoolFilterBuilder whereCondition;
     /*SQL的order by条件*/
-    private transient List<SortBuilder> sortBuilderList;
-
-    public void addSort(SortBuilder sortBuilder) {
-        if (sortBuilder != null) {
-            if (sortBuilderList == null) {
-                sortBuilderList = new LinkedList<SortBuilder>();
-            }
-            sortBuilderList.add(sortBuilder);
-        }
-    }
-
-    public BoolFilterBuilder boolFilter() {
-        if (filterBuilder == null) {
-            filterBuilder = FilterBuilders.boolFilter();
-        }
-        return filterBuilder;
-    }
+    private transient List<SortBuilder> orderBy;
 
     public List<String> getQueryFieldList() {
         return queryFieldList;
@@ -98,12 +80,20 @@ public class ElasticSqlParseResult {
         this.queryAs = queryAs;
     }
 
-    public BoolFilterBuilder getFilterBuilder() {
-        return filterBuilder;
+    public BoolFilterBuilder getWhereCondition() {
+        return whereCondition;
     }
 
-    public List<SortBuilder> getSortBuilderList() {
-        return sortBuilderList;
+    public void setWhereCondition(BoolFilterBuilder whereCondition) {
+        this.whereCondition = whereCondition;
+    }
+
+    public List<SortBuilder> getOrderBy() {
+        return orderBy;
+    }
+
+    public void setOrderBy(List<SortBuilder> orderBy) {
+        this.orderBy = orderBy;
     }
 
     public List<String> getRoutingBy() {
@@ -116,12 +106,7 @@ public class ElasticSqlParseResult {
 
     public SearchRequestBuilder toRequest(Client client) {
         final SearchRequestBuilder requestBuilder = new SearchRequestBuilder(client);
-
-        if (size > 100) {
-            requestBuilder.setFrom(from).setSize(100);
-        } else {
-            requestBuilder.setFrom(from).setSize(size);
-        }
+        requestBuilder.setFrom(from).setSize(size);
 
         if (StringUtils.isNotBlank(index)) {
             requestBuilder.setIndices(index);
@@ -131,14 +116,14 @@ public class ElasticSqlParseResult {
             requestBuilder.setTypes(type);
         }
 
-        if (filterBuilder != null && filterBuilder.hasClauses()) {
-            requestBuilder.setQuery(QueryBuilders.filteredQuery(null, filterBuilder));
+        if (whereCondition != null && whereCondition.hasClauses()) {
+            requestBuilder.setQuery(QueryBuilders.filteredQuery(null, whereCondition));
         } else {
             requestBuilder.setQuery(QueryBuilders.matchAllQuery());
         }
 
-        if (CollectionUtils.isNotEmpty(sortBuilderList)) {
-            sortBuilderList.stream().forEach(new Consumer<SortBuilder>() {
+        if (CollectionUtils.isNotEmpty(orderBy)) {
+            orderBy.stream().forEach(new Consumer<SortBuilder>() {
                 @Override
                 public void accept(SortBuilder sortBuilder) {
                     requestBuilder.addSort(sortBuilder);
@@ -150,7 +135,7 @@ public class ElasticSqlParseResult {
             requestBuilder.setFetchSource(queryFieldList.toArray(new String[queryFieldList.size()]), null);
         }
 
-        if(CollectionUtils.isNotEmpty(routingBy)) {
+        if (CollectionUtils.isNotEmpty(routingBy)) {
             requestBuilder.setRouting(routingBy.toArray(new String[routingBy.size()]));
         }
         return requestBuilder;

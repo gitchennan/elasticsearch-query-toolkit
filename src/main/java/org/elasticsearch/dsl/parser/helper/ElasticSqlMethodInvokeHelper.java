@@ -15,7 +15,7 @@ public class ElasticSqlMethodInvokeHelper {
 
     public static void checkDateMethod(SQLMethodInvokeExpr dateInvokeExpr) {
         if (!DATE_METHOD.equalsIgnoreCase(dateInvokeExpr.getMethodName())) {
-            throw new ElasticSql2DslException("[syntax error] ElasticSql not support method:" + dateInvokeExpr.getMethodName());
+            throw new ElasticSql2DslException("[syntax error] Sql not support method:" + dateInvokeExpr.getMethodName());
         }
 
         if (CollectionUtils.isEmpty(dateInvokeExpr.getParameters()) || dateInvokeExpr.getParameters().size() != 2) {
@@ -37,7 +37,7 @@ public class ElasticSqlMethodInvokeHelper {
 
     public static void checkInnerDocMethod(SQLMethodInvokeExpr innerDocInvokeExpr) {
         if (!INNER_DOC_METHOD.equalsIgnoreCase(innerDocInvokeExpr.getMethodName())) {
-            throw new ElasticSql2DslException("[syntax error] ElasticSql not support method:" + innerDocInvokeExpr.getMethodName());
+            throw new ElasticSql2DslException("[syntax error] Sql not support method:" + innerDocInvokeExpr.getMethodName());
         }
 
         if (CollectionUtils.isEmpty(innerDocInvokeExpr.getParameters()) || innerDocInvokeExpr.getParameters().size() != 1) {
@@ -71,7 +71,7 @@ public class ElasticSqlMethodInvokeHelper {
 
     public static void checkNvlMethod(SQLMethodInvokeExpr nvlInvokeExpr) {
         if (!NVL_METHOD.equalsIgnoreCase(nvlInvokeExpr.getMethodName())) {
-            throw new ElasticSql2DslException("[syntax error] ElasticSql sort condition only support nvl method invoke");
+            throw new ElasticSql2DslException("[syntax error] Sql sort condition only support nvl method invoke");
         }
 
         if (CollectionUtils.isEmpty(nvlInvokeExpr.getParameters()) || nvlInvokeExpr.getParameters().size() > 3) {

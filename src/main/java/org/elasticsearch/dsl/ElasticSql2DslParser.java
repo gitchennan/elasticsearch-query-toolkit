@@ -57,7 +57,7 @@ public class ElasticSql2DslParser {
                 }
             });
         } else {
-            throw new ElasticSql2DslException("[syntax error] ElasticSql only support Select Sql");
+            throw new ElasticSql2DslException("[syntax error] Sql only support Select Sql");
         }
         return elasticDslContext.getParseResult();
     }

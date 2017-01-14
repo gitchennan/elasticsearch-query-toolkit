@@ -29,12 +29,14 @@ public class QueryOrderConditionParser implements QueryParser {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();
         SQLOrderBy sqlOrderBy = queryBlock.getOrderBy();
         if (sqlOrderBy != null && CollectionUtils.isNotEmpty(sqlOrderBy.getItems())) {
+            List<SortBuilder> orderByList = Lists.newLinkedList();
             for (SQLSelectOrderByItem orderByItem : sqlOrderBy.getItems()) {
                 SortBuilder orderBy = parseOrderCondition(orderByItem, dslContext.getParseResult().getQueryAs(), dslContext.getSqlArgs());
                 if (orderBy != null) {
-                    dslContext.getParseResult().addSort(orderBy);
+                    orderByList.add(orderBy);
                 }
             }
+            dslContext.getParseResult().setOrderBy(orderByList);
         }
     }
 
@@ -89,7 +91,7 @@ public class QueryOrderConditionParser implements QueryParser {
                 });
             }
         }
-        throw new ElasticSql2DslException("[syntax error] ElasticSql cannot support sort type: " + orderByItem.getExpr().getClass());
+        throw new ElasticSql2DslException("[syntax error] Sql cannot support sort type: " + orderByItem.getExpr().getClass());
     }
 
     private SortBuilder parseCondition(SQLExpr sqlExpr, String queryAs, final ConditionSortBuilder sortBuilder) {

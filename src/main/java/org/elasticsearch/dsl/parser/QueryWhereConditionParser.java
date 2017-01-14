@@ -20,21 +20,23 @@ public class QueryWhereConditionParser implements QueryParser {
     @Override
     public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();
+        BoolFilterBuilder whereCondition = FilterBuilders.boolFilter();
         if (queryBlock.getWhere() != null) {
             SqlCondition sqlCondition = parseFilterCondition(dslContext, queryBlock.getWhere());
             if (!sqlCondition.isAndOr()) {
-                dslContext.getParseResult().boolFilter().must(sqlCondition.getFilterList().get(0));
+                whereCondition.must(sqlCondition.getFilterList().get(0));
             } else {
                 for (FilterBuilder filter : sqlCondition.getFilterList()) {
                     if (sqlCondition.getOperator() == SQLBinaryOperator.BooleanAnd) {
-                        dslContext.getParseResult().boolFilter().must(filter);
+                        whereCondition.must(filter);
                     }
                     if (sqlCondition.getOperator() == SQLBinaryOperator.BooleanOr) {
-                        dslContext.getParseResult().boolFilter().should(filter);
+                        whereCondition.should(filter);
                     }
                 }
             }
         }
+        dslContext.getParseResult().setWhereCondition(whereCondition);
     }
 
     private SqlCondition parseFilterCondition(ElasticDslContext dslContext, SQLExpr sqlExpr) {
@@ -207,9 +209,8 @@ public class QueryWhereConditionParser implements QueryParser {
         return null;
     }
 
-    @FunctionalInterface
-    private interface ConditionFilterBuilder {
-        FilterBuilder buildFilter(String idfName);
+    private abstract class ConditionFilterBuilder {
+        public abstract FilterBuilder buildFilter(String idfName);
     }
 
     private class SqlCondition {

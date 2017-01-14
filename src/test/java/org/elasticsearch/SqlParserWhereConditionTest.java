@@ -15,37 +15,37 @@ public class SqlParserWhereConditionTest  {
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         FilterBuilder targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.termFilter("status", "SUCCESS"));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where trx.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.termFilter("price", "123.4"));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where inner_doc(product.price)='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.termFilter("product.price", "123.4"));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where nested_doc(product.price)='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.termFilter("price", "123.4")));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where nested_doc(trx.product.price)='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.termFilter("price", "123.4")));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where nested_doc(abc.trx.product.price)='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("abc.trx.product", FilterBuilders.termFilter("price", "123.4")));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where trx.product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.termFilter("product.price", "123.4"));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
     }
 
     @Test
@@ -56,17 +56,17 @@ public class SqlParserWhereConditionTest  {
         String sql = "select id,productStatus from index.trx_order trx where trx.price > 123.4";
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         FilterBuilder targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("price").gt(123.4));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where inner_doc(product.price) > 123.4";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("product.price").gt(123.4));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where nested_doc(product.price) > 123.4";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.rangeFilter("price").gt(123.4)));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
     }
 
@@ -78,28 +78,28 @@ public class SqlParserWhereConditionTest  {
         String sql = "select id,productStatus from index.trx_order trx where trx.updatedAt > '2017-01-25'";
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         FilterBuilder targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("updatedAt").gt("2017-01-25T00:00:00.000+0800"));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where trx.updatedAt > '2017-01-25 13:32'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("updatedAt").gt("2017-01-25T13:32:00.000+0800"));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where trx.updatedAt > '2017-01-25 13:32:59'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("updatedAt").gt("2017-01-25T13:32:59.000+0800"));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where trx.updatedAt > date('yyyy/MM/dd hh:mm:ss', '2017/01/25 13:32:59')";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("updatedAt").gt("2017-01-25T13:32:59.000+0800"));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
 
         sql = "select id,productStatus from index.trx_order trx where trx.updatedAt > date('yyyy/MM/dd hh-mm', '2017/01/25 13-32')";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("updatedAt").gt("2017-01-25T13:32:00.000+0800"));
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
 
         sql = "select id,productStatus from index.trx_order trx where trx.updatedAt between date('yyyy/MM/dd hh-mm', '2017/01/25 13-32') and '2018-10-25'";
@@ -109,7 +109,7 @@ public class SqlParserWhereConditionTest  {
                         .gte("2017-01-25T13:32:00.000+0800")
                         .lte("2018-10-25T00:00:00.000+0800")
         );
-        Assert.assertEquals(parseResult.getFilterBuilder().toString(), targetFilter.toString());
+        Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
     }
 
     @Test

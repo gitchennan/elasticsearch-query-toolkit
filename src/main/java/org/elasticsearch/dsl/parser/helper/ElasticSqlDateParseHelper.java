@@ -82,7 +82,7 @@ public class ElasticSqlDateParseHelper {
         if (SqlDateRegex.DATE_REGEX_03.getPattern().matcher(date).matches()) {
             return formatDefaultEsDate(SqlDateRegex.DATE_REGEX_03.getPatternString(), date);
         }
-        throw new ElasticSql2DslException("[syntax error] ElasticSql cannot support such date type: " + date);
+        throw new ElasticSql2DslException("[syntax error] Sql cannot support such date type: " + date);
     }
 
     public static String formatDefaultEsDateObjectValue(Object date) {
@@ -90,7 +90,7 @@ public class ElasticSqlDateParseHelper {
             SimpleDateFormat dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
             return dateFormat.format(date);
         }
-        throw new ElasticSql2DslException("[syntax error] ElasticSql cannot support such date type: " + date.getClass());
+        throw new ElasticSql2DslException("[syntax error] Sql cannot support such date type: " + date.getClass());
     }
 
     public static String formatDefaultEsDate(String patternArg, String timeValArg) {

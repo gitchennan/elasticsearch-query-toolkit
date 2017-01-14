@@ -1,6 +1,7 @@
 package org.elasticsearch.dsl.parser.helper;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLAllColumnExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
@@ -22,7 +23,7 @@ public class ElasticSqlIdentifierHelper {
         if (propertyNameExpr instanceof SQLMethodInvokeExpr) {
             //如果指定是inner doc类型
             SQLMethodInvokeExpr innerObjExpr = (SQLMethodInvokeExpr) propertyNameExpr;
-            if ("inner_doc".equalsIgnoreCase(innerObjExpr.getMethodName())) {
+            if (ElasticSqlMethodInvokeHelper.INNER_DOC_METHOD.equalsIgnoreCase(innerObjExpr.getMethodName())) {
                 ElasticSqlMethodInvokeHelper.checkInnerDocMethod(innerObjExpr);
 
                 ElasticSqlIdentifierHelper.parseSqlIdf(innerObjExpr.getParameters().get(0), queryAsAlias, new ElasticSqlSinglePropertyFunc() {
@@ -40,7 +41,7 @@ public class ElasticSqlIdentifierHelper {
             }
 
             //如果执行是nested doc类型
-            if ("nested_doc".equalsIgnoreCase(innerObjExpr.getMethodName())) {
+            if (ElasticSqlMethodInvokeHelper.NESTED_DOC_METHOD.equalsIgnoreCase(innerObjExpr.getMethodName())) {
                 ElasticSqlMethodInvokeHelper.checkNestedDocMethod(innerObjExpr);
 
                 ElasticSqlIdentifierHelper.parseSqlIdf(innerObjExpr.getParameters().get(0), queryAsAlias, new ElasticSqlSinglePropertyFunc() {
@@ -57,7 +58,7 @@ public class ElasticSqlIdentifierHelper {
                 return;
             }
 
-            throw new ElasticSql2DslException("[syntax error] ElasticSql identifier method only support nested_doc and inner_doc");
+            throw new ElasticSql2DslException("[syntax error] Sql identifier method only support nested_doc and inner_doc");
         }
 
         //默认按照inner doc或者property name来处理
@@ -76,12 +77,14 @@ public class ElasticSqlIdentifierHelper {
 
     private static void parseSqlIdf(final SQLExpr propertyNameExpr, final String queryAsAlias,
                                     final ElasticSqlSinglePropertyFunc singlePropertyFunc, final ElasticSqlPathPropertyFunc pathPropertyFunc) {
-        //如果标识符直接返回
-        if (propertyNameExpr instanceof SQLIdentifierExpr) {
-            singlePropertyFunc.parse(((SQLIdentifierExpr) propertyNameExpr).getName());
+        //查询所有字段
+        if (propertyNameExpr instanceof SQLAllColumnExpr) {
+            return;
         }
 
-        if (propertyNameExpr instanceof SQLPropertyExpr) {
+        if (propertyNameExpr instanceof SQLIdentifierExpr) {
+            singlePropertyFunc.parse(((SQLIdentifierExpr) propertyNameExpr).getName());
+        } else if (propertyNameExpr instanceof SQLPropertyExpr) {
             SQLPropertyExpr propertyExpr = (SQLPropertyExpr) propertyNameExpr;
             StringBuffer ownerIdfNameBuilder = new StringBuffer();
             propertyExpr.getOwner().output(ownerIdfNameBuilder);
@@ -105,6 +108,8 @@ public class ElasticSqlIdentifierHelper {
                 //如果使用未使用别名
                 pathPropertyFunc.parse(ownerIdfNameBuilder.toString(), propertyExpr.getName());
             }
+        } else {
+            throw new ElasticSql2DslException("[syntax error] Sql unSupport Identifier type: " + propertyNameExpr.getClass());
         }
     }
 
