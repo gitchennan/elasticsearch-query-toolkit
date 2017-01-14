@@ -5,8 +5,13 @@ import com.alibaba.druid.sql.ast.expr.SQLAllColumnExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.elasticsearch.dsl.SQLIdentifierType;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
+
+import java.util.List;
 
 public class ElasticSqlIdentifierHelper {
 
@@ -17,9 +22,11 @@ public class ElasticSqlIdentifierHelper {
      * @param queryAsAlias       文档类型别名
      * @param singlePropertyFunc 非内嵌类型处理策略(inner/property)
      * @param pathPropertyFunc   内嵌类型处理逻辑(nested)
+     * @return 标识符类型
      */
-    public static void parseSqlIdentifier(final SQLExpr propertyNameExpr, final String queryAsAlias,
-                                          final ElasticSqlSinglePropertyFunc singlePropertyFunc, final ElasticSqlPathPropertyFunc pathPropertyFunc) {
+    public static SQLIdentifierType parseSqlIdentifier(final SQLExpr propertyNameExpr, final String queryAsAlias,
+                                                       final ElasticSqlSinglePropertyFunc singlePropertyFunc,
+                                                       final ElasticSqlPathPropertyFunc pathPropertyFunc) {
         if (propertyNameExpr instanceof SQLMethodInvokeExpr) {
             //如果指定是inner doc类型
             SQLMethodInvokeExpr innerObjExpr = (SQLMethodInvokeExpr) propertyNameExpr;
@@ -37,7 +44,7 @@ public class ElasticSqlIdentifierHelper {
                         singlePropertyFunc.parse(String.format("%s.%s", propertyPath, propertyName));
                     }
                 });
-                return;
+                return SQLIdentifierType.InnerDocProperty;
             }
 
             //如果执行是nested doc类型
@@ -55,24 +62,31 @@ public class ElasticSqlIdentifierHelper {
                         pathPropertyFunc.parse(propertyPath, propertyName);
                     }
                 });
-                return;
+                return SQLIdentifierType.NestedDocProperty;
             }
 
             throw new ElasticSql2DslException("[syntax error] Sql identifier method only support nested_doc and inner_doc");
         }
 
         //默认按照inner doc或者property name来处理
+        final List<Boolean> isInnerDocProperty = Lists.newLinkedList();
         ElasticSqlIdentifierHelper.parseSqlIdf(propertyNameExpr, queryAsAlias, new ElasticSqlSinglePropertyFunc() {
             @Override
             public void parse(String propertyName) {
+                isInnerDocProperty.add(Boolean.FALSE);
                 singlePropertyFunc.parse(propertyName);
             }
         }, new ElasticSqlPathPropertyFunc() {
             @Override
             public void parse(String propertyPath, String propertyName) {
+                isInnerDocProperty.add(Boolean.TRUE);
                 singlePropertyFunc.parse(String.format("%s.%s", propertyPath, propertyName));
             }
         });
+        if (CollectionUtils.isNotEmpty(isInnerDocProperty)) {
+            return isInnerDocProperty.get(0) ? SQLIdentifierType.InnerDocProperty : SQLIdentifierType.Property;
+        }
+        return SQLIdentifierType.MatchAllField;
     }
 
     private static void parseSqlIdf(final SQLExpr propertyNameExpr, final String queryAsAlias,

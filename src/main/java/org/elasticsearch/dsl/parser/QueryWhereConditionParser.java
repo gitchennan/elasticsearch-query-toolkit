@@ -6,6 +6,8 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.dsl.ElasticDslContext;
 import org.elasticsearch.dsl.ElasticSqlParseUtil;
+import org.elasticsearch.dsl.SQLConditionOperator;
+import org.elasticsearch.dsl.SQLIdentifierType;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlIdentifierHelper;
 import org.elasticsearch.index.query.BoolFilterBuilder;
@@ -98,12 +100,14 @@ public class QueryWhereConditionParser implements QueryParser {
             if (ElasticSqlParseUtil.isValidBinOperator(binaryOperator)) {
                 //EQ NEQ
                 if (SQLBinaryOperator.Equality == binaryOperator || SQLBinaryOperator.LessThanOrGreater == binaryOperator || SQLBinaryOperator.NotEqual == binaryOperator) {
-                    final Object targetVal = ElasticSqlParseUtil.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
-                    return parseCondition(sqlBinOpExpr.getLeft(), dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
+                    Object targetVal = ElasticSqlParseUtil.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
+
+                    SQLConditionOperator operator = SQLBinaryOperator.Equality == binaryOperator ? SQLConditionOperator.Equality : SQLConditionOperator.NotEqual;
+                    return parseCondition(sqlBinOpExpr.getLeft(), operator, new Object[]{targetVal}, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
                         @Override
-                        public FilterBuilder buildFilter(String idfName) {
-                            FilterBuilder eqFilter = FilterBuilders.termFilter(idfName, targetVal);
-                            if (SQLBinaryOperator.Equality == binaryOperator) {
+                        public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
+                            FilterBuilder eqFilter = FilterBuilders.termFilter(leftIdfName, rightParamValues[0]);
+                            if (SQLConditionOperator.Equality == operator) {
                                 return eqFilter;
                             } else {
                                 return FilterBuilders.notFilter(eqFilter);
@@ -115,19 +119,31 @@ public class QueryWhereConditionParser implements QueryParser {
                 //GT GTE LT LTE
                 if (SQLBinaryOperator.GreaterThan == binaryOperator || SQLBinaryOperator.GreaterThanOrEqual == binaryOperator
                         || SQLBinaryOperator.LessThan == binaryOperator || SQLBinaryOperator.LessThanOrEqual == binaryOperator) {
-                    final Object targetVal = ElasticSqlParseUtil.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
-                    return parseCondition(sqlBinOpExpr.getLeft(), dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
+
+                    SQLConditionOperator operator = null;
+                    if (SQLBinaryOperator.GreaterThan == binaryOperator) {
+                        operator = SQLConditionOperator.GreaterThan;
+                    } else if (SQLBinaryOperator.GreaterThanOrEqual == binaryOperator) {
+                        operator = SQLConditionOperator.GreaterThanOrEqual;
+                    } else if (SQLBinaryOperator.LessThan == binaryOperator) {
+                        operator = SQLConditionOperator.LessThan;
+                    } else if (SQLBinaryOperator.LessThanOrEqual == binaryOperator) {
+                        operator = SQLConditionOperator.LessThanOrEqual;
+                    }
+
+                    Object targetVal = ElasticSqlParseUtil.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
+                    return parseCondition(sqlBinOpExpr.getLeft(), operator, new Object[]{targetVal}, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
                         @Override
-                        public FilterBuilder buildFilter(String idfName) {
+                        public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
                             FilterBuilder rangeFilter = null;
-                            if (SQLBinaryOperator.GreaterThan == binaryOperator) {
-                                rangeFilter = FilterBuilders.rangeFilter(idfName).gt(targetVal);
-                            } else if (SQLBinaryOperator.GreaterThanOrEqual == binaryOperator) {
-                                rangeFilter = FilterBuilders.rangeFilter(idfName).gte(targetVal);
-                            } else if (SQLBinaryOperator.LessThan == binaryOperator) {
-                                rangeFilter = FilterBuilders.rangeFilter(idfName).lt(targetVal);
-                            } else if (SQLBinaryOperator.LessThanOrEqual == binaryOperator) {
-                                rangeFilter = FilterBuilders.rangeFilter(idfName).lte(targetVal);
+                            if (SQLConditionOperator.GreaterThan == operator) {
+                                rangeFilter = FilterBuilders.rangeFilter(leftIdfName).gt(rightParamValues[0]);
+                            } else if (SQLConditionOperator.GreaterThanOrEqual == operator) {
+                                rangeFilter = FilterBuilders.rangeFilter(leftIdfName).gte(rightParamValues[0]);
+                            } else if (SQLConditionOperator.LessThan == operator) {
+                                rangeFilter = FilterBuilders.rangeFilter(leftIdfName).lt(rightParamValues[0]);
+                            } else if (SQLConditionOperator.LessThanOrEqual == operator) {
+                                rangeFilter = FilterBuilders.rangeFilter(leftIdfName).lte(rightParamValues[0]);
                             }
                             return rangeFilter;
                         }
@@ -139,11 +155,12 @@ public class QueryWhereConditionParser implements QueryParser {
                     if (!(sqlBinOpExpr.getRight() instanceof SQLNullExpr)) {
                         throw new ElasticSql2DslException("[syntax error] Is/IsNot expr right part should be null");
                     }
-                    return parseCondition(sqlBinOpExpr.getLeft(), dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
+                    SQLConditionOperator operator = SQLBinaryOperator.Is == binaryOperator ? SQLConditionOperator.IsNull : SQLConditionOperator.IsNotNull;
+                    return parseCondition(sqlBinOpExpr.getLeft(), operator, null, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
                         @Override
-                        public FilterBuilder buildFilter(String idfName) {
-                            FilterBuilder missingFilter = FilterBuilders.missingFilter(idfName);
-                            if (SQLBinaryOperator.IsNot == binaryOperator) {
+                        public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
+                            FilterBuilder missingFilter = FilterBuilders.missingFilter(leftIdfName);
+                            if (SQLConditionOperator.IsNotNull == operator) {
                                 return FilterBuilders.notFilter(missingFilter);
                             }
                             return missingFilter;
@@ -156,61 +173,70 @@ public class QueryWhereConditionParser implements QueryParser {
             if (CollectionUtils.isEmpty(inListExpr.getTargetList())) {
                 throw new ElasticSql2DslException("[syntax error] In list expr target list cannot be blank");
             }
-            final Object[] targetInList = ElasticSqlParseUtil.transferSqlArgs(inListExpr.getTargetList(), dslContext.getSqlArgs());
-            return parseCondition(inListExpr.getExpr(), dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
+            Object[] targetInList = ElasticSqlParseUtil.transferSqlArgs(inListExpr.getTargetList(), dslContext.getSqlArgs());
+            SQLConditionOperator operator = inListExpr.isNot() ? SQLConditionOperator.NotIn : SQLConditionOperator.In;
+            return parseCondition(inListExpr.getExpr(), operator, targetInList, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
                 @Override
-                public FilterBuilder buildFilter(String idfName) {
-                    if (inListExpr.isNot()) {
-                        return FilterBuilders.notFilter(FilterBuilders.inFilter(idfName, targetInList));
+                public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
+                    if (SQLConditionOperator.NotIn == operator) {
+                        return FilterBuilders.notFilter(FilterBuilders.inFilter(leftIdfName, rightParamValues));
                     } else {
-                        return FilterBuilders.inFilter(idfName, targetInList);
+                        return FilterBuilders.inFilter(leftIdfName, rightParamValues);
                     }
                 }
             });
         } else if (sqlExpr instanceof SQLBetweenExpr) {
             SQLBetweenExpr betweenExpr = (SQLBetweenExpr) sqlExpr;
 
-            final Object from = ElasticSqlParseUtil.transferSqlArg(betweenExpr.getBeginExpr(), dslContext.getSqlArgs());
-            final Object to = ElasticSqlParseUtil.transferSqlArg(betweenExpr.getEndExpr(), dslContext.getSqlArgs());
+            Object from = ElasticSqlParseUtil.transferSqlArg(betweenExpr.getBeginExpr(), dslContext.getSqlArgs());
+            Object to = ElasticSqlParseUtil.transferSqlArg(betweenExpr.getEndExpr(), dslContext.getSqlArgs());
 
             if (from == null || to == null) {
                 throw new ElasticSql2DslException("[syntax error] Between Expr only support one of [number,date] arg type");
             }
 
-            return parseCondition(betweenExpr.getTestExpr(), dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
+            return parseCondition(betweenExpr.getTestExpr(), SQLConditionOperator.BetweenAnd, new Object[]{from, to}, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
                 @Override
-                public FilterBuilder buildFilter(String idfName) {
-                    return FilterBuilders.rangeFilter(idfName).gte(from).lte(to);
+                public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
+                    return FilterBuilders.rangeFilter(leftIdfName).gte(rightParamValues[0]).lte(rightParamValues[1]);
                 }
             });
         }
         throw new ElasticSql2DslException("[syntax error] Can not support syntax type: " + sqlExpr.toString());
     }
 
-    private FilterBuilder parseCondition(SQLExpr sqlExpr, String queryAs, final ConditionFilterBuilder filterBuilder) {
-        final List<FilterBuilder> tmpFilterList = Lists.newLinkedList();
-        ElasticSqlIdentifierHelper.parseSqlIdentifier(sqlExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlSinglePropertyFunc() {
+    private FilterBuilder parseCondition(SQLExpr leftIdentifierExpr, SQLConditionOperator operator, Object[] rightParamValues, String queryAs, final ConditionFilterBuilder filterBuilder) {
+        final List<FilterBuilder> conditionCollector = Lists.newLinkedList();
+        final Object[] pRightParamValues = rightParamValues;
+        final SQLConditionOperator pOperator = operator;
+        SQLIdentifierType idfType = ElasticSqlIdentifierHelper.parseSqlIdentifier(leftIdentifierExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlSinglePropertyFunc() {
             @Override
             public void parse(String propertyName) {
-                FilterBuilder originalFilter = filterBuilder.buildFilter(propertyName);
-                tmpFilterList.add(originalFilter);
+                FilterBuilder originalFilter = filterBuilder.buildFilter(propertyName, pOperator, pRightParamValues);
+                conditionCollector.add(originalFilter);
             }
         }, new ElasticSqlIdentifierHelper.ElasticSqlPathPropertyFunc() {
             @Override
             public void parse(String propertyPath, String propertyName) {
-                FilterBuilder originalFilter = filterBuilder.buildFilter(propertyName);
+                FilterBuilder originalFilter = filterBuilder.buildFilter(propertyName, pOperator, pRightParamValues);
                 FilterBuilder nestFilter = FilterBuilders.nestedFilter(propertyPath, originalFilter);
-                tmpFilterList.add(nestFilter);
+                conditionCollector.add(nestFilter);
             }
         });
-        if (CollectionUtils.isNotEmpty(tmpFilterList)) {
-            return tmpFilterList.get(0);
+        if (CollectionUtils.isNotEmpty(conditionCollector)) {
+            //todo invoke listener
+            onAtomConditionParse("", rightParamValues, idfType, operator);
+            return conditionCollector.get(0);
         }
         return null;
     }
 
+    public void onAtomConditionParse(String paramName, Object[] paramValues, SQLIdentifierType paramPropertyType, SQLConditionOperator operator) {
+
+    }
+
     private abstract class ConditionFilterBuilder {
-        public abstract FilterBuilder buildFilter(String idfName);
+        public abstract FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues);
     }
 
     private class SqlCondition {

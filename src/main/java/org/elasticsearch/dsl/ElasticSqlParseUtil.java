@@ -69,7 +69,6 @@ public class ElasticSqlParseUtil {
                 || binaryOperator == SQLBinaryOperator.GreaterThanOrEqual
                 || binaryOperator == SQLBinaryOperator.LessThan
                 || binaryOperator == SQLBinaryOperator.LessThanOrEqual
-                || binaryOperator == SQLBinaryOperator.LessThanOrGreater
                 || binaryOperator == SQLBinaryOperator.Is
                 || binaryOperator == SQLBinaryOperator.IsNot;
     }
