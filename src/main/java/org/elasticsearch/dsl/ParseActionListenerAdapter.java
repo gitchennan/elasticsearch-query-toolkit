@@ -3,12 +3,12 @@ package org.elasticsearch.dsl;
 public class ParseActionListenerAdapter implements ParseActionListener {
 
     @Override
-    public void onSqlSelectFieldParse(ElasticSqlIdentifier sqlIdentifier) {
+    public void onSelectFieldParse(ElasticSqlIdentifier field) {
 
     }
 
     @Override
-    public void onAtomConditionParse(ElasticSqlIdentifier sqlIdentifier, Object[] paramValues, SQLConditionOperator operator) {
+    public void onAtomConditionParse(ElasticSqlIdentifier paramName, Object[] paramValues, SQLConditionOperator operator) {
 
     }
 

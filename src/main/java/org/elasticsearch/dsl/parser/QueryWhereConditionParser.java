@@ -234,9 +234,9 @@ public class QueryWhereConditionParser implements QueryParser {
         return null;
     }
 
-    private void onAtomConditionParse(ElasticSqlIdentifier sqlIdentifier, Object[] paramValues, SQLConditionOperator operator) {
+    private void onAtomConditionParse(ElasticSqlIdentifier paramName, Object[] paramValues, SQLConditionOperator operator) {
         try {
-            parseActionListener.onAtomConditionParse(sqlIdentifier, paramValues, operator);
+            parseActionListener.onAtomConditionParse(paramName, paramValues, operator);
         } catch (Exception ex) {
             try {
                 parseActionListener.onFailure(ex);

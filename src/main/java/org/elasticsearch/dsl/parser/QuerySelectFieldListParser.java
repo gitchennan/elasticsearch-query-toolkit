@@ -39,14 +39,14 @@ public class QuerySelectFieldListParser implements QueryParser {
                     selectFields.add(String.format("%s.%s", propertyPath, propertyName));
                 }
             });
-            onSqlSelectFieldParse(sqlIdentifier);
+            onSelectFieldParse(sqlIdentifier);
         }
         dslContext.getParseResult().setQueryFieldList(selectFields);
     }
 
-    private void onSqlSelectFieldParse(ElasticSqlIdentifier sqlIdentifier) {
+    private void onSelectFieldParse(ElasticSqlIdentifier field) {
         try {
-            parseActionListener.onSqlSelectFieldParse(sqlIdentifier);
+            parseActionListener.onSelectFieldParse(field);
         } catch (Exception ex) {
             try {
                 parseActionListener.onFailure(ex);
