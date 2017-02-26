@@ -1,6 +1,6 @@
 package org.elasticsearch.dsl.parser;
 
-import org.elasticsearch.dsl.ElasticDslContext;
+import org.elasticsearch.dsl.bean.ElasticDslContext;
 
 @FunctionalInterface
 public interface QueryParser {

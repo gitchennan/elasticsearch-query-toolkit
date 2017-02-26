@@ -1,4 +1,4 @@
-package org.elasticsearch.dsl;
+package org.elasticsearch.dsl.bean;
 
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 

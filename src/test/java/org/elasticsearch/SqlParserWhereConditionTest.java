@@ -1,8 +1,8 @@
 package org.elasticsearch;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.dsl.ElasticSql2DslParser;
-import org.elasticsearch.dsl.ElasticSqlParseResult;
+import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
+import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.NestedFilterBuilder;
@@ -143,6 +143,13 @@ public class SqlParserWhereConditionTest {
         System.out.println(parseResult.toString());
     }
 
+    @Test
+    public void test$Expr() {
+        String sql = "select * from index where a.$b.c.$d > 2";
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+        System.out.println(parseResult.toString());
+    }
 
     @Test
     public void testCreateSearchDsl() {

@@ -1,7 +1,7 @@
 package org.elasticsearch;
 
-import org.elasticsearch.dsl.ElasticSql2DslParser;
-import org.elasticsearch.dsl.ElasticSqlParseResult;
+import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
+import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,9 +34,9 @@ public class SqlParserRoutingTest {
 //
 //    @Test
 //    public void testJoin() {
-//        String sql = "select * from index.trx_order trx nested join product.xx x";
+//        String syntax = "select * from index.trx_order trx nested join product.xx x";
 //        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
-//        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+//        ElasticSqlParseResult parseResult = sql2DslParser.parse(syntax);
 //    }
 
 }

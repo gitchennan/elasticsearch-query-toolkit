@@ -1,16 +1,18 @@
-package org.elasticsearch.dsl.parser;
+package org.elasticsearch.dsl.parser.syntax;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
-import org.elasticsearch.dsl.ElasticDslContext;
-import org.elasticsearch.dsl.ElasticSqlIdentifier;
-import org.elasticsearch.dsl.ElasticSqlParseUtil;
-import org.elasticsearch.dsl.ParseActionListener;
+import org.elasticsearch.dsl.bean.ElasticDslContext;
+import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
+import org.elasticsearch.dsl.bean.SqlCondition;
 import org.elasticsearch.dsl.enums.SQLConditionOperator;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
+import org.elasticsearch.dsl.parser.QueryParser;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlIdentifierHelper;
+import org.elasticsearch.dsl.parser.listener.ParseActionListener;
+import org.elasticsearch.dsl.parser.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
@@ -59,7 +61,7 @@ public class QueryWhereConditionParser implements QueryParser {
 
                 List<FilterBuilder> curFilterList = Lists.newArrayList();
 
-                if (!leftCondition.isAndOr() || leftCondition.operator == binaryOperator) {
+                if (!leftCondition.isAndOr() || leftCondition.getOperator() == binaryOperator) {
                     curFilterList.addAll(leftCondition.getFilterList());
                 } else {
                     final BoolFilterBuilder subBoolFilter = FilterBuilders.boolFilter();
@@ -77,7 +79,7 @@ public class QueryWhereConditionParser implements QueryParser {
                     curFilterList.add(subBoolFilter);
                 }
 
-                if (!rightCondition.isAndOr() || rightCondition.operator == binaryOperator) {
+                if (!rightCondition.isAndOr() || rightCondition.getOperator() == binaryOperator) {
                     curFilterList.addAll(rightCondition.getFilterList());
                 } else {
                     final BoolFilterBuilder subBoolFilter = FilterBuilders.boolFilter();
@@ -105,10 +107,10 @@ public class QueryWhereConditionParser implements QueryParser {
             SQLBinaryOpExpr sqlBinOpExpr = (SQLBinaryOpExpr) sqlExpr;
             final SQLBinaryOperator binaryOperator = sqlBinOpExpr.getOperator();
 
-            if (ElasticSqlParseUtil.isValidBinOperator(binaryOperator)) {
+            if (isValidBinOperator(binaryOperator)) {
                 //EQ NEQ
                 if (SQLBinaryOperator.Equality == binaryOperator || SQLBinaryOperator.LessThanOrGreater == binaryOperator || SQLBinaryOperator.NotEqual == binaryOperator) {
-                    Object targetVal = ElasticSqlParseUtil.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
+                    Object targetVal = ElasticSqlArgTransferHelper.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
 
                     SQLConditionOperator operator = SQLBinaryOperator.Equality == binaryOperator ? SQLConditionOperator.Equality : SQLConditionOperator.NotEqual;
                     return parseCondition(sqlBinOpExpr.getLeft(), operator, new Object[]{targetVal}, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
@@ -139,7 +141,7 @@ public class QueryWhereConditionParser implements QueryParser {
                         operator = SQLConditionOperator.LessThanOrEqual;
                     }
 
-                    Object targetVal = ElasticSqlParseUtil.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
+                    Object targetVal = ElasticSqlArgTransferHelper.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
                     return parseCondition(sqlBinOpExpr.getLeft(), operator, new Object[]{targetVal}, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
                         @Override
                         public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
@@ -181,7 +183,7 @@ public class QueryWhereConditionParser implements QueryParser {
             if (CollectionUtils.isEmpty(inListExpr.getTargetList())) {
                 throw new ElasticSql2DslException("[syntax error] In list expr target list cannot be blank");
             }
-            Object[] targetInList = ElasticSqlParseUtil.transferSqlArgs(inListExpr.getTargetList(), dslContext.getSqlArgs());
+            Object[] targetInList = ElasticSqlArgTransferHelper.transferSqlArgs(inListExpr.getTargetList(), dslContext.getSqlArgs());
             SQLConditionOperator operator = inListExpr.isNot() ? SQLConditionOperator.NotIn : SQLConditionOperator.In;
             return parseCondition(inListExpr.getExpr(), operator, targetInList, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
                 @Override
@@ -196,8 +198,8 @@ public class QueryWhereConditionParser implements QueryParser {
         } else if (sqlExpr instanceof SQLBetweenExpr) {
             SQLBetweenExpr betweenExpr = (SQLBetweenExpr) sqlExpr;
 
-            Object from = ElasticSqlParseUtil.transferSqlArg(betweenExpr.getBeginExpr(), dslContext.getSqlArgs());
-            Object to = ElasticSqlParseUtil.transferSqlArg(betweenExpr.getEndExpr(), dslContext.getSqlArgs());
+            Object from = ElasticSqlArgTransferHelper.transferSqlArg(betweenExpr.getBeginExpr(), dslContext.getSqlArgs());
+            Object to = ElasticSqlArgTransferHelper.transferSqlArg(betweenExpr.getEndExpr(), dslContext.getSqlArgs());
 
             if (from == null || to == null) {
                 throw new ElasticSql2DslException("[syntax error] Between Expr only support one of [number,date] arg type");
@@ -217,17 +219,17 @@ public class QueryWhereConditionParser implements QueryParser {
         final List<FilterBuilder> conditionCollector = Lists.newLinkedList();
         final Object[] pRightParamValues = rightParamValues;
         final SQLConditionOperator pOperator = operator;
-        ElasticSqlIdentifier sqlIdentifier = ElasticSqlIdentifierHelper.parseSqlIdentifier(leftIdentifierExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlSinglePropertyFunc() {
+        ElasticSqlQueryField sqlIdentifier = ElasticSqlIdentifierHelper.parseSqlIdentifier(leftIdentifierExpr, queryAs, new ElasticSqlIdentifierHelper.SQLFlatFieldFunc() {
             @Override
-            public void parse(String propertyName) {
-                FilterBuilder originalFilter = filterBuilder.buildFilter(propertyName, pOperator, pRightParamValues);
+            public void parse(String flatFieldName) {
+                FilterBuilder originalFilter = filterBuilder.buildFilter(flatFieldName, pOperator, pRightParamValues);
                 conditionCollector.add(originalFilter);
             }
-        }, new ElasticSqlIdentifierHelper.ElasticSqlPathPropertyFunc() {
+        }, new ElasticSqlIdentifierHelper.SQLNestedFieldFunc() {
             @Override
-            public void parse(String propertyPath, String propertyName) {
-                FilterBuilder originalFilter = filterBuilder.buildFilter(propertyName, pOperator, pRightParamValues);
-                FilterBuilder nestFilter = FilterBuilders.nestedFilter(propertyPath, originalFilter);
+            public void parse(String nestedDocPath, String fieldName) {
+                FilterBuilder originalFilter = filterBuilder.buildFilter(fieldName, pOperator, pRightParamValues);
+                FilterBuilder nestFilter = FilterBuilders.nestedFilter(nestedDocPath, originalFilter);
                 conditionCollector.add(nestFilter);
             }
         });
@@ -238,7 +240,7 @@ public class QueryWhereConditionParser implements QueryParser {
         return null;
     }
 
-    private void onAtomConditionParse(ElasticSqlIdentifier paramName, Object[] paramValues, SQLConditionOperator operator) {
+    private void onAtomConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
         try {
             parseActionListener.onAtomConditionParse(paramName, paramValues, operator);
         } catch (Exception ex) {
@@ -255,35 +257,15 @@ public class QueryWhereConditionParser implements QueryParser {
         FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues);
     }
 
-    private class SqlCondition {
-        //是否AND/OR运算
-        private boolean isAndOr = false;
-        //运算符
-        private SQLBinaryOperator operator;
-        //条件集合
-        private List<FilterBuilder> filterList;
-
-        public SqlCondition(FilterBuilder atomFilter) {
-            filterList = Lists.newArrayList(atomFilter);
-            isAndOr = false;
-        }
-
-        public SqlCondition(List<FilterBuilder> filterList, SQLBinaryOperator operator) {
-            this.filterList = filterList;
-            isAndOr = true;
-            this.operator = operator;
-        }
-
-        public boolean isAndOr() {
-            return isAndOr;
-        }
-
-        public SQLBinaryOperator getOperator() {
-            return operator;
-        }
-
-        public List<FilterBuilder> getFilterList() {
-            return filterList;
-        }
+    private boolean isValidBinOperator(SQLBinaryOperator binaryOperator) {
+        return binaryOperator == SQLBinaryOperator.Equality
+                || binaryOperator == SQLBinaryOperator.NotEqual
+                || binaryOperator == SQLBinaryOperator.LessThanOrGreater
+                || binaryOperator == SQLBinaryOperator.GreaterThan
+                || binaryOperator == SQLBinaryOperator.GreaterThanOrEqual
+                || binaryOperator == SQLBinaryOperator.LessThan
+                || binaryOperator == SQLBinaryOperator.LessThanOrEqual
+                || binaryOperator == SQLBinaryOperator.Is
+                || binaryOperator == SQLBinaryOperator.IsNot;
     }
 }

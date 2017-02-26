@@ -1,4 +1,4 @@
-package org.elasticsearch.dsl;
+package org.elasticsearch.dsl.parser;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
@@ -6,7 +6,11 @@ import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.Token;
 import com.google.common.collect.ImmutableList;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.dsl.parser.*;
+import org.elasticsearch.dsl.bean.ElasticDslContext;
+import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
+import org.elasticsearch.dsl.parser.listener.ParseActionListener;
+import org.elasticsearch.dsl.parser.listener.ParseActionListenerAdapter;
+import org.elasticsearch.dsl.parser.syntax.*;
 import org.elasticsearch.sql.ElasticSqlExprParser;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
@@ -60,7 +64,7 @@ public class ElasticSql2DslParser {
         }
 
         if (!(sqlQueryExpr instanceof SQLQueryExpr)) {
-            throw new ElasticSql2DslException("[syntax error] Sql is not select sql");
+            throw new ElasticSql2DslException("[syntax error] Sql is not select syntax");
         }
 
         if (sqlArgs != null && sqlArgs.length > 0) {

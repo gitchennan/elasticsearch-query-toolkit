@@ -1,11 +1,12 @@
-package org.elasticsearch.dsl.parser;
+package org.elasticsearch.dsl.parser.syntax;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
-import org.elasticsearch.dsl.ElasticDslContext;
-import org.elasticsearch.dsl.ElasticSqlParseUtil;
-import org.elasticsearch.dsl.ParseActionListener;
+import org.elasticsearch.dsl.bean.ElasticDslContext;
+import org.elasticsearch.dsl.parser.QueryParser;
+import org.elasticsearch.dsl.parser.helper.ElasticSqlArgTransferHelper;
+import org.elasticsearch.dsl.parser.listener.ParseActionListener;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
@@ -37,7 +38,7 @@ public class QueryLimitSizeParser implements QueryParser {
             return ((SQLIntegerExpr) limitInt).getNumber().intValue();
         } else if (limitInt instanceof SQLVariantRefExpr) {
             SQLVariantRefExpr varLimitExpr = (SQLVariantRefExpr) limitInt;
-            final Object targetVal = ElasticSqlParseUtil.transferSqlArg(varLimitExpr, args);
+            final Object targetVal = ElasticSqlArgTransferHelper.transferSqlArg(varLimitExpr, args);
             if (!(targetVal instanceof Integer)) {
                 throw new ElasticSql2DslException("[syntax error] Sql limit expr should be a non-negative number");
             }

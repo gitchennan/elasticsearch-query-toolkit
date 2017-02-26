@@ -1,4 +1,4 @@
-package org.elasticsearch.dsl.parser;
+package org.elasticsearch.dsl.parser.syntax;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLOrderBy;
@@ -10,9 +10,10 @@ import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.statement.SQLSelectOrderByItem;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
-import org.elasticsearch.dsl.ElasticDslContext;
-import org.elasticsearch.dsl.ElasticSqlParseUtil;
-import org.elasticsearch.dsl.ParseActionListener;
+import org.elasticsearch.dsl.bean.ElasticDslContext;
+import org.elasticsearch.dsl.parser.QueryParser;
+import org.elasticsearch.dsl.parser.helper.ElasticSqlArgTransferHelper;
+import org.elasticsearch.dsl.parser.listener.ParseActionListener;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlIdentifierHelper;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlMethodInvokeHelper;
@@ -66,7 +67,7 @@ public class QueryOrderConditionParser implements QueryParser {
             //nvl method
             if (ElasticSqlMethodInvokeHelper.NVL_METHOD.equalsIgnoreCase(methodInvokeExpr.getMethodName())) {
                 ElasticSqlMethodInvokeHelper.checkNvlMethod(methodInvokeExpr);
-                final Object valueArg = ElasticSqlParseUtil.transferSqlArg(methodInvokeExpr.getParameters().get(1), sqlArgs);
+                final Object valueArg = ElasticSqlArgTransferHelper.transferSqlArg(methodInvokeExpr.getParameters().get(1), sqlArgs);
                 return parseCondition(methodInvokeExpr.getParameters().get(0), queryAs, new ConditionSortBuilder() {
                     @Override
                     public FieldSortBuilder buildSort(String idfName) {
@@ -104,17 +105,17 @@ public class QueryOrderConditionParser implements QueryParser {
 
     private SortBuilder parseCondition(SQLExpr sqlExpr, String queryAs, final ConditionSortBuilder sortBuilder) {
         final List<SortBuilder> tmpSortList = Lists.newLinkedList();
-        ElasticSqlIdentifierHelper.parseSqlIdentifier(sqlExpr, queryAs, new ElasticSqlIdentifierHelper.ElasticSqlSinglePropertyFunc() {
+        ElasticSqlIdentifierHelper.parseSqlIdentifier(sqlExpr, queryAs, new ElasticSqlIdentifierHelper.SQLFlatFieldFunc() {
             @Override
-            public void parse(String propertyName) {
-                FieldSortBuilder originalSort = sortBuilder.buildSort(propertyName);
+            public void parse(String flatFieldName) {
+                FieldSortBuilder originalSort = sortBuilder.buildSort(flatFieldName);
                 tmpSortList.add(originalSort);
             }
-        }, new ElasticSqlIdentifierHelper.ElasticSqlPathPropertyFunc() {
+        }, new ElasticSqlIdentifierHelper.SQLNestedFieldFunc() {
             @Override
-            public void parse(String propertyPath, String propertyName) {
-                FieldSortBuilder originalSort = sortBuilder.buildSort(propertyName);
-                originalSort.setNestedPath(propertyPath);
+            public void parse(String nestedDocPath, String fieldName) {
+                FieldSortBuilder originalSort = sortBuilder.buildSort(fieldName);
+                originalSort.setNestedPath(nestedDocPath);
                 tmpSortList.add(originalSort);
             }
         });

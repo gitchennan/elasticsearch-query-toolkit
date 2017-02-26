@@ -1,7 +1,7 @@
 package org.elasticsearch;
 
-import org.elasticsearch.dsl.ElasticSql2DslParser;
-import org.elasticsearch.dsl.ElasticSqlParseResult;
+import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
+import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;

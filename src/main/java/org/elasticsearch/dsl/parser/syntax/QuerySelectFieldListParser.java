@@ -1,10 +1,11 @@
-package org.elasticsearch.dsl.parser;
+package org.elasticsearch.dsl.parser.syntax;
 
 import com.alibaba.druid.sql.ast.statement.SQLSelectItem;
 import com.google.common.collect.Lists;
-import org.elasticsearch.dsl.ElasticDslContext;
-import org.elasticsearch.dsl.ElasticSqlIdentifier;
-import org.elasticsearch.dsl.ParseActionListener;
+import org.elasticsearch.dsl.bean.ElasticDslContext;
+import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
+import org.elasticsearch.dsl.parser.QueryParser;
+import org.elasticsearch.dsl.parser.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlIdentifierHelper;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
@@ -26,17 +27,17 @@ public class QuerySelectFieldListParser implements QueryParser {
 
         final List<String> selectFields = Lists.newLinkedList();
         for (SQLSelectItem selectField : queryBlock.getSelectList()) {
-            ElasticSqlIdentifier sqlIdentifier = ElasticSqlIdentifierHelper.parseSqlIdentifier(selectField.getExpr(), dslContext.getParseResult().getQueryAs(), new ElasticSqlIdentifierHelper.ElasticSqlSinglePropertyFunc() {
+            ElasticSqlQueryField sqlIdentifier = ElasticSqlIdentifierHelper.parseSqlIdentifier(selectField.getExpr(), dslContext.getParseResult().getQueryAs(), new ElasticSqlIdentifierHelper.SQLFlatFieldFunc() {
                 @Override
-                public void parse(String propertyName) {
-                    if (!SQL_FIELD_MATCH_ALL.equals(propertyName)) {
-                        selectFields.add(propertyName);
+                public void parse(String flatFieldName) {
+                    if (!SQL_FIELD_MATCH_ALL.equals(flatFieldName)) {
+                        selectFields.add(flatFieldName);
                     }
                 }
-            }, new ElasticSqlIdentifierHelper.ElasticSqlPathPropertyFunc() {
+            }, new ElasticSqlIdentifierHelper.SQLNestedFieldFunc() {
                 @Override
-                public void parse(String propertyPath, String propertyName) {
-                    selectFields.add(String.format("%s.%s", propertyPath, propertyName));
+                public void parse(String nestedDocPath, String fieldName) {
+                    selectFields.add(String.format("%s.%s", nestedDocPath, fieldName));
                 }
             });
             onSelectFieldParse(sqlIdentifier);
@@ -44,7 +45,7 @@ public class QuerySelectFieldListParser implements QueryParser {
         dslContext.getParseResult().setQueryFieldList(selectFields);
     }
 
-    private void onSelectFieldParse(ElasticSqlIdentifier field) {
+    private void onSelectFieldParse(ElasticSqlQueryField field) {
         try {
             parseActionListener.onSelectFieldParse(field);
         } catch (Exception ex) {

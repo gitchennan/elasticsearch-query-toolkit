@@ -4,7 +4,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.dsl.parser.QueryOrderConditionParser;
+import org.elasticsearch.dsl.parser.syntax.QueryOrderConditionParser;
 
 public class ElasticSqlMethodInvokeHelper {
 

@@ -1,10 +1,11 @@
-package org.elasticsearch.dsl.parser;
+package org.elasticsearch.dsl.parser.syntax;
 
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
-import org.elasticsearch.dsl.ElasticDslContext;
-import org.elasticsearch.dsl.ParseActionListener;
+import org.elasticsearch.dsl.bean.ElasticDslContext;
+import org.elasticsearch.dsl.parser.QueryParser;
+import org.elasticsearch.dsl.parser.listener.ParseActionListener;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
