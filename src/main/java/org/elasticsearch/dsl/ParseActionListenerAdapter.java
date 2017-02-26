@@ -1,5 +1,7 @@
 package org.elasticsearch.dsl;
 
+import org.elasticsearch.dsl.enums.SQLConditionOperator;
+
 public class ParseActionListenerAdapter implements ParseActionListener {
 
     @Override

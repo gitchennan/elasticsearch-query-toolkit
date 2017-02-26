@@ -1,14 +1,21 @@
 package org.elasticsearch;
 
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.dsl.ElasticSql2DslParser;
 import org.elasticsearch.dsl.ElasticSqlParseResult;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.NestedFilterBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
+import org.elasticsearch.util.ElasticMockClient;
 import org.junit.Assert;
 import org.junit.Test;
 
 
-public class SqlParserWhereConditionTest  {
+public class SqlParserWhereConditionTest {
     @Test
     public void testParseEqExpr() {
         String sql = "select id,productStatus from index.trx_order trx where trx.status='SUCCESS'";
@@ -134,5 +141,52 @@ public class SqlParserWhereConditionTest  {
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, new Object[]{"RM", "CX"});
         System.out.println(parseResult.toString());
+    }
+
+
+    @Test
+    public void testCreateSearchDsl() {
+        SearchRequestBuilder searchReq = new SearchRequestBuilder(new ElasticMockClient());
+
+        NestedFilterBuilder categoryNameTerm = FilterBuilders.nestedFilter("bookCategories", FilterBuilders.termFilter("bookCategories.categoryName", "ART"));
+        NestedFilterBuilder bookAuthorNestedFilter = FilterBuilders.nestedFilter("bookCategories.books", FilterBuilders.termsFilter("bookCategories.books.bookAuthor", "bibicx"));
+        NestedFilterBuilder bookPublisherCodeNestedFilter = FilterBuilders.nestedFilter("bookCategories.books", FilterBuilders.termsFilter("bookCategories.books.bookPublisher.publisherCode", "PUB_03"));
+        NestedFilterBuilder bookProviderNameNestedFilter = FilterBuilders.nestedFilter("bookCategories.books.bookPublisher.bookProvider", FilterBuilders.termsFilter("bookCategories.books.bookPublisher.bookProvider.providerName", "PVD_01"));
+
+        FilterBuilder topFilter = FilterBuilders.boolFilter().must(categoryNameTerm).must(bookAuthorNestedFilter).must(bookPublisherCodeNestedFilter).must(bookProviderNameNestedFilter);
+
+        searchReq.setQuery(QueryBuilders.filteredQuery(null, topFilter));
+
+        System.out.println(searchReq);
+
+    }
+
+    @Test
+    public void testCreateAggDsl() {
+        SearchRequestBuilder searchReq = new SearchRequestBuilder(new ElasticMockClient());
+        searchReq.setSize(0);
+
+        //NestedFilterBuilder categoryNameTerm = FilterBuilders.nestedFilter("bookCategories", FilterBuilders.termFilter("bookCategories.categoryName", "ART"));
+        TermsBuilder categoryNameAgg = AggregationBuilders.terms("agg_bookCategories.categoryName").field("bookCategories.categoryName");
+        AbstractAggregationBuilder topAgg = AggregationBuilders.nested("nested_bookCategories.categoryName").path("bookCategories").subAggregation(categoryNameAgg);
+
+        AbstractAggregationBuilder rtnAgg = AggregationBuilders.reverseNested("rtn_root").subAggregation(AggregationBuilders.terms("agg_name").field("name"));
+        categoryNameAgg.subAggregation(rtnAgg);
+
+        //NestedFilterBuilder bookAuthorNestedFilter = FilterBuilders.nestedFilter("bookCategories.books", FilterBuilders.termsFilter("bookCategories.books.bookAuthor", "bibicx"));
+        //TermsBuilder bookAuthorAgg = AggregationBuilders.terms("agg_bookCategories.books.bookAuthor").field("bookCategories.books.bookAuthor");
+        //AbstractAggregationBuilder secNestedAgg = AggregationBuilders.nested("nested_bookCategories.books.bookAuthor").path("bookCategories.books").subAggregation(bookAuthorAgg);
+
+        //categoryNameAgg.subAggregation(secNestedAgg);
+
+        //NestedFilterBuilder bookPublisherCodeNestedFilter = FilterBuilders.nestedFilter("bookCategories.books", FilterBuilders.termsFilter("bookCategories.books.bookPublisher.publisherCode", "PUB_03"));
+        //NestedFilterBuilder bookProviderNameNestedFilter = FilterBuilders.nestedFilter("bookCategories.books.bookPublisher.bookProvider", FilterBuilders.termsFilter("bookCategories.books.bookPublisher.bookProvider.providerName", "PVD_01"));
+
+        //FilterBuilder topFilter = FilterBuilders.boolFilter().must(categoryNameTerm).must(bookAuthorNestedFilter).must(bookPublisherCodeNestedFilter).must(bookProviderNameNestedFilter);
+
+        searchReq.addAggregation(topAgg);
+
+        System.out.println(searchReq);
+
     }
 }

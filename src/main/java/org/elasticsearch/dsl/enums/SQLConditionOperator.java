@@ -1,4 +1,5 @@
-package org.elasticsearch.dsl;
+package org.elasticsearch.dsl.enums;
+
 
 public enum SQLConditionOperator {
     Equality,

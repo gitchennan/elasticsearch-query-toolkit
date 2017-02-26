@@ -1,7 +1,11 @@
 package org.elasticsearch;
 
 import com.google.common.collect.Lists;
-import org.elasticsearch.dsl.*;
+import org.elasticsearch.dsl.ElasticSql2DslParser;
+import org.elasticsearch.dsl.ElasticSqlIdentifier;
+import org.elasticsearch.dsl.ElasticSqlParseResult;
+import org.elasticsearch.dsl.ParseActionListenerAdapter;
+import org.elasticsearch.dsl.enums.SQLConditionOperator;
 import org.junit.Test;
 
 import java.util.List;
