@@ -3,6 +3,7 @@ package org.elasticsearch.dsl.parser.syntax;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
+import com.google.common.collect.Lists;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
 import org.elasticsearch.dsl.parser.QueryParser;
 import org.elasticsearch.dsl.parser.listener.ParseActionListener;
@@ -25,7 +26,8 @@ public class QueryFromParser implements QueryParser {
             dslContext.getParseResult().setQueryAs(tableSource.getAlias());
 
             if (tableSource.getExpr() instanceof SQLIdentifierExpr) {
-                dslContext.getParseResult().setIndex(((SQLIdentifierExpr) tableSource.getExpr()).getName());
+                String index = ((SQLIdentifierExpr) tableSource.getExpr()).getName();
+                dslContext.getParseResult().setIndices(Lists.newArrayList(index));
                 return;
             }
             if (tableSource.getExpr() instanceof SQLPropertyExpr) {
@@ -34,7 +36,8 @@ public class QueryFromParser implements QueryParser {
                 if (!(idxExpr.getOwner() instanceof SQLIdentifierExpr)) {
                     throw new ElasticSql2DslException("[syntax error] From table should like [index].[type]");
                 }
-                dslContext.getParseResult().setIndex(((SQLIdentifierExpr) idxExpr.getOwner()).getName());
+                String index = ((SQLIdentifierExpr) idxExpr.getOwner()).getName();
+                dslContext.getParseResult().setIndices(Lists.newArrayList(index));
                 dslContext.getParseResult().setType(idxExpr.getName());
                 return;
             }

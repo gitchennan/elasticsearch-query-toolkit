@@ -15,7 +15,7 @@ public class SqlParserSelectFieldTest {
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
 
-        Assert.assertEquals(parseResult.getIndex(), "index");
+        Assert.assertEquals(parseResult.getIndices().get(0), "index");
         Assert.assertEquals(parseResult.getType(), "trx_order");
         Assert.assertEquals(parseResult.getQueryAs(), "trx");
     }

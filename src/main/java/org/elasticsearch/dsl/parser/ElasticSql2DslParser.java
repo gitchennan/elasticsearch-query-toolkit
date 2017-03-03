@@ -5,9 +5,9 @@ import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.Token;
 import com.google.common.collect.ImmutableList;
-import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
+import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.listener.ParseActionListenerAdapter;
 import org.elasticsearch.dsl.parser.syntax.*;
@@ -17,7 +17,6 @@ import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class ElasticSql2DslParser {
 
@@ -46,12 +45,9 @@ public class ElasticSql2DslParser {
 
         final ElasticDslContext elasticDslContext = new ElasticDslContext(queryExpr, sqlArgs);
         if (queryExpr.getSubQuery().getQuery() instanceof ElasticSqlSelectQueryBlock) {
-            buildSqlParserChain(parseActionListener).stream().forEach(new Consumer<QueryParser>() {
-                @Override
-                public void accept(QueryParser sqlParser) {
-                    sqlParser.parse(elasticDslContext);
-                }
-            });
+            for (QueryParser sqlParser : buildSqlParserChain(parseActionListener)) {
+                sqlParser.parse(elasticDslContext);
+            }
         } else {
             throw new ElasticSql2DslException("[syntax error] Sql only support Select Sql");
         }
@@ -64,7 +60,7 @@ public class ElasticSql2DslParser {
         }
 
         if (!(sqlQueryExpr instanceof SQLQueryExpr)) {
-            throw new ElasticSql2DslException("[syntax error] Sql is not select syntax");
+            throw new ElasticSql2DslException("[syntax error] Sql is not select sql");
         }
 
         if (sqlArgs != null && sqlArgs.length > 0) {
@@ -87,6 +83,8 @@ public class ElasticSql2DslParser {
                 new QueryOrderConditionParser(parseActionListener),
                 //解析路由参数
                 new QueryRoutingValParser(parseActionListener),
+                //解析分组统计
+                new QueryGroupByParser(parseActionListener),
                 //解析SQL查询指定的字段
                 new QuerySelectFieldListParser(parseActionListener),
                 //解析SQL的分页条数

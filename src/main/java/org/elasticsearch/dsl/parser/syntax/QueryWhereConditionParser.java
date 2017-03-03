@@ -2,24 +2,28 @@ package org.elasticsearch.dsl.parser.syntax;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.dsl.bean.AtomFilter;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
 import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
-import org.elasticsearch.dsl.bean.SqlCondition;
+import org.elasticsearch.dsl.bean.SQLCondition;
+import org.elasticsearch.dsl.enums.QueryFieldType;
+import org.elasticsearch.dsl.enums.SQLBoolOperator;
 import org.elasticsearch.dsl.enums.SQLConditionOperator;
+import org.elasticsearch.dsl.enums.SQLConditionType;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.QueryParser;
-import org.elasticsearch.dsl.parser.helper.ElasticSqlIdentifierHelper;
-import org.elasticsearch.dsl.parser.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlArgTransferHelper;
+import org.elasticsearch.dsl.parser.listener.ParseActionListener;
 import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class QueryWhereConditionParser implements QueryParser {
 
@@ -32,77 +36,106 @@ public class QueryWhereConditionParser implements QueryParser {
     @Override
     public void parse(ElasticDslContext dslContext) {
         ElasticSqlSelectQueryBlock queryBlock = (ElasticSqlSelectQueryBlock) dslContext.getQueryExpr().getSubQuery().getQuery();
-        BoolFilterBuilder whereCondition = FilterBuilders.boolFilter();
+
         if (queryBlock.getWhere() != null) {
-            SqlCondition sqlCondition = parseFilterCondition(dslContext, queryBlock.getWhere());
-            if (!sqlCondition.isAndOr()) {
-                whereCondition.must(sqlCondition.getFilterList().get(0));
-            } else {
-                for (FilterBuilder filter : sqlCondition.getFilterList()) {
-                    if (sqlCondition.getOperator() == SQLBinaryOperator.BooleanAnd) {
-                        whereCondition.must(filter);
-                    }
-                    if (sqlCondition.getOperator() == SQLBinaryOperator.BooleanOr) {
-                        whereCondition.should(filter);
-                    }
-                }
+            SQLCondition whereCondition = parseFilterCondition(dslContext, queryBlock.getWhere());
+
+            SQLBoolOperator operator = whereCondition.getOperator();
+            if(SQLConditionType.Atom == whereCondition.getSQLConditionType()) {
+                operator = SQLBoolOperator.AND;
             }
+
+            BoolFilterBuilder boolFilter = mergeAtomFilter(whereCondition.getFilterList(), operator);
+            dslContext.getParseResult().setWhereCondition(boolFilter);
         }
-        dslContext.getParseResult().setWhereCondition(whereCondition);
     }
 
-    private SqlCondition parseFilterCondition(ElasticDslContext dslContext, SQLExpr sqlExpr) {
+    private SQLCondition parseFilterCondition(ElasticDslContext dslContext, SQLExpr sqlExpr) {
         if (sqlExpr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr sqlBinOpExpr = (SQLBinaryOpExpr) sqlExpr;
             SQLBinaryOperator binaryOperator = sqlBinOpExpr.getOperator();
             if (SQLBinaryOperator.BooleanAnd == binaryOperator || SQLBinaryOperator.BooleanOr == binaryOperator) {
-                final SqlCondition leftCondition = parseFilterCondition(dslContext, sqlBinOpExpr.getLeft());
-                final SqlCondition rightCondition = parseFilterCondition(dslContext, sqlBinOpExpr.getRight());
 
-                List<FilterBuilder> curFilterList = Lists.newArrayList();
+                SQLBoolOperator operator = SQLBinaryOperator.BooleanAnd == binaryOperator ? SQLBoolOperator.AND : SQLBoolOperator.OR;
 
-                if (!leftCondition.isAndOr() || leftCondition.getOperator() == binaryOperator) {
-                    curFilterList.addAll(leftCondition.getFilterList());
-                } else {
-                    final BoolFilterBuilder subBoolFilter = FilterBuilders.boolFilter();
-                    leftCondition.getFilterList().stream().forEach(new Consumer<FilterBuilder>() {
-                        @Override
-                        public void accept(FilterBuilder filter) {
-                            if (leftCondition.getOperator() == SQLBinaryOperator.BooleanAnd) {
-                                subBoolFilter.must(filter);
-                            }
-                            if (leftCondition.getOperator() == SQLBinaryOperator.BooleanOr) {
-                                subBoolFilter.should(filter);
-                            }
-                        }
-                    });
-                    curFilterList.add(subBoolFilter);
-                }
+                SQLCondition leftCondition = parseFilterCondition(dslContext, sqlBinOpExpr.getLeft());
+                SQLCondition rightCondition = parseFilterCondition(dslContext, sqlBinOpExpr.getRight());
 
-                if (!rightCondition.isAndOr() || rightCondition.getOperator() == binaryOperator) {
-                    curFilterList.addAll(rightCondition.getFilterList());
-                } else {
-                    final BoolFilterBuilder subBoolFilter = FilterBuilders.boolFilter();
-                    rightCondition.getFilterList().stream().forEach(new Consumer<FilterBuilder>() {
-                        @Override
-                        public void accept(FilterBuilder filter) {
-                            if (rightCondition.getOperator() == SQLBinaryOperator.BooleanAnd) {
-                                subBoolFilter.must(filter);
-                            }
-                            if (rightCondition.getOperator() == SQLBinaryOperator.BooleanOr) {
-                                subBoolFilter.should(filter);
-                            }
-                        }
-                    });
-                    curFilterList.add(subBoolFilter);
-                }
-                return new SqlCondition(curFilterList, binaryOperator);
+                List<AtomFilter> curFilterList = Lists.newArrayList();
+                combineFilterBuilder(curFilterList, leftCondition, operator);
+                combineFilterBuilder(curFilterList, rightCondition, operator);
+
+
+                return new SQLCondition(curFilterList, operator);
             }
         }
-        return new SqlCondition(parseAtomFilterCondition(dslContext, sqlExpr));
+        return new SQLCondition(parseAtomFilterCondition(dslContext, sqlExpr), SQLConditionType.Atom);
     }
 
-    private FilterBuilder parseAtomFilterCondition(ElasticDslContext dslContext, SQLExpr sqlExpr) {
+    private void combineFilterBuilder(List<AtomFilter> combiner, SQLCondition SQLCondition, SQLBoolOperator binOperator) {
+        if (SQLConditionType.Atom == SQLCondition.getSQLConditionType() || SQLCondition.getOperator() == binOperator) {
+            combiner.addAll(SQLCondition.getFilterList());
+        }
+        else {
+            BoolFilterBuilder subBoolFilter = mergeAtomFilter(SQLCondition.getFilterList(), binOperator);
+            combiner.add(new AtomFilter(subBoolFilter));
+        }
+    }
+
+    private BoolFilterBuilder mergeAtomFilter(List<AtomFilter> atomFilterList, SQLBoolOperator operator) {
+        BoolFilterBuilder subBoolFilter = FilterBuilders.boolFilter();
+        ListMultimap<String, FilterBuilder> listMultiMap = ArrayListMultimap.create();
+
+        for (AtomFilter atomFilter : atomFilterList) {
+            if(Boolean.FALSE == atomFilter.getNestedFilter()) {
+                if (operator == SQLBoolOperator.AND) {
+                    subBoolFilter.must(atomFilter.getFilter());
+                }
+                if (operator == SQLBoolOperator.OR) {
+                    subBoolFilter.should(atomFilter.getFilter());
+                }
+            }
+            else {
+                String nestedDocPrefix = atomFilter.getNestedFilterPathContext();
+                listMultiMap.put(nestedDocPrefix, atomFilter.getFilter());
+            }
+        }
+
+        for (String nestedDocPrefix : listMultiMap.keySet()) {
+            List<FilterBuilder> nestedFilterList = listMultiMap.get(nestedDocPrefix);
+
+            if(nestedFilterList.size() == 1) {
+                if (operator == SQLBoolOperator.AND) {
+                    subBoolFilter.must(FilterBuilders.nestedFilter(nestedDocPrefix, nestedFilterList.get(0)));
+                }
+                if (operator == SQLBoolOperator.OR) {
+                    subBoolFilter.should(FilterBuilders.nestedFilter(nestedDocPrefix, nestedFilterList.get(0)));
+                }
+                continue;
+            }
+
+            BoolFilterBuilder boolNestedFilter = FilterBuilders.boolFilter();
+            for (FilterBuilder nestedFilterItem : nestedFilterList) {
+                if (operator == SQLBoolOperator.AND) {
+                    boolNestedFilter.must(nestedFilterItem);
+                }
+                if (operator == SQLBoolOperator.OR) {
+                    boolNestedFilter.should(nestedFilterItem);
+                }
+            }
+
+            if (operator == SQLBoolOperator.AND) {
+                subBoolFilter.must(FilterBuilders.nestedFilter(nestedDocPrefix, boolNestedFilter));
+            }
+            if (operator == SQLBoolOperator.OR) {
+                subBoolFilter.should(FilterBuilders.nestedFilter(nestedDocPrefix, boolNestedFilter));
+            }
+
+        }
+        return subBoolFilter;
+    }
+
+    private AtomFilter parseAtomFilterCondition(ElasticDslContext dslContext, SQLExpr sqlExpr) {
         if (sqlExpr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr sqlBinOpExpr = (SQLBinaryOpExpr) sqlExpr;
             final SQLBinaryOperator binaryOperator = sqlBinOpExpr.getOperator();
@@ -179,7 +212,7 @@ public class QueryWhereConditionParser implements QueryParser {
                 }
             }
         } else if (sqlExpr instanceof SQLInListExpr) {
-            final SQLInListExpr inListExpr = (SQLInListExpr) sqlExpr;
+            SQLInListExpr inListExpr = (SQLInListExpr) sqlExpr;
             if (CollectionUtils.isEmpty(inListExpr.getTargetList())) {
                 throw new ElasticSql2DslException("[syntax error] In list expr target list cannot be blank");
             }
@@ -215,29 +248,28 @@ public class QueryWhereConditionParser implements QueryParser {
         throw new ElasticSql2DslException("[syntax error] Can not support syntax type: " + sqlExpr.toString());
     }
 
-    private FilterBuilder parseCondition(SQLExpr leftIdentifierExpr, SQLConditionOperator operator, Object[] rightParamValues, String queryAs, final ConditionFilterBuilder filterBuilder) {
-        final List<FilterBuilder> conditionCollector = Lists.newLinkedList();
-        final Object[] pRightParamValues = rightParamValues;
-        final SQLConditionOperator pOperator = operator;
-        ElasticSqlQueryField sqlIdentifier = ElasticSqlIdentifierHelper.parseSqlIdentifier(leftIdentifierExpr, queryAs, new ElasticSqlIdentifierHelper.SQLFlatFieldFunc() {
-            @Override
-            public void parse(String flatFieldName) {
-                FilterBuilder originalFilter = filterBuilder.buildFilter(flatFieldName, pOperator, pRightParamValues);
-                conditionCollector.add(originalFilter);
-            }
-        }, new ElasticSqlIdentifierHelper.SQLNestedFieldFunc() {
-            @Override
-            public void parse(String nestedDocPath, String fieldName) {
-                FilterBuilder originalFilter = filterBuilder.buildFilter(fieldName, pOperator, pRightParamValues);
-                FilterBuilder nestFilter = FilterBuilders.nestedFilter(nestedDocPath, originalFilter);
-                conditionCollector.add(nestFilter);
-            }
-        });
-        if (CollectionUtils.isNotEmpty(conditionCollector)) {
-            onAtomConditionParse(sqlIdentifier, rightParamValues, operator);
-            return conditionCollector.get(0);
+    private AtomFilter parseCondition(SQLExpr leftQueryFieldExpr, SQLConditionOperator operator, Object[] rightParamValues, String queryAs, ConditionFilterBuilder filterBuilder) {
+        QueryFieldParser queryFieldParser = new QueryFieldParser();
+        ElasticSqlQueryField queryField = queryFieldParser.parseConditionQueryField(leftQueryFieldExpr, queryAs);
+
+        AtomFilter atomFilter = null;
+        if (queryField.getQueryFieldType() == QueryFieldType.RootDocField || queryField.getQueryFieldType() == QueryFieldType.InnerDocField) {
+            FilterBuilder originalFilter = filterBuilder.buildFilter(queryField.getQueryFieldFullName(), operator, rightParamValues);
+            atomFilter = new AtomFilter(originalFilter);
         }
-        return null;
+
+        if (queryField.getQueryFieldType() == QueryFieldType.NestedDocField) {
+            FilterBuilder originalFilter = filterBuilder.buildFilter(queryField.getQueryFieldFullName(), operator, rightParamValues);
+            atomFilter = new AtomFilter(originalFilter, queryField.getNestedDocContextPath());
+        }
+
+        if (atomFilter == null) {
+            throw new ElasticSql2DslException(String.format("[syntax error] where condition field can not support type[%s]", queryField.getQueryFieldType()));
+        }
+
+        onAtomConditionParse(queryField, rightParamValues, operator);
+
+        return atomFilter;
     }
 
     private void onAtomConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
@@ -257,7 +289,7 @@ public class QueryWhereConditionParser implements QueryParser {
         FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues);
     }
 
-    private boolean isValidBinOperator(SQLBinaryOperator binaryOperator) {
+    public boolean isValidBinOperator(SQLBinaryOperator binaryOperator) {
         return binaryOperator == SQLBinaryOperator.Equality
                 || binaryOperator == SQLBinaryOperator.NotEqual
                 || binaryOperator == SQLBinaryOperator.LessThanOrGreater

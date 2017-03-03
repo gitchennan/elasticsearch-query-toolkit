@@ -1,7 +1,7 @@
 package org.elasticsearch.dsl.parser.listener;
 
-import org.elasticsearch.dsl.enums.SQLConditionOperator;
 import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
+import org.elasticsearch.dsl.enums.SQLConditionOperator;
 
 public interface ParseActionListener {
 

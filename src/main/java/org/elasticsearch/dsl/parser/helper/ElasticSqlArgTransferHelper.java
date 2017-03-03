@@ -11,12 +11,16 @@ public class ElasticSqlArgTransferHelper {
     public static Object[] transferSqlArgs(List<SQLExpr> exprList, Object[] sqlArgs) {
         Object[] values = new Object[exprList.size()];
         for (int idx = 0; idx < exprList.size(); idx++) {
-            values[idx] = transferSqlArg(exprList.get(idx), sqlArgs);
+            values[idx] = transferSqlArg(exprList.get(idx), sqlArgs, true);
         }
         return values;
     }
 
     public static Object transferSqlArg(SQLExpr expr, Object[] sqlArgs) {
+        return transferSqlArg(expr, sqlArgs, true);
+    }
+
+    public static Object transferSqlArg(SQLExpr expr, Object[] sqlArgs, boolean recognizeDateArg) {
         if (expr instanceof SQLVariantRefExpr) {
             SQLVariantRefExpr varRefExpr = (SQLVariantRefExpr) expr;
             if (sqlArgs == null || sqlArgs.length == 0) {
@@ -26,7 +30,7 @@ public class ElasticSqlArgTransferHelper {
                 throw new ElasticSql2DslException("[syntax error] Sql args out of index: " + varRefExpr.getIndex());
             }
             //解析date类型
-            if (ElasticSqlDateParseHelper.isDateArgObjectValue(sqlArgs[varRefExpr.getIndex()])) {
+            if (recognizeDateArg && ElasticSqlDateParseHelper.isDateArgObjectValue(sqlArgs[varRefExpr.getIndex()])) {
                 return ElasticSqlDateParseHelper.formatDefaultEsDateObjectValue(sqlArgs[varRefExpr.getIndex()]);
             }
             return sqlArgs[varRefExpr.getIndex()];
@@ -40,7 +44,7 @@ public class ElasticSqlArgTransferHelper {
         if (expr instanceof SQLCharExpr) {
             Object textObject = ((SQLCharExpr) expr).getValue();
             //解析date类型
-            if (textObject instanceof String && ElasticSqlDateParseHelper.isDateArgStringValue((String) textObject)) {
+            if (recognizeDateArg && (textObject instanceof String) && ElasticSqlDateParseHelper.isDateArgStringValue((String) textObject)) {
                 return ElasticSqlDateParseHelper.formatDefaultEsDateStringValue((String) textObject);
             }
             return textObject;
@@ -51,8 +55,8 @@ public class ElasticSqlArgTransferHelper {
             //解析date函数
             if (ElasticSqlDateParseHelper.isDateMethod(methodExpr)) {
                 ElasticSqlMethodInvokeHelper.checkDateMethod(methodExpr);
-                String patternArg = (String) ElasticSqlArgTransferHelper.transferSqlArg(methodExpr.getParameters().get(0), sqlArgs);
-                String timeValArg = (String) ElasticSqlArgTransferHelper.transferSqlArg(methodExpr.getParameters().get(1), sqlArgs);
+                String patternArg = (String) ElasticSqlArgTransferHelper.transferSqlArg(methodExpr.getParameters().get(0), sqlArgs, false);
+                String timeValArg = (String) ElasticSqlArgTransferHelper.transferSqlArg(methodExpr.getParameters().get(1), sqlArgs, false);
                 return ElasticSqlDateParseHelper.formatDefaultEsDate(patternArg, timeValArg);
             }
         }

@@ -6,11 +6,13 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.util.ElasticMockClient;
 
 import java.util.List;
-import java.util.function.Consumer;
+
 
 public class ElasticSqlParseResult {
     /*取数开始位置*/
@@ -18,7 +20,7 @@ public class ElasticSqlParseResult {
     /*取数大小*/
     private int size = 15;
     /*查询索引*/
-    private String index;
+    private List<String> indices;
     /*查询文档类*/
     private String type;
     /*查询索引别名*/
@@ -32,6 +34,10 @@ public class ElasticSqlParseResult {
     /*SQL的order by条件*/
     private transient List<SortBuilder> orderBy;
 
+    private transient boolean isTopStatsAgg = false;
+
+    private transient List<AbstractAggregationBuilder> groupBy;
+
     public List<String> getQueryFieldList() {
         return queryFieldList;
     }
@@ -40,12 +46,12 @@ public class ElasticSqlParseResult {
         this.queryFieldList = queryFieldList;
     }
 
-    public String getIndex() {
-        return index;
+    public List<String> getIndices() {
+        return indices;
     }
 
-    public void setIndex(String index) {
-        this.index = index;
+    public void setIndices(List<String> indices) {
+        this.indices = indices;
     }
 
     public String getType() {
@@ -104,12 +110,28 @@ public class ElasticSqlParseResult {
         this.routingBy = routingBy;
     }
 
+    public void setGroupBy(List<AbstractAggregationBuilder> groupBy) {
+        this.groupBy = groupBy;
+    }
+
+    public List<AbstractAggregationBuilder> getGroupBy() {
+        return groupBy;
+    }
+
+    public void setTopStatsAgg() {
+        this.isTopStatsAgg = true;
+    }
+
+    public boolean getIsTopStatsAgg() {
+        return isTopStatsAgg;
+    }
+
     public SearchRequestBuilder toRequest(Client client) {
-        final SearchRequestBuilder requestBuilder = new SearchRequestBuilder(client);
+        SearchRequestBuilder requestBuilder = new SearchRequestBuilder(client);
         requestBuilder.setFrom(from).setSize(size);
 
-        if (StringUtils.isNotBlank(index)) {
-            requestBuilder.setIndices(index);
+        if (CollectionUtils.isNotEmpty(indices)) {
+            requestBuilder.setIndices(indices.toArray(new String[indices.size()]));
         }
 
         if (StringUtils.isNotBlank(type)) {
@@ -123,12 +145,9 @@ public class ElasticSqlParseResult {
         }
 
         if (CollectionUtils.isNotEmpty(orderBy)) {
-            orderBy.stream().forEach(new Consumer<SortBuilder>() {
-                @Override
-                public void accept(SortBuilder sortBuilder) {
-                    requestBuilder.addSort(sortBuilder);
-                }
-            });
+            for (SortBuilder sortBuilder : orderBy) {
+                requestBuilder.addSort(sortBuilder);
+            }
         }
 
         if (CollectionUtils.isNotEmpty(queryFieldList)) {
@@ -138,6 +157,26 @@ public class ElasticSqlParseResult {
         if (CollectionUtils.isNotEmpty(routingBy)) {
             requestBuilder.setRouting(routingBy.toArray(new String[routingBy.size()]));
         }
+
+        if (CollectionUtils.isNotEmpty(groupBy)) {
+            if (!getIsTopStatsAgg()) {
+                AggregationBuilder preAgg = null;
+                for (AbstractAggregationBuilder aggItem : groupBy) {
+                    if (preAgg == null) {
+                        preAgg = (AggregationBuilder) aggItem;
+                        continue;
+                    }
+                    preAgg.subAggregation(aggItem);
+                    preAgg = (AggregationBuilder) aggItem;
+                }
+                requestBuilder.addAggregation(groupBy.get(0));
+            } else {
+                for (AbstractAggregationBuilder aggItem : groupBy) {
+                    requestBuilder.addAggregation(aggItem);
+                }
+            }
+        }
+
         return requestBuilder;
     }
 
@@ -152,6 +191,6 @@ public class ElasticSqlParseResult {
     @Override
     public String toString() {
         String ptn = "index:%s,type:%s,query_as:%s,from:%s,size:%s,routing:%s,dsl:%s";
-        return String.format(ptn, index, type, queryAs, from, size, routingBy != null ? routingBy.toString() : "[]", toDsl());
+        return String.format(ptn, indices, type, queryAs, from, size, routingBy != null ? routingBy.toString() : "[]", toDsl());
     }
 }

@@ -1,39 +1,45 @@
 package org.elasticsearch.dsl.bean;
 
-import com.alibaba.druid.sql.ast.expr.SQLBinaryOperator;
 import com.google.common.collect.Lists;
-import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.dsl.enums.SQLBoolOperator;
+import org.elasticsearch.dsl.enums.SQLConditionType;
 
 import java.util.List;
 
-public class SqlCondition {
-    //是否AND/OR运算
-    private boolean isAndOr = false;
+public class SQLCondition {
+    //条件类型
+    private SQLConditionType conditionType;
     //运算符
-    private SQLBinaryOperator operator;
+    private SQLBoolOperator operator;
     //条件集合
-    private List<FilterBuilder> filterList;
+    private List<AtomFilter> filterList;
 
-    public SqlCondition(FilterBuilder atomFilter) {
-        filterList = Lists.newArrayList(atomFilter);
-        isAndOr = false;
+    public SQLCondition(AtomFilter atomFilter) {
+        this.filterList = Lists.newArrayList(atomFilter);
+        this.conditionType = SQLConditionType.Atom;
     }
 
-    public SqlCondition(List<FilterBuilder> filterList, SQLBinaryOperator operator) {
+    public SQLCondition(AtomFilter atomFilter, SQLConditionType SQLConditionType) {
+        this.filterList = Lists.newArrayList(atomFilter);
+        this.conditionType = SQLConditionType;
+    }
+
+    public SQLCondition(List<AtomFilter> filterList, SQLBoolOperator operator) {
         this.filterList = filterList;
-        isAndOr = true;
         this.operator = operator;
+        this.conditionType = SQLConditionType.Combine;
     }
 
-    public boolean isAndOr() {
-        return isAndOr;
+
+    public SQLConditionType getSQLConditionType() {
+        return conditionType;
     }
 
-    public SQLBinaryOperator getOperator() {
+    public SQLBoolOperator getOperator() {
         return operator;
     }
 
-    public List<FilterBuilder> getFilterList() {
+    public List<AtomFilter> getFilterList() {
         return filterList;
     }
 }

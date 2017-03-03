@@ -11,12 +11,14 @@ import com.alibaba.druid.sql.ast.statement.SQLSelectOrderByItem;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
+import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
+import org.elasticsearch.dsl.enums.QueryFieldType;
+import org.elasticsearch.dsl.enums.SortOption;
+import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.QueryParser;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlArgTransferHelper;
-import org.elasticsearch.dsl.parser.listener.ParseActionListener;
-import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.dsl.parser.helper.ElasticSqlIdentifierHelper;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlMethodInvokeHelper;
+import org.elasticsearch.dsl.parser.listener.ParseActionListener;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -49,128 +51,75 @@ public class QueryOrderConditionParser implements QueryParser {
         }
     }
 
-    private SortBuilder parseOrderCondition(final SQLSelectOrderByItem orderByItem, String queryAs, Object[] sqlArgs) {
+    private SortBuilder parseOrderCondition(SQLSelectOrderByItem orderByItem, String queryAs, Object[] sqlArgs) {
         if (orderByItem.getExpr() instanceof SQLPropertyExpr || orderByItem.getExpr() instanceof SQLIdentifierExpr) {
             return parseCondition(orderByItem.getExpr(), queryAs, new ConditionSortBuilder() {
                 @Override
-                public FieldSortBuilder buildSort(String idfName) {
+                public FieldSortBuilder buildSort(String queryFieldName) {
                     if (SQLOrderingSpecification.ASC == orderByItem.getType()) {
-                        return SortBuilders.fieldSort(idfName).order(SortOrder.ASC);
+                        return SortBuilders.fieldSort(queryFieldName).order(SortOrder.ASC);
                     } else {
-                        return SortBuilders.fieldSort(idfName).order(SortOrder.DESC);
+                        return SortBuilders.fieldSort(queryFieldName).order(SortOrder.DESC);
                     }
                 }
             });
         }
         if (orderByItem.getExpr() instanceof SQLMethodInvokeExpr) {
-            final SQLMethodInvokeExpr methodInvokeExpr = (SQLMethodInvokeExpr) orderByItem.getExpr();
+            SQLMethodInvokeExpr methodInvokeExpr = (SQLMethodInvokeExpr) orderByItem.getExpr();
             //nvl method
             if (ElasticSqlMethodInvokeHelper.NVL_METHOD.equalsIgnoreCase(methodInvokeExpr.getMethodName())) {
                 ElasticSqlMethodInvokeHelper.checkNvlMethod(methodInvokeExpr);
-                final Object valueArg = ElasticSqlArgTransferHelper.transferSqlArg(methodInvokeExpr.getParameters().get(1), sqlArgs);
+                Object valueArg = ElasticSqlArgTransferHelper.transferSqlArg(methodInvokeExpr.getParameters().get(1), sqlArgs);
                 return parseCondition(methodInvokeExpr.getParameters().get(0), queryAs, new ConditionSortBuilder() {
                     @Override
                     public FieldSortBuilder buildSort(String idfName) {
                         FieldSortBuilder fieldSortBuilder = null;
+
                         if (SQLOrderingSpecification.ASC == orderByItem.getType()) {
                             fieldSortBuilder = SortBuilders.fieldSort(idfName).order(SortOrder.ASC).missing(valueArg);
                         } else {
                             fieldSortBuilder = SortBuilders.fieldSort(idfName).order(SortOrder.DESC).missing(valueArg);
                         }
+
                         if (methodInvokeExpr.getParameters().size() == 3) {
                             SQLExpr sortModArg = methodInvokeExpr.getParameters().get(2);
                             String sortModeText = ((SQLCharExpr) sortModArg).getText();
                             fieldSortBuilder.sortMode(SortOption.get(sortModeText).mode());
                         }
+
                         return fieldSortBuilder;
                     }
                 });
             }
-
-            //nested或者inner doc类型
-            if (ElasticSqlMethodInvokeHelper.NESTED_DOC_METHOD.equalsIgnoreCase(methodInvokeExpr.getMethodName())
-                    || ElasticSqlMethodInvokeHelper.INNER_DOC_METHOD.equalsIgnoreCase(methodInvokeExpr.getMethodName())) {
-                return parseCondition(methodInvokeExpr, queryAs, new ConditionSortBuilder() {
-                    @Override
-                    public FieldSortBuilder buildSort(String idfName) {
-                        return SortBuilders.fieldSort(idfName).order(
-                                SQLOrderingSpecification.ASC == orderByItem.getType() ? SortOrder.ASC : SortOrder.DESC
-                        );
-                    }
-                });
-            }
         }
-        throw new ElasticSql2DslException("[syntax error] Sql cannot support sort type: " + orderByItem.getExpr().getClass());
+        throw new ElasticSql2DslException("[syntax error] can not support sort type: " + orderByItem.getExpr().getClass());
     }
 
-    private SortBuilder parseCondition(SQLExpr sqlExpr, String queryAs, final ConditionSortBuilder sortBuilder) {
-        final List<SortBuilder> tmpSortList = Lists.newLinkedList();
-        ElasticSqlIdentifierHelper.parseSqlIdentifier(sqlExpr, queryAs, new ElasticSqlIdentifierHelper.SQLFlatFieldFunc() {
-            @Override
-            public void parse(String flatFieldName) {
-                FieldSortBuilder originalSort = sortBuilder.buildSort(flatFieldName);
-                tmpSortList.add(originalSort);
-            }
-        }, new ElasticSqlIdentifierHelper.SQLNestedFieldFunc() {
-            @Override
-            public void parse(String nestedDocPath, String fieldName) {
-                FieldSortBuilder originalSort = sortBuilder.buildSort(fieldName);
-                originalSort.setNestedPath(nestedDocPath);
-                tmpSortList.add(originalSort);
-            }
-        });
-        if (CollectionUtils.isNotEmpty(tmpSortList)) {
-            return tmpSortList.get(0);
+    private SortBuilder parseCondition(SQLExpr sqlExpr, String queryAs, ConditionSortBuilder sortBuilder) {
+        QueryFieldParser queryFieldParser = new QueryFieldParser();
+        ElasticSqlQueryField sortField = queryFieldParser.parseConditionQueryField(sqlExpr, queryAs);
+
+        SortBuilder rtnSortBuilder = null;
+        if(sortField.getQueryFieldType() == QueryFieldType.RootDocField || sortField.getQueryFieldType() == QueryFieldType.InnerDocField) {
+            rtnSortBuilder = sortBuilder.buildSort(sortField.getQueryFieldFullName());
         }
-        return null;
+
+        if(sortField.getQueryFieldType() == QueryFieldType.NestedDocField) {
+            FieldSortBuilder originalSort = sortBuilder.buildSort(sortField.getQueryFieldFullName());
+            originalSort.setNestedPath(sortField.getNestedDocContextPath());
+            rtnSortBuilder = originalSort;
+        }
+
+        if(rtnSortBuilder == null) {
+            throw new ElasticSql2DslException(String.format("[syntax error] sort condition field can not support type[%s]", sortField.getQueryFieldType()));
+        }
+
+        return rtnSortBuilder;
     }
+
 
     @FunctionalInterface
     private interface ConditionSortBuilder {
         FieldSortBuilder buildSort(String idfName);
-    }
-
-    public enum SortOption {
-        SUM {
-            @Override
-            public String mode() {
-                return "sum";
-            }
-        },
-        MIN {
-            @Override
-            public String mode() {
-                return "min";
-            }
-        },
-        MAX {
-            @Override
-            public String mode() {
-                return "max";
-            }
-        },
-        AVG {
-            @Override
-            public String mode() {
-                return "avg";
-            }
-        };
-
-        public abstract String mode();
-
-        @Override
-        public String toString() {
-            return mode();
-        }
-
-        public static SortOption get(String mode) {
-            SortOption op = null;
-            for (SortOption option : SortOption.values()) {
-                if (option.mode().equalsIgnoreCase(mode)) {
-                    op = option;
-                }
-            }
-            return op;
-        }
     }
 }

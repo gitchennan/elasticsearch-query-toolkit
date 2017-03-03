@@ -3,15 +3,50 @@ package org.elasticsearch.dsl.parser.helper;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.dsl.enums.SortOption;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.dsl.parser.syntax.QueryOrderConditionParser;
 
 public class ElasticSqlMethodInvokeHelper {
 
     public static final String DATE_METHOD = "date";
     public static final String NVL_METHOD = "nvl";
-    public static final String INNER_DOC_METHOD = "inner_doc";
-    public static final String NESTED_DOC_METHOD = "nested_doc";
+
+    public static final String AGG_TERMS_METHOD = "terms";
+    public static final String AGG_RANGE_METHOD = "range";
+    public static final String AGG_RANGE_SEGMENT_METHOD = "segment";
+
+    public static final String AGG_MIN_METHOD = "min";
+    public static final String AGG_MAX_METHOD = "max";
+    public static final String AGG_AVG_METHOD = "avg";
+    public static final String AGG_SUM_METHOD = "sum";
+
+
+    public static void checkTermsAggMethod(SQLMethodInvokeExpr aggInvokeExpr) {
+        if (!AGG_TERMS_METHOD.equalsIgnoreCase(aggInvokeExpr.getMethodName())) {
+            throw new ElasticSql2DslException("[syntax error] Sql not support method:" + aggInvokeExpr.getMethodName());
+        }
+    }
+
+    public static void checkRangeAggMethod(SQLMethodInvokeExpr aggInvokeExpr) {
+        if (!AGG_RANGE_METHOD.equalsIgnoreCase(aggInvokeExpr.getMethodName())) {
+            throw new ElasticSql2DslException("[syntax error] Sql not support method:" + aggInvokeExpr.getMethodName());
+        }
+    }
+
+    public static void checkRangeItemAggMethod(SQLMethodInvokeExpr aggInvokeExpr) {
+        if (!AGG_RANGE_SEGMENT_METHOD.equalsIgnoreCase(aggInvokeExpr.getMethodName())) {
+            throw new ElasticSql2DslException("[syntax error] Sql not support method:" + aggInvokeExpr.getMethodName());
+        }
+    }
+
+    public static void checkStatAggMethod(SQLAggregateExpr statAggExpr) {
+        if (!AGG_MIN_METHOD.equalsIgnoreCase(statAggExpr.getMethodName()) &&
+                !AGG_MAX_METHOD.equalsIgnoreCase(statAggExpr.getMethodName()) &&
+                !AGG_AVG_METHOD.equalsIgnoreCase(statAggExpr.getMethodName()) &&
+                !AGG_SUM_METHOD.equalsIgnoreCase(statAggExpr.getMethodName())) {
+            throw new ElasticSql2DslException("[syntax error] Sql not support method:" + statAggExpr.getMethodName());
+        }
+    }
 
     public static void checkDateMethod(SQLMethodInvokeExpr dateInvokeExpr) {
         if (!DATE_METHOD.equalsIgnoreCase(dateInvokeExpr.getMethodName())) {
@@ -35,40 +70,6 @@ public class ElasticSqlMethodInvokeHelper {
         }
     }
 
-    public static void checkInnerDocMethod(SQLMethodInvokeExpr innerDocInvokeExpr) {
-        if (!INNER_DOC_METHOD.equalsIgnoreCase(innerDocInvokeExpr.getMethodName())) {
-            throw new ElasticSql2DslException("[syntax error] Sql not support method:" + innerDocInvokeExpr.getMethodName());
-        }
-
-        if (CollectionUtils.isEmpty(innerDocInvokeExpr.getParameters()) || innerDocInvokeExpr.getParameters().size() != 1) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There is no %s args method named inner_doc",
-                    innerDocInvokeExpr.getParameters() != null ? innerDocInvokeExpr.getParameters().size() : 0));
-        }
-
-        SQLExpr innerPropertyName = innerDocInvokeExpr.getParameters().get(0);
-
-        if (!(innerPropertyName instanceof SQLPropertyExpr) && !(innerPropertyName instanceof SQLIdentifierExpr)) {
-            throw new ElasticSql2DslException("[syntax error] The arg of inner_doc method should be field param name");
-        }
-    }
-
-    public static void checkNestedDocMethod(SQLMethodInvokeExpr nestedDocInvokeExpr) {
-        if (!NESTED_DOC_METHOD.equalsIgnoreCase(nestedDocInvokeExpr.getMethodName())) {
-            throw new ElasticSql2DslException("[syntax error] ElasticSql not support method:" + nestedDocInvokeExpr.getMethodName());
-        }
-
-        if (CollectionUtils.isEmpty(nestedDocInvokeExpr.getParameters()) || nestedDocInvokeExpr.getParameters().size() != 1) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There is no %s args method named nested_doc",
-                    nestedDocInvokeExpr.getParameters() != null ? nestedDocInvokeExpr.getParameters().size() : 0));
-        }
-
-        SQLExpr innerPropertyName = nestedDocInvokeExpr.getParameters().get(0);
-
-        if (!(innerPropertyName instanceof SQLPropertyExpr) && !(innerPropertyName instanceof SQLIdentifierExpr)) {
-            throw new ElasticSql2DslException("[syntax error] The arg of nested_doc method should be field param name");
-        }
-    }
-
     public static void checkNvlMethod(SQLMethodInvokeExpr nvlInvokeExpr) {
         if (!NVL_METHOD.equalsIgnoreCase(nvlInvokeExpr.getMethodName())) {
             throw new ElasticSql2DslException("[syntax error] Sql sort condition only support nvl method invoke");
@@ -82,14 +83,7 @@ public class ElasticSqlMethodInvokeHelper {
         SQLExpr fieldArg = nvlInvokeExpr.getParameters().get(0);
         SQLExpr valueArg = nvlInvokeExpr.getParameters().get(1);
 
-        if (fieldArg instanceof SQLMethodInvokeExpr) {
-            if (INNER_DOC_METHOD.equalsIgnoreCase(((SQLMethodInvokeExpr) fieldArg).getMethodName())) {
-                checkInnerDocMethod((SQLMethodInvokeExpr) fieldArg);
-            }
-            if (NESTED_DOC_METHOD.equalsIgnoreCase(((SQLMethodInvokeExpr) fieldArg).getMethodName())) {
-                checkNestedDocMethod((SQLMethodInvokeExpr) fieldArg);
-            }
-        } else if (!(fieldArg instanceof SQLPropertyExpr) && !(fieldArg instanceof SQLIdentifierExpr)) {
+        if (!(fieldArg instanceof SQLPropertyExpr) && !(fieldArg instanceof SQLIdentifierExpr)) {
             throw new ElasticSql2DslException("[syntax error] The first arg of nvl method should be field param name");
         }
 
@@ -103,8 +97,8 @@ public class ElasticSqlMethodInvokeHelper {
                 throw new ElasticSql2DslException("[syntax error] The third arg of nvl method should be string");
             }
             String sortModeText = ((SQLCharExpr) sortModArg).getText();
-            if (!QueryOrderConditionParser.SortOption.AVG.mode().equalsIgnoreCase(sortModeText) && !QueryOrderConditionParser.SortOption.MIN.mode().equalsIgnoreCase(sortModeText)
-                    && !QueryOrderConditionParser.SortOption.MAX.mode().equalsIgnoreCase(sortModeText) && !QueryOrderConditionParser.SortOption.SUM.mode().equalsIgnoreCase(sortModeText)) {
+            if (!SortOption.AVG.mode().equalsIgnoreCase(sortModeText) && !SortOption.MIN.mode().equalsIgnoreCase(sortModeText)
+                    && !SortOption.MAX.mode().equalsIgnoreCase(sortModeText) && !SortOption.SUM.mode().equalsIgnoreCase(sortModeText)) {
                 throw new ElasticSql2DslException("[syntax error] The third arg of nvl method should be one of the string[min,max,avg,sum]");
             }
         }
