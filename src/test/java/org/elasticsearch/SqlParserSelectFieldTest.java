@@ -52,17 +52,17 @@ public class SqlParserSelectFieldTest {
 
     @Test
     public void testInnerDocField() {
-        String sql = "select id,inner_doc(product.productStatus) from index.trx_order";
+        String sql = "select id,product.productStatus from index.trx_order";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
         Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.productStatus");
 
-        sql = "select inner_doc(trx.product.productStatus) from index.trx_order trx";
+        sql = "select trx.product.productStatus from index.trx_order trx";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.productStatus");
 
-        sql = "select inner_doc(tmp.product.productStatus) from index.trx_order trx";
+        sql = "select tmp.product.productStatus from index.trx_order trx";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "tmp.product.productStatus");
 
@@ -78,17 +78,17 @@ public class SqlParserSelectFieldTest {
 
     @Test
     public void testNestedDocField() {
-        String sql = "select id,nested_doc(product.productStatus) from index.trx_order";
+        String sql = "select id,$product.productStatus from index.trx_order";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
         Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.productStatus");
 
-        sql = "select nested_doc(trx.product.productStatus) from index.trx_order trx";
+        sql = "select trx.$product.productStatus from index.trx_order trx";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.productStatus");
 
-        sql = "select nested_doc(tmp.product.productStatus) from index.trx_order trx";
+        sql = "select $tmp.product.productStatus from index.trx_order trx";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "tmp.product.productStatus");
 
