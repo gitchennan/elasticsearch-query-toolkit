@@ -21,7 +21,7 @@
     <properties>
         <elasticsearch.version>1.4.5</elasticsearch.version>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <skip.unit.tests>true</skip.unit.tests>
+        <skip.unit.tests>false</skip.unit.tests>
     </properties>
 	
     <repositories>
@@ -116,7 +116,8 @@
                 <version>2.11</version>
                 <configuration>
                     <includes>
-                        <include>**/*Tests.java</include>
+                        <include>**/*Test.java</include>
+                        <include>**/Test*.java</include>
                     </includes>
                 </configuration>
             </plugin>

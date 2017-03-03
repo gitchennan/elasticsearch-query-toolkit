@@ -29,24 +29,24 @@ public class SqlParserWhereConditionTest {
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.termFilter("price", "123.4"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
-        sql = "select id,productStatus from index.trx_order trx where inner_doc(product.price)='123.4'";
+        sql = "select id,productStatus from index.trx_order trx where product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.termFilter("product.price", "123.4"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
-        sql = "select id,productStatus from index.trx_order trx where nested_doc(product.price)='123.4'";
+        sql = "select id,productStatus from index.trx_order trx where $product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.termFilter("price", "123.4")));
+        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.termFilter("product.price", "123.4")));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
-        sql = "select id,productStatus from index.trx_order trx where nested_doc(trx.product.price)='123.4'";
+        sql = "select id,productStatus from index.trx_order trx where trx.$product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.termFilter("price", "123.4")));
+        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.termFilter("product.price", "123.4")));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
-        sql = "select id,productStatus from index.trx_order trx where nested_doc(abc.trx.product.price)='123.4'";
+        sql = "select id,productStatus from index.trx_order trx where abc.trx.$product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("abc.trx.product", FilterBuilders.termFilter("price", "123.4")));
+        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("abc.trx.product", FilterBuilders.termFilter("abc.trx.product.price", "123.4")));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,productStatus from index.trx_order trx where trx.product.price='123.4'";
@@ -65,14 +65,14 @@ public class SqlParserWhereConditionTest {
         FilterBuilder targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("price").gt(123.4));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
-        sql = "select id,productStatus from index.trx_order trx where inner_doc(product.price) > 123.4";
+        sql = "select id,productStatus from index.trx_order trx where product.price > 123.4";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("product.price").gt(123.4));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
-        sql = "select id,productStatus from index.trx_order trx where nested_doc(product.price) > 123.4";
+        sql = "select id,productStatus from index.trx_order trx where $product.price > 123.4";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.rangeFilter("price").gt(123.4)));
+        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.rangeFilter("product.price").gt(123.4)));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
     }
