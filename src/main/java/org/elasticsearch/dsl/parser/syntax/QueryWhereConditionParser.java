@@ -78,8 +78,8 @@ public class QueryWhereConditionParser implements QueryParser {
         }
         else {
             //todo binOperator -> sqlCondition.getOperator()
-            BoolFilterBuilder subBoolFilter = mergeAtomFilter(sqlCondition.getFilterList(), sqlCondition.getOperator());
-            combiner.add(new AtomFilter(subBoolFilter));
+            BoolFilterBuilder boolFilter = mergeAtomFilter(sqlCondition.getFilterList(), sqlCondition.getOperator());
+            combiner.add(new AtomFilter(boolFilter));
         }
     }
 

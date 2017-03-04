@@ -59,7 +59,7 @@ public class SqlParserOrderByTest {
 
     @Test
     public void testX() {
-        String sql = "select totalPrice, product.*, product.$seller.* from index.order";
+        String sql = "select * from index.order where (a=0 and d=0) or (b=0 and c=0)";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         System.out.println(sql2DslParser.parse(sql).toDsl());
     }

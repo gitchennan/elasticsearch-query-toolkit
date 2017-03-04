@@ -399,6 +399,8 @@ select totalPrice, product.*, product.$seller.* from index.order
 ```
 
 ```bash
+select min(price),avg(price) from index.product group by terms(category),terms(color),range(price, segment(0,100), segment(100,200), segment(200,300))
+
 #聚合统计
 {
   "from" : 0,
