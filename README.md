@@ -6,7 +6,7 @@ elasticsearch-sql2dsl版本
 
 sql2dsl version | ES version
 -----------|-----------
-master | 1.4.5
+master | 2.4.4
 2.x    | 2.4.4
 1.x    | 1.4.5
 
