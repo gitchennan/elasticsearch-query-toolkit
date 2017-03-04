@@ -97,8 +97,8 @@ SearchRequestBuilder searchReq = parseResult.toRequest(esClient);
 
 
 ## SQL使用示例
+下面index表示索引名，order表示文档类型名
 ```bash
-#下面index表示索引名，order表示文档类型名
 select * from index.order
 
 # 1. 默认从第0条数据开始，取15条
@@ -110,11 +110,13 @@ select * from index.order
     "match_all" : { }
   }
 }
+```
 
-# 带上分页参数查询
+用关键字limit指定分页参数
+```bash
 select * from index.order limit 0,100
 
-# 1. 分页参数从0开始取100条
+# 分页参数从0开始取100条
 {
   "from" : 0,
   "size" : 100,
@@ -122,8 +124,10 @@ select * from index.order limit 0,100
     "match_all" : { }
   }
 }
+```
 
-# where条件中带一个status参数
+SQL中指定查询条件  status = 'SUCCESS'
+```bash
 select * from index.order where status='SUCCESS' limit 0,100
 
 {
@@ -143,8 +147,10 @@ select * from index.order where status='SUCCESS' limit 0,100
     }
   }
 }
+```
 
-# totalPrice 范围查询
+范围查询  totalPrice > 1000
+```bash
 select * from index.order where status='SUCCESS' and totalPrice > 1000 limit 0,100
 
 {
@@ -173,8 +179,10 @@ select * from index.order where status='SUCCESS' and totalPrice > 1000 limit 0,1
     }
   }
 }
+```
 
-# between...and... 上下限都取
+使用 between...and... 指定条件范围（上下限都取）
+```bash
 select * from index.order where status='SUCCESS' and totalPrice between 1000 and 2000 limit 0,100
 
 {
@@ -203,10 +211,14 @@ select * from index.order where status='SUCCESS' and totalPrice between 1000 and
     }
   }
 }
+```
 
-# 日期范围查询，下面3条SQL等效
+
+日期类型范围查询，下面3条SQL等效
+```bash
 select * from index.order where status='SUCCESS' and lastUpdateTime > '2017-01-01 00:00:00' limit 0,100
 select * from index.order where status='SUCCESS' and lastUpdateTime > '2017-01-01' limit 0,100
+
 #日期函数可以自定义日期格式
 select * from index.order where status='SUCCESS' and lastUpdateTime > date('yyyy-MM-dd', '2017-01-01') limit 0,100
 
@@ -237,7 +249,10 @@ select * from index.order where status='SUCCESS' and lastUpdateTime > date('yyyy
   }
 }
 
-# 排序条件，price升序，publishDate降序
+```
+
+排序条件，price升序，publishDate降序
+```bash
 select * from index.order where status='SUCCESS' order by price asc, publishDate desc
 
 {
@@ -267,8 +282,11 @@ select * from index.order where status='SUCCESS' order by price asc, publishDate
   } ]
 }
 
-# 使用nvl函数指定默认值
-select * from index.order where status='SUCCESS' order by nvl(price,0) asc, publishDate desc
+```
+
+使用nvl函数指定默认值
+```bash
+select * from index.order where status='SUCCESS' order by nvl(price, 0) asc, publishDate desc
 
 {
   "from" : 0,
@@ -298,7 +316,10 @@ select * from index.order where status='SUCCESS' order by nvl(price,0) asc, publ
   } ]
 }
 
-#内嵌文档排序，指定sort_mode
+```
+
+内嵌文档排序，指定sort_mode（其中$providers 表示内嵌文档），按照 min 方式排序
+```bash
 select * from index.order where status='SUCCESS' order by nvl(product.$providers.sortNo, 0, 'min') asc, publishDate desc
 
 {
@@ -331,7 +352,10 @@ select * from index.order where status='SUCCESS' order by nvl(product.$providers
   } ]
 }
 
-# Inner Doc 查询
+```
+
+Inner Doc 查询
+```bash
 select * from index.order where seller.name='JD' order by id desc
 
 {
@@ -357,8 +381,10 @@ select * from index.order where seller.name='JD' order by id desc
   } ]
 }
 
+```
 
-#Nested Doc查询
+Nested Doc查询（$providers 表示内嵌文档）
+```bash
 select * from index.order where product.$providers.name in ('JD', 'TB') and product.price < 1000 order by id desc
 
 {
@@ -397,9 +423,17 @@ select * from index.order where product.$providers.name in ('JD', 'TB') and prod
     }
   } ]
 }
+```
 
-#组合条件查询
-select * from index.order where (product.$providers.name in ('JD', 'TB') or product.$providers.channel='ONLINE') and (product.status='OPEN' or product.price < 1000) order by id desc
+
+组合条件查询
+```bash
+select * from index.order
+where
+(product.$providers.name in ('JD', 'TB') or product.$providers.channel='ONLINE')
+and
+(product.status='OPEN' or product.price < 1000)
+order by id desc
 
 {
   "from" : 0,
@@ -457,8 +491,10 @@ select * from index.order where (product.$providers.name in ('JD', 'TB') or prod
     }
   } ]
 }
+```
 
-# 查询字段
+查询字段指定
+```bash
 select totalPrice, product.*, product.$seller.* from index.order
 
 {
@@ -477,7 +513,7 @@ select totalPrice, product.*, product.$seller.* from index.order
 
 
 
-## 聚合统计
+聚合统计，目前只支持 terms，range 聚合
 
 ```bash
 select min(price),avg(price) from index.product group by terms(category),terms(color),range(price, segment(0,100), segment(100,200), segment(200,300))
