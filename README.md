@@ -19,8 +19,84 @@ sql2dsl介绍
 > * 针对`Inner Doc`，直接引用即可：`a.b.c.d`
 > * 针对`Nested Doc`，需要在内嵌文档加上`$`符号： `$b.c`
 
+## Api使用示例
 
-## 使用示例
+常规sql查询，不带参数
+```java
+String sql = "select * from index.order where status='SUCCESS' order by nvl(pride, 0) asc limit 0, 20";
+
+ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+//解析SQL
+ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
+//生成DSL,可用于rest api调用
+String dsl = parseResult.toDsl();
+
+//toRequest方法接收一个clinet对象参数，用于生成SearchRequestBuilder
+SearchRequestBuilder searchReq = parseResult.toRequest(esClient);
+
+//执行查询
+SearchResponse response = searchReq.execute().actionGet();
+```
+指定可变参数查询
+```java
+String sql = "select * from index.order where status=? order by nvl(pride, 0) asc limit ?, ?";
+
+ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+//指定参数，解析SQL
+ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, new Object[]{"SUCCESS", 0, 20});
+
+//生成DSL,可用于rest api调用
+String dsl = parseResult.toDsl();
+
+//toRequest方法接收一个clinet对象参数，用于生成SearchRequestBuilder
+SearchRequestBuilder searchReq = parseResult.toRequest(esClient);
+
+//执行查询
+SearchResponse response = searchReq.execute().actionGet();
+```
+
+使用WHERE条件解析时的回调方法
+```java
+String sql = "select * from index.order where status='SUCCESS' and lastUpdateTime > '2017-01-02' order by nvl(pride, 0) asc limit 0, 20";
+
+ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+
+//指定SQL解析监听器,解析SQL
+ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, new ParseActionListenerAdapter() {
+    @Override
+    public void onAtomConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
+        if(paramName.getQueryFieldType() == QueryFieldType.RootDocField && "lastUpdateTime".equals(paramName.getQueryFieldFullName())) {
+            //这里是解析SQL中原子条件时的回调方法
+            //某些按时间划分的索引,可在此解析出SQL中指定的时间返回,并重新设置需要查询的索引
+        }
+    }
+});
+
+//生成DSL,可用于rest api调用
+String dsl = parseResult.toDsl();
+
+//toRequest方法接收一个clinet对象参数，用于生成SearchRequestBuilder
+SearchRequestBuilder searchReq = parseResult.toRequest(esClient);
+
+//执行查询
+SearchResponse response = searchReq.execute().actionGet();
+
+```
+使用routing by指定routing参数
+```bash
+String sql = "select * from index.order where status='SUCCESS' order by nvl(pride, 0) asc routing by 'A','B' limit 0, 20";
+
+ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+//解析SQL，
+ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
+//toRequest方法会把指定的routing参数放到SearchRequest中
+SearchRequestBuilder searchReq = parseResult.toRequest(esClient);
+```
+
+
+## SQL使用示例
 ```bash
 #下面index表示索引名，order表示文档类型名
 select * from index.order
@@ -398,10 +474,15 @@ select totalPrice, product.*, product.$seller.* from index.order
 }
 ```
 
+
+
+
+## 聚合统计
+
 ```bash
 select min(price),avg(price) from index.product group by terms(category),terms(color),range(price, segment(0,100), segment(100,200), segment(200,300))
 
-#聚合统计
+
 {
   "from" : 0,
   "size" : 15,
