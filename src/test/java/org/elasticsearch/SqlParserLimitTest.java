@@ -9,7 +9,7 @@ import org.junit.Test;
 public class SqlParserLimitTest {
     @Test
     public void testParseLimitExpr() {
-        String sql = "select id,productStatus from index.trx_order trx where trx.status='SUCCESS' limit 5,15";
+        String sql = "select id,status from index.order t where t.status='SUCCESS' limit 5,15";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
 
@@ -19,7 +19,7 @@ public class SqlParserLimitTest {
 
     @Test
     public void testParseLimitExprWithArgs() {
-        String sql = "select id,productStatus from index.trx_order trx where trx.status='SUCCESS' limit ?,?";
+        String sql = "select id,status from index.order t where t.status='SUCCESS' limit ?,?";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, new Object[]{5, 15});
 

@@ -9,34 +9,27 @@ import org.junit.Test;
 public class SqlParserRoutingTest {
     @Test
     public void testParseRoutingExpr() {
-        String sql = "select * from index.trx_order trx where trx.status='SUCCESS' order by id asc routing by '801','802' limit 5,15";
+        String sql = "select * from index.order t where t.status='SUCCESS' order by id asc routing by 'A','B' limit 5,15";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
 
-        Assert.assertTrue("801".equalsIgnoreCase(parseResult.getRoutingBy().get(0)));
-        Assert.assertTrue("802".equalsIgnoreCase(parseResult.getRoutingBy().get(1)));
+        Assert.assertTrue("A".equalsIgnoreCase(parseResult.getRoutingBy().get(0)));
+        Assert.assertTrue("B".equalsIgnoreCase(parseResult.getRoutingBy().get(1)));
 
-        sql = "select * from index.trx_order trx where trx.status='SUCCESS' order by id asc routing by '801' limit 5,15";
+        sql = "select * from index.order t where t.status='SUCCESS' order by id asc routing by 'A' limit 5,15";
         sql2DslParser = new ElasticSql2DslParser();
         parseResult = sql2DslParser.parse(sql);
-        Assert.assertTrue("801".equalsIgnoreCase(parseResult.getRoutingBy().get(0)));
+        Assert.assertTrue("A".equalsIgnoreCase(parseResult.getRoutingBy().get(0)));
     }
+
 
     @Test
     public void testParseRoutingExprWithArgs() {
-        String sql = "select * from index.trx_order trx where trx.status='SUCCESS' order by id asc routing by ?,? limit 5,15";
+        String sql = "select * from index.order t where t.status='SUCCESS' order by id asc routing by ?,? limit 5,15";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
-        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, new Object[]{"801", "802"});
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, new Object[]{"A", "B"});
 
-        Assert.assertTrue("801".equalsIgnoreCase(parseResult.getRoutingBy().get(0)));
-        Assert.assertTrue("802".equalsIgnoreCase(parseResult.getRoutingBy().get(1)));
+        Assert.assertTrue("A".equalsIgnoreCase(parseResult.getRoutingBy().get(0)));
+        Assert.assertTrue("B".equalsIgnoreCase(parseResult.getRoutingBy().get(1)));
     }
-//
-//    @Test
-//    public void testJoin() {
-//        String syntax = "select * from index.trx_order trx nested join product.xx x";
-//        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
-//        ElasticSqlParseResult parseResult = sql2DslParser.parse(syntax);
-//    }
-
 }

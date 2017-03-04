@@ -72,12 +72,13 @@ public class QueryWhereConditionParser implements QueryParser {
         return new SQLCondition(parseAtomFilterCondition(dslContext, sqlExpr), SQLConditionType.Atom);
     }
 
-    private void combineFilterBuilder(List<AtomFilter> combiner, SQLCondition SQLCondition, SQLBoolOperator binOperator) {
-        if (SQLConditionType.Atom == SQLCondition.getSQLConditionType() || SQLCondition.getOperator() == binOperator) {
-            combiner.addAll(SQLCondition.getFilterList());
+    private void combineFilterBuilder(List<AtomFilter> combiner, SQLCondition sqlCondition, SQLBoolOperator binOperator) {
+        if (SQLConditionType.Atom == sqlCondition.getSQLConditionType() || sqlCondition.getOperator() == binOperator) {
+            combiner.addAll(sqlCondition.getFilterList());
         }
         else {
-            BoolFilterBuilder subBoolFilter = mergeAtomFilter(SQLCondition.getFilterList(), binOperator);
+            //todo binOperator -> sqlCondition.getOperator()
+            BoolFilterBuilder subBoolFilter = mergeAtomFilter(sqlCondition.getFilterList(), sqlCondition.getOperator());
             combiner.add(new AtomFilter(subBoolFilter));
         }
     }

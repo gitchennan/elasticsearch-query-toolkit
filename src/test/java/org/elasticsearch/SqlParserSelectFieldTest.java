@@ -11,18 +11,18 @@ public class SqlParserSelectFieldTest {
 
     @Test
     public void testParseFromSource() {
-        String sql = "select id,productStatus from index.trx_order trx";
+        String sql = "select id,status from index.order t";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
 
         Assert.assertEquals(parseResult.getIndices().get(0), "index");
-        Assert.assertEquals(parseResult.getType(), "trx_order");
-        Assert.assertEquals(parseResult.getQueryAs(), "trx");
+        Assert.assertEquals(parseResult.getType(), "order");
+        Assert.assertEquals(parseResult.getQueryAs(), "t");
     }
 
     @Test
     public void testParseDefaultLimit() {
-        String sql = "select id,productStatus from index.trx_order";
+        String sql = "select id,status from index.order";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
 
@@ -32,45 +32,44 @@ public class SqlParserSelectFieldTest {
 
     @Test
     public void testParseOriSelectField() {
-        String sql = "select id,productStatus from index.trx_order";
+        String sql = "select id,status from index.order t";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
 
         Assert.assertTrue(parseResult.getQueryFieldList().size() == 2);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
-        Assert.assertEquals(parseResult.getQueryFieldList().get(1), "productStatus");
+        Assert.assertEquals(parseResult.getQueryFieldList().get(1), "status");
     }
 
     @Test
     public void testSelectAllField() {
-        String sql = "select * from index.trx_order order by id asc routing by '801','802','803' limit 1,2";
+        String sql = "select * from index.order order by id asc routing by 'A','B','C' limit 1,2";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
-        System.out.println(parseResult.toString());
         Assert.assertTrue(CollectionUtils.isEmpty(parseResult.getQueryFieldList()));
     }
 
     @Test
     public void testInnerDocField() {
-        String sql = "select id,product.productStatus from index.trx_order";
+        String sql = "select id,product.status from index.order";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
-        Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.productStatus");
+        Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.status");
 
-        sql = "select trx.product.productStatus from index.trx_order trx";
+        sql = "select id,product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
-        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.productStatus");
+        Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.status");
 
-        sql = "select tmp.product.productStatus from index.trx_order trx";
+        sql = "select tmp.product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
-        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "tmp.product.productStatus");
+        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "tmp.product.status");
 
-        sql = "select product.productStatus from index.trx_order trx";
+        sql = "select product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
-        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.productStatus");
+        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.status");
 
-        sql = "select id,product.* from index.trx_order trx";
+        sql = "select id,product.* from index.order t";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
         Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.*");
@@ -78,25 +77,25 @@ public class SqlParserSelectFieldTest {
 
     @Test
     public void testNestedDocField() {
-        String sql = "select id,$product.productStatus from index.trx_order";
+        String sql = "select id,$product.status from index.order";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
-        Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.productStatus");
+        Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.status");
 
-        sql = "select trx.$product.productStatus from index.trx_order trx";
+        sql = "select t.$product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
-        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.productStatus");
+        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.status");
 
-        sql = "select $tmp.product.productStatus from index.trx_order trx";
+        sql = "select $tmp.product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
-        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "tmp.product.productStatus");
+        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "tmp.product.status");
 
-        sql = "select product.productStatus from index.trx_order trx";
+        sql = "select product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
-        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.productStatus");
+        Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.status");
 
-        sql = "select id,product.* from index.trx_order trx";
+        sql = "select id,product.* from index.order t";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
         Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.*");
