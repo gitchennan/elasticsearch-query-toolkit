@@ -77,6 +77,8 @@ public class ElasticSql2DslParser {
         return ImmutableList.of(
                 //解析SQL指定的索引和文档类型
                 new QueryFromParser(parseActionListener),
+                //解析SQL查询指定的match条件
+                new MatchQueryConditionParser(parseActionListener),
                 //解析SQL查询指定的where条件
                 new QueryWhereConditionParser(parseActionListener),
                 //解析SQL排序条件

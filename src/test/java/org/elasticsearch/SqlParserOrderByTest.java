@@ -70,7 +70,9 @@ public class SqlParserOrderByTest {
     @Test
     public void testX() {
 
-        String sql = "select * from index.order where status='SUCCESS' limit 0,100";
+        //String sql = "select * from index.order where status='SUCCESS' match_query id=123 limit 0,100";
+
+        String sql = "select * from index.order query id=123 where status='SUCCESS' limit 0,100";
 
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);

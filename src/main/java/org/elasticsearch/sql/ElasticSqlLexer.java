@@ -47,6 +47,7 @@ public class ElasticSqlLexer extends Lexer {
         map.put("XOR", Token.XOR);
         map.put("COMMENT", Token.COMMENT);
 
+        map.put("QUERY", Token.INDEX);
         map.put("ROUTING", Token.INDEX);
         map.put("NESTED", Token.INDEX);
         map.put("INNER", Token.INNER);

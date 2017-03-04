@@ -32,6 +32,8 @@ public class ElasticSqlParseResult {
     private List<String> queryFieldList;
     /*SQL的where条件*/
     private transient BoolQueryBuilder whereCondition;
+    /*SQL的where条件*/
+    private transient BoolQueryBuilder matchCondition;
     /*SQL的order by条件*/
     private transient List<SortBuilder> orderBy;
 
@@ -95,6 +97,14 @@ public class ElasticSqlParseResult {
         this.whereCondition = whereCondition;
     }
 
+    public BoolQueryBuilder getMatchCondition() {
+        return matchCondition;
+    }
+
+    public void setMatchCondition(BoolQueryBuilder matchCondition) {
+        this.matchCondition = matchCondition;
+    }
+
     public List<SortBuilder> getOrderBy() {
         return orderBy;
     }
@@ -140,10 +150,17 @@ public class ElasticSqlParseResult {
         }
 
         if (whereCondition != null && whereCondition.hasClauses()) {
-            requestBuilder.setQuery(QueryBuilders.boolQuery().filter(whereCondition));
-            //requestBuilder.setQuery(QueryBuilders.filteredQuery(null, whereCondition));
+            if(matchCondition != null && matchCondition.hasClauses()) {
+                requestBuilder.setQuery(QueryBuilders.boolQuery().must(matchCondition).filter(whereCondition));
+            } else {
+                requestBuilder.setQuery(QueryBuilders.boolQuery().filter(whereCondition));
+            }
         } else {
-            requestBuilder.setQuery(QueryBuilders.matchAllQuery());
+            if(matchCondition != null && matchCondition.hasClauses()) {
+                requestBuilder.setQuery(QueryBuilders.boolQuery().must(matchCondition));
+            } else {
+                requestBuilder.setQuery(QueryBuilders.matchAllQuery());
+            }
         }
 
         if (CollectionUtils.isNotEmpty(orderBy)) {

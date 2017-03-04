@@ -50,7 +50,7 @@ public class QueryWhereConditionParser implements QueryParser {
         }
     }
 
-    private SQLCondition parseFilterCondition(ElasticDslContext dslContext, SQLExpr sqlExpr) {
+    protected SQLCondition parseFilterCondition(ElasticDslContext dslContext, SQLExpr sqlExpr) {
         if (sqlExpr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr sqlBinOpExpr = (SQLBinaryOpExpr) sqlExpr;
             SQLBinaryOperator binaryOperator = sqlBinOpExpr.getOperator();
@@ -83,7 +83,7 @@ public class QueryWhereConditionParser implements QueryParser {
         }
     }
 
-    private BoolQueryBuilder mergeAtomFilter(List<AtomFilter> atomFilterList, SQLBoolOperator operator) {
+    protected BoolQueryBuilder mergeAtomFilter(List<AtomFilter> atomFilterList, SQLBoolOperator operator) {
         BoolQueryBuilder subboolQuery = QueryBuilders.boolQuery();
         ListMultimap<String, QueryBuilder> listMultiMap = ArrayListMultimap.create();
 
