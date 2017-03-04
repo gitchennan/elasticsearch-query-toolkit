@@ -19,7 +19,7 @@
     </licenses>
 
     <properties>
-        <elasticsearch.version>1.4.5</elasticsearch.version>
+        <elasticsearch.version>2.4.4</elasticsearch.version>
         <maven.compiler.target>1.8</maven.compiler.target>
         <skip.unit.tests>false</skip.unit.tests>
     </properties>

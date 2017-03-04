@@ -1,24 +1,24 @@
 package org.elasticsearch.dsl.bean;
 
-import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 
 public class AtomFilter {
-    private FilterBuilder filter;
+    private QueryBuilder filter;
     private Boolean isNestedFilter;
-    private String nestedFilterPathContext;
+    private String nestedQueryPathContext;
 
-    public AtomFilter(FilterBuilder filter) {
+    public AtomFilter(QueryBuilder filter) {
         this.filter = filter;
         this.isNestedFilter = Boolean.FALSE;
     }
 
-    public AtomFilter(FilterBuilder filter, String nestedFilterPathContext) {
+    public AtomFilter(QueryBuilder filter, String nestedQueryPathContext) {
         this.filter = filter;
         this.isNestedFilter = Boolean.TRUE;
-        this.nestedFilterPathContext = nestedFilterPathContext;
+        this.nestedQueryPathContext = nestedQueryPathContext;
     }
 
-    public FilterBuilder getFilter() {
+    public QueryBuilder getFilter() {
         return filter;
     }
 
@@ -27,6 +27,6 @@ public class AtomFilter {
     }
 
     public String getNestedFilterPathContext() {
-        return nestedFilterPathContext;
+        return nestedQueryPathContext;
     }
 }

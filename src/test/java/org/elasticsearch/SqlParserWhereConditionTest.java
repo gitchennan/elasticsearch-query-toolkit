@@ -1,11 +1,11 @@
 package org.elasticsearch;
 
+import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.NestedFilterBuilder;
+import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
+import org.elasticsearch.index.query.NestedQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -21,37 +21,37 @@ public class SqlParserWhereConditionTest {
         String sql = "select id,status from index.order t where t.status='SUCCESS'";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
-        FilterBuilder targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.termFilter("status", "SUCCESS"));
+        QueryBuilder targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("status", "SUCCESS"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where t.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.termFilter("price", "123.4"));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("price", "123.4"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.termFilter("product.price", "123.4"));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("product.price", "123.4"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where $product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.termFilter("product.price", "123.4")));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.termQuery("product.price", "123.4")));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where t.$product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.termFilter("product.price", "123.4")));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.termQuery("product.price", "123.4")));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where abc.t.$product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("abc.t.product", FilterBuilders.termFilter("abc.t.product.price", "123.4")));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("abc.t.product", QueryBuilders.termQuery("abc.t.product.price", "123.4")));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where t.product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.termFilter("product.price", "123.4"));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("product.price", "123.4"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
     }
 
@@ -62,17 +62,17 @@ public class SqlParserWhereConditionTest {
 
         String sql = "select id,status from index.order t where t.price > 123.4";
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
-        FilterBuilder targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("price").gt(123.4));
+        QueryBuilder targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("price").gt(123.4));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where product.price > 123.4";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("product.price").gt(123.4));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("product.price").gt(123.4));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where $product.price > 123.4";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("product", FilterBuilders.rangeFilter("product.price").gt(123.4)));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.rangeQuery("product.price").gt(123.4)));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
     }
@@ -84,35 +84,35 @@ public class SqlParserWhereConditionTest {
 
         String sql = "select id,status from index.order t where t.lastUpdateTime > '2017-01-25'";
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
-        FilterBuilder targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("lastUpdateTime").gt("2017-01-25T00:00:00.000+0800"));
+        QueryBuilder targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T00:00:00.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where t.lastUpdateTime > '2017-01-25 13:32'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("lastUpdateTime").gt("2017-01-25T13:32:00.000+0800"));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T13:32:00.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where t.lastUpdateTime > '2017-01-25 13:32:59'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("lastUpdateTime").gt("2017-01-25T13:32:59.000+0800"));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T13:32:59.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
         sql = "select id,status from index.order t where t.lastUpdateTime > date('yyyy/MM/dd hh:mm:ss', '2017/01/25 13:32:59')";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("lastUpdateTime").gt("2017-01-25T13:32:59.000+0800"));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T13:32:59.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
 
         sql = "select id,status from index.order t where t.lastUpdateTime > date('yyyy/MM/dd hh-mm', '2017/01/25 13-32')";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(FilterBuilders.rangeFilter("lastUpdateTime").gt("2017-01-25T13:32:00.000+0800"));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T13:32:00.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
 
 
         sql = "select id,status from index.order t where t.lastUpdateTime between date('yyyy/MM/dd hh-mm', '2017/01/25 13-32') and '2018-10-25'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = FilterBuilders.boolFilter().must(
-                FilterBuilders.rangeFilter("lastUpdateTime")
+        targetFilter = QueryBuilders.boolQuery().must(
+                QueryBuilders.rangeQuery("lastUpdateTime")
                         .gte("2017-01-25T13:32:00.000+0800")
                         .lte("2018-10-25T00:00:00.000+0800")
         );
@@ -125,44 +125,45 @@ public class SqlParserWhereConditionTest {
         String sql = "select * from index where a.$b.c.$d.e > 2";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+        System.out.println(parseResult.toDsl());
     }
 
     @Test
     public void testCreateSearchDsl() {
-        SearchRequestBuilder searchReq = new SearchRequestBuilder(new ElasticMockClient());
+        SearchRequestBuilder searchReq = new SearchRequestBuilder(new ElasticMockClient(), SearchAction.INSTANCE);
 
-        NestedFilterBuilder categoryNameTerm = FilterBuilders.nestedFilter("bookCategories", FilterBuilders.termFilter("bookCategories.categoryName", "ART"));
-        NestedFilterBuilder bookAuthorNestedFilter = FilterBuilders.nestedFilter("bookCategories.books", FilterBuilders.termsFilter("bookCategories.books.bookAuthor", "bibicx"));
-        NestedFilterBuilder bookPublisherCodeNestedFilter = FilterBuilders.nestedFilter("bookCategories.books", FilterBuilders.termsFilter("bookCategories.books.bookPublisher.publisherCode", "PUB_03"));
-        NestedFilterBuilder bookProviderNameNestedFilter = FilterBuilders.nestedFilter("bookCategories.books.bookPublisher.bookProvider", FilterBuilders.termsFilter("bookCategories.books.bookPublisher.bookProvider.providerName", "PVD_01"));
+        NestedQueryBuilder categoryNameTerm = QueryBuilders.nestedQuery("bookCategories", QueryBuilders.termQuery("bookCategories.categoryName", "ART"));
+        NestedQueryBuilder bookAuthorNestedFilter = QueryBuilders.nestedQuery("bookCategories.books", QueryBuilders.termQuery("bookCategories.books.bookAuthor", "bibicx"));
+        NestedQueryBuilder bookPublisherCodeNestedFilter = QueryBuilders.nestedQuery("bookCategories.books", QueryBuilders.termQuery("bookCategories.books.bookPublisher.publisherCode", "PUB_03"));
+        NestedQueryBuilder bookProviderNameNestedFilter = QueryBuilders.nestedQuery("bookCategories.books.bookPublisher.bookProvider", QueryBuilders.termQuery("bookCategories.books.bookPublisher.bookProvider.providerName", "PVD_01"));
 
-        FilterBuilder topFilter = FilterBuilders.boolFilter().must(categoryNameTerm).must(bookAuthorNestedFilter).must(bookPublisherCodeNestedFilter).must(bookProviderNameNestedFilter);
+        QueryBuilder topFilter = QueryBuilders.boolQuery().must(categoryNameTerm).must(bookAuthorNestedFilter).must(bookPublisherCodeNestedFilter).must(bookProviderNameNestedFilter);
 
-        searchReq.setQuery(QueryBuilders.filteredQuery(null, topFilter));
+        searchReq.setQuery(QueryBuilders.boolQuery().filter(topFilter));
     }
 
     @Test
     public void testCreateAggDsl() {
-        SearchRequestBuilder searchReq = new SearchRequestBuilder(new ElasticMockClient());
+        SearchRequestBuilder searchReq = new SearchRequestBuilder(new ElasticMockClient(), SearchAction.INSTANCE);
         searchReq.setSize(0);
 
-        //NestedFilterBuilder categoryNameTerm = FilterBuilders.nestedFilter("bookCategories", FilterBuilders.termFilter("bookCategories.categoryName", "ART"));
+        //NestedQueryBuilder categoryNameTerm = QueryBuilders.nestedQuery("bookCategories", QueryBuilders.termQuery("bookCategories.categoryName", "ART"));
         TermsBuilder categoryNameAgg = AggregationBuilders.terms("agg_bookCategories.categoryName").field("bookCategories.categoryName");
         AbstractAggregationBuilder topAgg = AggregationBuilders.nested("nested_bookCategories.categoryName").path("bookCategories").subAggregation(categoryNameAgg);
 
         AbstractAggregationBuilder rtnAgg = AggregationBuilders.reverseNested("rtn_root").subAggregation(AggregationBuilders.terms("agg_name").field("name"));
         categoryNameAgg.subAggregation(rtnAgg);
 
-        //NestedFilterBuilder bookAuthorNestedFilter = FilterBuilders.nestedFilter("bookCategories.books", FilterBuilders.termsFilter("bookCategories.books.bookAuthor", "bibicx"));
+        //NestedQueryBuilder bookAuthorNestedFilter = QueryBuilders.nestedQuery("bookCategories.books", QueryBuilders.termsFilter("bookCategories.books.bookAuthor", "bibicx"));
         //TermsBuilder bookAuthorAgg = AggregationBuilders.terms("agg_bookCategories.books.bookAuthor").field("bookCategories.books.bookAuthor");
         //AbstractAggregationBuilder secNestedAgg = AggregationBuilders.nested("nested_bookCategories.books.bookAuthor").path("bookCategories.books").subAggregation(bookAuthorAgg);
 
         //categoryNameAgg.subAggregation(secNestedAgg);
 
-        //NestedFilterBuilder bookPublisherCodeNestedFilter = FilterBuilders.nestedFilter("bookCategories.books", FilterBuilders.termsFilter("bookCategories.books.bookPublisher.publisherCode", "PUB_03"));
-        //NestedFilterBuilder bookProviderNameNestedFilter = FilterBuilders.nestedFilter("bookCategories.books.bookPublisher.bookProvider", FilterBuilders.termsFilter("bookCategories.books.bookPublisher.bookProvider.providerName", "PVD_01"));
+        //NestedQueryBuilder bookPublisherCodeNestedFilter = QueryBuilders.nestedQuery("bookCategories.books", QueryBuilders.termsFilter("bookCategories.books.bookPublisher.publisherCode", "PUB_03"));
+        //NestedQueryBuilder bookProviderNameNestedFilter = QueryBuilders.nestedQuery("bookCategories.books.bookPublisher.bookProvider", QueryBuilders.termsFilter("bookCategories.books.bookPublisher.bookProvider.providerName", "PVD_01"));
 
-        //FilterBuilder topFilter = FilterBuilders.boolFilter().must(categoryNameTerm).must(bookAuthorNestedFilter).must(bookPublisherCodeNestedFilter).must(bookProviderNameNestedFilter);
+        //QueryBuilder topFilter = QueryBuilders.boolQuery().must(categoryNameTerm).must(bookAuthorNestedFilter).must(bookPublisherCodeNestedFilter).must(bookProviderNameNestedFilter);
 
         searchReq.addAggregation(topAgg);
 

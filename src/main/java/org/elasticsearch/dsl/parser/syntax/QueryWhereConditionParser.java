@@ -18,9 +18,9 @@ import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.QueryParser;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.dsl.parser.listener.ParseActionListener;
-import org.elasticsearch.index.query.BoolFilterBuilder;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
 import java.util.List;
@@ -45,8 +45,8 @@ public class QueryWhereConditionParser implements QueryParser {
                 operator = SQLBoolOperator.AND;
             }
 
-            BoolFilterBuilder boolFilter = mergeAtomFilter(whereCondition.getFilterList(), operator);
-            dslContext.getParseResult().setWhereCondition(boolFilter);
+            BoolQueryBuilder boolQuery = mergeAtomFilter(whereCondition.getFilterList(), operator);
+            dslContext.getParseResult().setWhereCondition(boolQuery);
         }
     }
 
@@ -62,8 +62,8 @@ public class QueryWhereConditionParser implements QueryParser {
                 SQLCondition rightCondition = parseFilterCondition(dslContext, sqlBinOpExpr.getRight());
 
                 List<AtomFilter> curFilterList = Lists.newArrayList();
-                combineFilterBuilder(curFilterList, leftCondition, operator);
-                combineFilterBuilder(curFilterList, rightCondition, operator);
+                combineQueryBuilder(curFilterList, leftCondition, operator);
+                combineQueryBuilder(curFilterList, rightCondition, operator);
 
 
                 return new SQLCondition(curFilterList, operator);
@@ -72,28 +72,28 @@ public class QueryWhereConditionParser implements QueryParser {
         return new SQLCondition(parseAtomFilterCondition(dslContext, sqlExpr), SQLConditionType.Atom);
     }
 
-    private void combineFilterBuilder(List<AtomFilter> combiner, SQLCondition sqlCondition, SQLBoolOperator binOperator) {
+    private void combineQueryBuilder(List<AtomFilter> combiner, SQLCondition sqlCondition, SQLBoolOperator binOperator) {
         if (SQLConditionType.Atom == sqlCondition.getSQLConditionType() || sqlCondition.getOperator() == binOperator) {
             combiner.addAll(sqlCondition.getFilterList());
         }
         else {
             //todo binOperator -> sqlCondition.getOperator()
-            BoolFilterBuilder boolFilter = mergeAtomFilter(sqlCondition.getFilterList(), sqlCondition.getOperator());
-            combiner.add(new AtomFilter(boolFilter));
+            BoolQueryBuilder boolQuery = mergeAtomFilter(sqlCondition.getFilterList(), sqlCondition.getOperator());
+            combiner.add(new AtomFilter(boolQuery));
         }
     }
 
-    private BoolFilterBuilder mergeAtomFilter(List<AtomFilter> atomFilterList, SQLBoolOperator operator) {
-        BoolFilterBuilder subBoolFilter = FilterBuilders.boolFilter();
-        ListMultimap<String, FilterBuilder> listMultiMap = ArrayListMultimap.create();
+    private BoolQueryBuilder mergeAtomFilter(List<AtomFilter> atomFilterList, SQLBoolOperator operator) {
+        BoolQueryBuilder subboolQuery = QueryBuilders.boolQuery();
+        ListMultimap<String, QueryBuilder> listMultiMap = ArrayListMultimap.create();
 
         for (AtomFilter atomFilter : atomFilterList) {
             if(Boolean.FALSE == atomFilter.getNestedFilter()) {
                 if (operator == SQLBoolOperator.AND) {
-                    subBoolFilter.must(atomFilter.getFilter());
+                    subboolQuery.must(atomFilter.getFilter());
                 }
                 if (operator == SQLBoolOperator.OR) {
-                    subBoolFilter.should(atomFilter.getFilter());
+                    subboolQuery.should(atomFilter.getFilter());
                 }
             }
             else {
@@ -103,37 +103,37 @@ public class QueryWhereConditionParser implements QueryParser {
         }
 
         for (String nestedDocPrefix : listMultiMap.keySet()) {
-            List<FilterBuilder> nestedFilterList = listMultiMap.get(nestedDocPrefix);
+            List<QueryBuilder> nestedQueryList = listMultiMap.get(nestedDocPrefix);
 
-            if(nestedFilterList.size() == 1) {
+            if(nestedQueryList.size() == 1) {
                 if (operator == SQLBoolOperator.AND) {
-                    subBoolFilter.must(FilterBuilders.nestedFilter(nestedDocPrefix, nestedFilterList.get(0)));
+                    subboolQuery.must(QueryBuilders.nestedQuery(nestedDocPrefix, nestedQueryList.get(0)));
                 }
                 if (operator == SQLBoolOperator.OR) {
-                    subBoolFilter.should(FilterBuilders.nestedFilter(nestedDocPrefix, nestedFilterList.get(0)));
+                    subboolQuery.should(QueryBuilders.nestedQuery(nestedDocPrefix, nestedQueryList.get(0)));
                 }
                 continue;
             }
 
-            BoolFilterBuilder boolNestedFilter = FilterBuilders.boolFilter();
-            for (FilterBuilder nestedFilterItem : nestedFilterList) {
+            BoolQueryBuilder boolNestedFilter = QueryBuilders.boolQuery();
+            for (QueryBuilder nestedQueryItem : nestedQueryList) {
                 if (operator == SQLBoolOperator.AND) {
-                    boolNestedFilter.must(nestedFilterItem);
+                    boolNestedFilter.must(nestedQueryItem);
                 }
                 if (operator == SQLBoolOperator.OR) {
-                    boolNestedFilter.should(nestedFilterItem);
+                    boolNestedFilter.should(nestedQueryItem);
                 }
             }
 
             if (operator == SQLBoolOperator.AND) {
-                subBoolFilter.must(FilterBuilders.nestedFilter(nestedDocPrefix, boolNestedFilter));
+                subboolQuery.must(QueryBuilders.nestedQuery(nestedDocPrefix, boolNestedFilter));
             }
             if (operator == SQLBoolOperator.OR) {
-                subBoolFilter.should(FilterBuilders.nestedFilter(nestedDocPrefix, boolNestedFilter));
+                subboolQuery.should(QueryBuilders.nestedQuery(nestedDocPrefix, boolNestedFilter));
             }
 
         }
-        return subBoolFilter;
+        return subboolQuery;
     }
 
     private AtomFilter parseAtomFilterCondition(ElasticDslContext dslContext, SQLExpr sqlExpr) {
@@ -147,14 +147,14 @@ public class QueryWhereConditionParser implements QueryParser {
                     Object targetVal = ElasticSqlArgTransferHelper.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
 
                     SQLConditionOperator operator = SQLBinaryOperator.Equality == binaryOperator ? SQLConditionOperator.Equality : SQLConditionOperator.NotEqual;
-                    return parseCondition(sqlBinOpExpr.getLeft(), operator, new Object[]{targetVal}, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
+                    return parseCondition(sqlBinOpExpr.getLeft(), operator, new Object[]{targetVal}, dslContext.getParseResult().getQueryAs(), new ConditionQueryBuilder() {
                         @Override
-                        public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
-                            FilterBuilder eqFilter = FilterBuilders.termFilter(leftIdfName, rightParamValues[0]);
+                        public QueryBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
+                            QueryBuilder eqFilter = QueryBuilders.termQuery(leftIdfName, rightParamValues[0]);
                             if (SQLConditionOperator.Equality == operator) {
                                 return eqFilter;
                             } else {
-                                return FilterBuilders.notFilter(eqFilter);
+                                return QueryBuilders.boolQuery().mustNot(eqFilter);
                             }
                         }
                     });
@@ -176,20 +176,20 @@ public class QueryWhereConditionParser implements QueryParser {
                     }
 
                     Object targetVal = ElasticSqlArgTransferHelper.transferSqlArg(sqlBinOpExpr.getRight(), dslContext.getSqlArgs());
-                    return parseCondition(sqlBinOpExpr.getLeft(), operator, new Object[]{targetVal}, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
+                    return parseCondition(sqlBinOpExpr.getLeft(), operator, new Object[]{targetVal}, dslContext.getParseResult().getQueryAs(), new ConditionQueryBuilder() {
                         @Override
-                        public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
-                            FilterBuilder rangeFilter = null;
+                        public QueryBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
+                            QueryBuilder rangeQuery = null;
                             if (SQLConditionOperator.GreaterThan == operator) {
-                                rangeFilter = FilterBuilders.rangeFilter(leftIdfName).gt(rightParamValues[0]);
+                                rangeQuery = QueryBuilders.rangeQuery(leftIdfName).gt(rightParamValues[0]);
                             } else if (SQLConditionOperator.GreaterThanOrEqual == operator) {
-                                rangeFilter = FilterBuilders.rangeFilter(leftIdfName).gte(rightParamValues[0]);
+                                rangeQuery = QueryBuilders.rangeQuery(leftIdfName).gte(rightParamValues[0]);
                             } else if (SQLConditionOperator.LessThan == operator) {
-                                rangeFilter = FilterBuilders.rangeFilter(leftIdfName).lt(rightParamValues[0]);
+                                rangeQuery = QueryBuilders.rangeQuery(leftIdfName).lt(rightParamValues[0]);
                             } else if (SQLConditionOperator.LessThanOrEqual == operator) {
-                                rangeFilter = FilterBuilders.rangeFilter(leftIdfName).lte(rightParamValues[0]);
+                                rangeQuery = QueryBuilders.rangeQuery(leftIdfName).lte(rightParamValues[0]);
                             }
-                            return rangeFilter;
+                            return rangeQuery;
                         }
                     });
                 }
@@ -200,12 +200,12 @@ public class QueryWhereConditionParser implements QueryParser {
                         throw new ElasticSql2DslException("[syntax error] Is/IsNot expr right part should be null");
                     }
                     SQLConditionOperator operator = SQLBinaryOperator.Is == binaryOperator ? SQLConditionOperator.IsNull : SQLConditionOperator.IsNotNull;
-                    return parseCondition(sqlBinOpExpr.getLeft(), operator, null, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
+                    return parseCondition(sqlBinOpExpr.getLeft(), operator, null, dslContext.getParseResult().getQueryAs(), new ConditionQueryBuilder() {
                         @Override
-                        public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
-                            FilterBuilder missingFilter = FilterBuilders.missingFilter(leftIdfName);
+                        public QueryBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
+                            QueryBuilder missingFilter = QueryBuilders.missingQuery(leftIdfName);
                             if (SQLConditionOperator.IsNotNull == operator) {
-                                return FilterBuilders.notFilter(missingFilter);
+                                return QueryBuilders.boolQuery().mustNot(missingFilter);
                             }
                             return missingFilter;
                         }
@@ -219,13 +219,13 @@ public class QueryWhereConditionParser implements QueryParser {
             }
             Object[] targetInList = ElasticSqlArgTransferHelper.transferSqlArgs(inListExpr.getTargetList(), dslContext.getSqlArgs());
             SQLConditionOperator operator = inListExpr.isNot() ? SQLConditionOperator.NotIn : SQLConditionOperator.In;
-            return parseCondition(inListExpr.getExpr(), operator, targetInList, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
+            return parseCondition(inListExpr.getExpr(), operator, targetInList, dslContext.getParseResult().getQueryAs(), new ConditionQueryBuilder() {
                 @Override
-                public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
+                public QueryBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
                     if (SQLConditionOperator.NotIn == operator) {
-                        return FilterBuilders.notFilter(FilterBuilders.inFilter(leftIdfName, rightParamValues));
+                        return QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery(leftIdfName, rightParamValues));
                     } else {
-                        return FilterBuilders.inFilter(leftIdfName, rightParamValues);
+                        return QueryBuilders.termsQuery(leftIdfName, rightParamValues);
                     }
                 }
             });
@@ -239,28 +239,28 @@ public class QueryWhereConditionParser implements QueryParser {
                 throw new ElasticSql2DslException("[syntax error] Between Expr only support one of [number,date] arg type");
             }
 
-            return parseCondition(betweenExpr.getTestExpr(), SQLConditionOperator.BetweenAnd, new Object[]{from, to}, dslContext.getParseResult().getQueryAs(), new ConditionFilterBuilder() {
+            return parseCondition(betweenExpr.getTestExpr(), SQLConditionOperator.BetweenAnd, new Object[]{from, to}, dslContext.getParseResult().getQueryAs(), new ConditionQueryBuilder() {
                 @Override
-                public FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
-                    return FilterBuilders.rangeFilter(leftIdfName).gte(rightParamValues[0]).lte(rightParamValues[1]);
+                public QueryBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues) {
+                    return QueryBuilders.rangeQuery(leftIdfName).gte(rightParamValues[0]).lte(rightParamValues[1]);
                 }
             });
         }
         throw new ElasticSql2DslException("[syntax error] Can not support syntax type: " + sqlExpr.toString());
     }
 
-    private AtomFilter parseCondition(SQLExpr leftQueryFieldExpr, SQLConditionOperator operator, Object[] rightParamValues, String queryAs, ConditionFilterBuilder filterBuilder) {
+    private AtomFilter parseCondition(SQLExpr leftQueryFieldExpr, SQLConditionOperator operator, Object[] rightParamValues, String queryAs, ConditionQueryBuilder filterBuilder) {
         QueryFieldParser queryFieldParser = new QueryFieldParser();
         ElasticSqlQueryField queryField = queryFieldParser.parseConditionQueryField(leftQueryFieldExpr, queryAs);
 
         AtomFilter atomFilter = null;
         if (queryField.getQueryFieldType() == QueryFieldType.RootDocField || queryField.getQueryFieldType() == QueryFieldType.InnerDocField) {
-            FilterBuilder originalFilter = filterBuilder.buildFilter(queryField.getQueryFieldFullName(), operator, rightParamValues);
+            QueryBuilder originalFilter = filterBuilder.buildFilter(queryField.getQueryFieldFullName(), operator, rightParamValues);
             atomFilter = new AtomFilter(originalFilter);
         }
 
         if (queryField.getQueryFieldType() == QueryFieldType.NestedDocField) {
-            FilterBuilder originalFilter = filterBuilder.buildFilter(queryField.getQueryFieldFullName(), operator, rightParamValues);
+            QueryBuilder originalFilter = filterBuilder.buildFilter(queryField.getQueryFieldFullName(), operator, rightParamValues);
             atomFilter = new AtomFilter(originalFilter, queryField.getNestedDocContextPath());
         }
 
@@ -286,8 +286,8 @@ public class QueryWhereConditionParser implements QueryParser {
     }
 
     @FunctionalInterface
-    private interface ConditionFilterBuilder {
-        FilterBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues);
+    private interface ConditionQueryBuilder {
+        QueryBuilder buildFilter(String leftIdfName, SQLConditionOperator operator, Object[] rightParamValues);
     }
 
     public boolean isValidBinOperator(SQLBinaryOperator binaryOperator) {
