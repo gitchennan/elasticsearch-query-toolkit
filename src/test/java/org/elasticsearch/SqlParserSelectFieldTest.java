@@ -18,6 +18,7 @@ public class SqlParserSelectFieldTest {
         Assert.assertEquals(parseResult.getIndices().get(0), "index");
         Assert.assertEquals(parseResult.getType(), "order");
         Assert.assertEquals(parseResult.getQueryAs(), "t");
+        System.out.println(parseResult.toDsl());
     }
 
     @Test
@@ -28,6 +29,7 @@ public class SqlParserSelectFieldTest {
 
         Assert.assertEquals(parseResult.getFrom(), 0);
         Assert.assertEquals(parseResult.getSize(), 15);
+        System.out.println(parseResult.toDsl());
     }
 
     @Test
@@ -39,6 +41,7 @@ public class SqlParserSelectFieldTest {
         Assert.assertTrue(parseResult.getQueryFieldList().size() == 2);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
         Assert.assertEquals(parseResult.getQueryFieldList().get(1), "status");
+        System.out.println(parseResult.toDsl());
     }
 
     @Test
@@ -47,6 +50,7 @@ public class SqlParserSelectFieldTest {
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         Assert.assertTrue(CollectionUtils.isEmpty(parseResult.getQueryFieldList()));
+        System.out.println(parseResult.toDsl());
     }
 
     @Test
@@ -56,23 +60,28 @@ public class SqlParserSelectFieldTest {
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
         Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.status");
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.status");
+        System.out.println(parseResult.toDsl());
 
         sql = "select tmp.product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "tmp.product.status");
+        System.out.println(parseResult.toDsl());
 
         sql = "select product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.status");
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,product.* from index.order t";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
         Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.*");
+        System.out.println(parseResult.toDsl());
     }
 
     @Test
@@ -82,22 +91,30 @@ public class SqlParserSelectFieldTest {
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
         Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.status");
+        System.out.println(parseResult.toDsl());
+
 
         sql = "select t.$product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.status");
+        System.out.println(parseResult.toDsl());
 
         sql = "select $tmp.product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "tmp.product.status");
+        System.out.println(parseResult.toDsl());
+
 
         sql = "select product.status from index.order t";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "product.status");
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,product.* from index.order t";
         parseResult = sql2DslParser.parse(sql);
         Assert.assertEquals(parseResult.getQueryFieldList().get(0), "id");
         Assert.assertEquals(parseResult.getQueryFieldList().get(1), "product.*");
+
+        System.out.println(parseResult.toDsl());
     }
 }

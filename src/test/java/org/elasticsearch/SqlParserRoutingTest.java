@@ -13,6 +13,8 @@ public class SqlParserRoutingTest {
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
 
+        System.out.println(parseResult.toDsl());
+
         Assert.assertTrue("A".equalsIgnoreCase(parseResult.getRoutingBy().get(0)));
         Assert.assertTrue("B".equalsIgnoreCase(parseResult.getRoutingBy().get(1)));
 
@@ -20,6 +22,8 @@ public class SqlParserRoutingTest {
         sql2DslParser = new ElasticSql2DslParser();
         parseResult = sql2DslParser.parse(sql);
         Assert.assertTrue("A".equalsIgnoreCase(parseResult.getRoutingBy().get(0)));
+
+        System.out.println(parseResult.toDsl());
     }
 
 
@@ -31,5 +35,7 @@ public class SqlParserRoutingTest {
 
         Assert.assertTrue("A".equalsIgnoreCase(parseResult.getRoutingBy().get(0)));
         Assert.assertTrue("B".equalsIgnoreCase(parseResult.getRoutingBy().get(1)));
+
+        System.out.println(parseResult.toDsl());
     }
 }

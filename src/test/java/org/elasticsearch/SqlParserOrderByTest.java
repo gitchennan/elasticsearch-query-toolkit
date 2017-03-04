@@ -55,9 +55,12 @@ public class SqlParserOrderByTest {
 //        targetSort = SortBuilders.fieldSort("product.price").order(SortOrder.ASC).missing(0);
 //        Assert.assertEquals(parseResult.getOrderBy().get(0).toString(), targetSort.toString());
 //
-//        sql = "select id,status from index.order order by product.price asc, $productTags.sortNo desc";
-//        sql2DslParser = new ElasticSql2DslParser();
-//        parseResult = sql2DslParser.parse(sql);
+        sql = "select id,status from index.order order by product.price asc, $productTags.sortNo desc";
+        sql2DslParser = new ElasticSql2DslParser();
+        parseResult = sql2DslParser.parse(sql);
+
+        System.out.println(parseResult.toDsl());
+
 //        targetSort = SortBuilders.fieldSort("product.price").order(SortOrder.ASC);
 //        Assert.assertEquals(parseResult.getOrderBy().get(0).toString(), targetSort.toString());
 //        targetSort = SortBuilders.fieldSort("productTags.sortNo").order(SortOrder.DESC).setNestedPath("productTags");

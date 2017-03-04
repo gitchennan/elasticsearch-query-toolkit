@@ -23,36 +23,43 @@ public class SqlParserWhereConditionTest {
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         QueryBuilder targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("status", "SUCCESS"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where t.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("price", "123.4"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("product.price", "123.4"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where $product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.termQuery("product.price", "123.4")));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where t.$product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.termQuery("product.price", "123.4")));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where abc.t.$product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("abc.t.product", QueryBuilders.termQuery("abc.t.product.price", "123.4")));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where t.product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("product.price", "123.4"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
     }
 
     @Test
@@ -64,17 +71,19 @@ public class SqlParserWhereConditionTest {
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         QueryBuilder targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("price").gt(123.4));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where product.price > 123.4";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("product.price").gt(123.4));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where $product.price > 123.4";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.rangeQuery("product.price").gt(123.4)));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
-
+        System.out.println(parseResult.toDsl());
     }
 
     @Test
@@ -86,28 +95,31 @@ public class SqlParserWhereConditionTest {
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         QueryBuilder targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T00:00:00.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where t.lastUpdateTime > '2017-01-25 13:32'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T13:32:00.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where t.lastUpdateTime > '2017-01-25 13:32:59'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T13:32:59.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where t.lastUpdateTime > date('yyyy/MM/dd hh:mm:ss', '2017/01/25 13:32:59')";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T13:32:59.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
-
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where t.lastUpdateTime > date('yyyy/MM/dd hh-mm', '2017/01/25 13-32')";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T13:32:00.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
-
+        System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where t.lastUpdateTime between date('yyyy/MM/dd hh-mm', '2017/01/25 13-32') and '2018-10-25'";
         parseResult = sql2DslParser.parse(sql);
@@ -117,6 +129,7 @@ public class SqlParserWhereConditionTest {
                         .lte("2018-10-25T00:00:00.000+0800")
         );
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
+        System.out.println(parseResult.toDsl());
     }
 
 
