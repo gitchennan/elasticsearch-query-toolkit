@@ -72,7 +72,7 @@ public class SqlParserOrderByTest {
         //生成DSL,可用于rest api调用
         String dsl = parseResult.toDsl();
 
-        //toRequest方法接收一个clinet对象参数，用于生成SearchRequestBuilder
+        //toRequest方法接收一个client对象参数，用于生成SearchRequestBuilder
         SearchRequestBuilder searchReq = parseResult.toRequest(esClient);
 
         //执行查询

@@ -56,7 +56,7 @@ SearchRequestBuilder searchReq = parseResult.toRequest(esClient);
 SearchResponse response = searchReq.execute().actionGet();
 ```
 
-使用WHERE条件解析时的回调方法
+向WHERE条件解析时注册监听
 ```java
 String sql = "select * from index.order where status='SUCCESS' and lastUpdateTime > '2017-01-02' order by nvl(pride, 0) asc limit 0, 20";
 
@@ -68,7 +68,7 @@ ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, new ParseActionList
     public void onAtomConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
         if(paramName.getQueryFieldType() == QueryFieldType.RootDocField && "lastUpdateTime".equals(paramName.getQueryFieldFullName())) {
             //这里是解析SQL中原子条件时的回调方法
-            //某些按时间划分的索引,可在此解析出SQL中指定的时间返回,并重新设置需要查询的索引
+            //某些按时间划分的索引,可在此解析出SQL中指定的时间范围,并重新设置需要查询的索引
         }
     }
 });
