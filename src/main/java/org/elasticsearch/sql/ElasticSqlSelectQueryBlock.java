@@ -16,6 +16,16 @@ public class ElasticSqlSelectQueryBlock extends SQLSelectQueryBlock implements S
 
     private Routing routing;
 
+    private SQLExpr matchQuery;
+
+    public void setMatchQuery(SQLExpr matchQuery) {
+        this.matchQuery = matchQuery;
+    }
+
+    public SQLExpr getMatchQuery() {
+        return matchQuery;
+    }
+
     public Limit getLimit() {
         return limit;
     }

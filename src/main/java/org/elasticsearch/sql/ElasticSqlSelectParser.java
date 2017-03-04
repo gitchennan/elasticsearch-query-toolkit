@@ -1,13 +1,17 @@
 package org.elasticsearch.sql;
 
+import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLSetQuantifier;
 import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQuery;
+import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.ast.statement.SQLTableSource;
 import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.SQLExprParser;
 import com.alibaba.druid.sql.parser.SQLSelectParser;
 import com.alibaba.druid.sql.parser.Token;
+
+import java.util.List;
 
 public class ElasticSqlSelectParser extends SQLSelectParser {
 
@@ -53,6 +57,7 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
 
         parseSelectList(queryBlock);
         parseFrom(queryBlock);
+        parseMatchQuery(queryBlock);
         parseWhere(queryBlock);
         parseGroupBy(queryBlock);
         queryBlock.setOrderBy(this.exprParser.parseOrderBy());
@@ -82,5 +87,15 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
         }
 
         return tableSrc;
+    }
+
+    protected void parseMatchQuery(ElasticSqlSelectQueryBlock queryBlock) {
+        if (lexer.token() == Token.INDEX && "QUERY".equalsIgnoreCase(lexer.stringVal())) {
+            lexer.nextToken();
+
+            SQLExpr matchQuery = expr();
+
+            queryBlock.setMatchQuery(matchQuery);
+        }
     }
 }
