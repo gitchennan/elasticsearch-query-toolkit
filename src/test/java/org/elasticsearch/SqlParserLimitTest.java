@@ -15,6 +15,8 @@ public class SqlParserLimitTest {
 
         Assert.assertEquals(parseResult.getFrom(), 5);
         Assert.assertEquals(parseResult.getSize(), 15);
+
+        System.out.println(parseResult.toDsl());
     }
 
     @Test
@@ -25,5 +27,7 @@ public class SqlParserLimitTest {
 
         Assert.assertEquals(parseResult.getFrom(), 5);
         Assert.assertEquals(parseResult.getSize(), 15);
+
+        System.out.println(parseResult.toDsl());
     }
 }

@@ -2,9 +2,10 @@ package org.elasticsearch.dsl.bean;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -30,7 +31,7 @@ public class ElasticSqlParseResult {
     /*查询字段列表*/
     private List<String> queryFieldList;
     /*SQL的where条件*/
-    private transient BoolFilterBuilder whereCondition;
+    private transient BoolQueryBuilder whereCondition;
     /*SQL的order by条件*/
     private transient List<SortBuilder> orderBy;
 
@@ -86,11 +87,11 @@ public class ElasticSqlParseResult {
         this.queryAs = queryAs;
     }
 
-    public BoolFilterBuilder getWhereCondition() {
+    public BoolQueryBuilder getWhereCondition() {
         return whereCondition;
     }
 
-    public void setWhereCondition(BoolFilterBuilder whereCondition) {
+    public void setWhereCondition(BoolQueryBuilder whereCondition) {
         this.whereCondition = whereCondition;
     }
 
@@ -127,7 +128,7 @@ public class ElasticSqlParseResult {
     }
 
     public SearchRequestBuilder toRequest(Client client) {
-        SearchRequestBuilder requestBuilder = new SearchRequestBuilder(client);
+        SearchRequestBuilder requestBuilder = new SearchRequestBuilder(client, SearchAction.INSTANCE);
         requestBuilder.setFrom(from).setSize(size);
 
         if (CollectionUtils.isNotEmpty(indices)) {
@@ -139,7 +140,8 @@ public class ElasticSqlParseResult {
         }
 
         if (whereCondition != null && whereCondition.hasClauses()) {
-            requestBuilder.setQuery(QueryBuilders.filteredQuery(null, whereCondition));
+            requestBuilder.setQuery(QueryBuilders.boolQuery().filter(whereCondition));
+            //requestBuilder.setQuery(QueryBuilders.filteredQuery(null, whereCondition));
         } else {
             requestBuilder.setQuery(QueryBuilders.matchAllQuery());
         }

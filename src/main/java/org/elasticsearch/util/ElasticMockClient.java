@@ -1,6 +1,5 @@
 package org.elasticsearch.util;
 
-import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.*;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -11,15 +10,15 @@ import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequest;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.action.exists.ExistsRequest;
 import org.elasticsearch.action.exists.ExistsRequestBuilder;
 import org.elasticsearch.action.exists.ExistsResponse;
 import org.elasticsearch.action.explain.ExplainRequest;
 import org.elasticsearch.action.explain.ExplainRequestBuilder;
 import org.elasticsearch.action.explain.ExplainResponse;
+import org.elasticsearch.action.fieldstats.FieldStatsRequest;
+import org.elasticsearch.action.fieldstats.FieldStatsRequestBuilder;
+import org.elasticsearch.action.fieldstats.FieldStatsResponse;
 import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
@@ -33,27 +32,22 @@ import org.elasticsearch.action.indexedscripts.get.GetIndexedScriptResponse;
 import org.elasticsearch.action.indexedscripts.put.PutIndexedScriptRequest;
 import org.elasticsearch.action.indexedscripts.put.PutIndexedScriptRequestBuilder;
 import org.elasticsearch.action.indexedscripts.put.PutIndexedScriptResponse;
-import org.elasticsearch.action.mlt.MoreLikeThisRequest;
-import org.elasticsearch.action.mlt.MoreLikeThisRequestBuilder;
 import org.elasticsearch.action.percolate.*;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.action.suggest.SuggestRequest;
 import org.elasticsearch.action.suggest.SuggestRequestBuilder;
 import org.elasticsearch.action.suggest.SuggestResponse;
-import org.elasticsearch.action.termvector.*;
+import org.elasticsearch.action.termvectors.*;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.support.Headers;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.threadpool.ThreadPool;
 
 public class ElasticMockClient implements Client {
-    @Override
-    public ThreadPool threadPool() {
-        return null;
-    }
 
     @Override
     public AdminClient admin() {
@@ -137,21 +131,6 @@ public class ElasticMockClient implements Client {
 
     @Override
     public BulkRequestBuilder prepareBulk() {
-        return null;
-    }
-
-    @Override
-    public ActionFuture<DeleteByQueryResponse> deleteByQuery(DeleteByQueryRequest deleteByQueryRequest) {
-        return null;
-    }
-
-    @Override
-    public void deleteByQuery(DeleteByQueryRequest deleteByQueryRequest, ActionListener<DeleteByQueryResponse> actionListener) {
-
-    }
-
-    @Override
-    public DeleteByQueryRequestBuilder prepareDeleteByQuery(String... strings) {
         return null;
     }
 
@@ -341,37 +320,42 @@ public class ElasticMockClient implements Client {
     }
 
     @Override
-    public ActionFuture<SearchResponse> moreLikeThis(MoreLikeThisRequest moreLikeThisRequest) {
+    public ActionFuture<TermVectorsResponse> termVectors(TermVectorsRequest termVectorsRequest) {
         return null;
     }
 
     @Override
-    public void moreLikeThis(MoreLikeThisRequest moreLikeThisRequest, ActionListener<SearchResponse> actionListener) {
+    public void termVectors(TermVectorsRequest termVectorsRequest, ActionListener<TermVectorsResponse> actionListener) {
 
     }
 
     @Override
-    public MoreLikeThisRequestBuilder prepareMoreLikeThis(String s, String s1, String s2) {
+    public TermVectorsRequestBuilder prepareTermVectors() {
         return null;
     }
 
     @Override
-    public ActionFuture<TermVectorResponse> termVector(TermVectorRequest termVectorRequest) {
+    public TermVectorsRequestBuilder prepareTermVectors(String s, String s1, String s2) {
         return null;
     }
 
     @Override
-    public void termVector(TermVectorRequest termVectorRequest, ActionListener<TermVectorResponse> actionListener) {
-
-    }
-
-    @Override
-    public TermVectorRequestBuilder prepareTermVector() {
+    public ActionFuture<TermVectorsResponse> termVector(TermVectorsRequest termVectorsRequest) {
         return null;
     }
 
     @Override
-    public TermVectorRequestBuilder prepareTermVector(String s, String s1, String s2) {
+    public void termVector(TermVectorsRequest termVectorsRequest, ActionListener<TermVectorsResponse> actionListener) {
+
+    }
+
+    @Override
+    public TermVectorsRequestBuilder prepareTermVector() {
+        return null;
+    }
+
+    @Override
+    public TermVectorsRequestBuilder prepareTermVector(String s, String s1, String s2) {
         return null;
     }
 
@@ -451,27 +435,52 @@ public class ElasticMockClient implements Client {
     }
 
     @Override
+    public FieldStatsRequestBuilder prepareFieldStats() {
+        return null;
+    }
+
+    @Override
+    public ActionFuture<FieldStatsResponse> fieldStats(FieldStatsRequest fieldStatsRequest) {
+        return null;
+    }
+
+    @Override
+    public void fieldStats(FieldStatsRequest fieldStatsRequest, ActionListener<FieldStatsResponse> actionListener) {
+
+    }
+
+    @Override
     public Settings settings() {
         return null;
     }
 
     @Override
-    public <Request extends ActionRequest, Response extends ActionResponse, RequestBuilder extends ActionRequestBuilder<Request, Response, RequestBuilder, Client>> ActionFuture<Response> execute(Action<Request, Response, RequestBuilder, Client> action, Request request) {
+    public Headers headers() {
         return null;
     }
 
     @Override
-    public <Request extends ActionRequest, Response extends ActionResponse, RequestBuilder extends ActionRequestBuilder<Request, Response, RequestBuilder, Client>> void execute(Action<Request, Response, RequestBuilder, Client> action, Request request, ActionListener<Response> actionListener) {
-
-    }
-
-    @Override
-    public <Request extends ActionRequest, Response extends ActionResponse, RequestBuilder extends ActionRequestBuilder<Request, Response, RequestBuilder, Client>> RequestBuilder prepareExecute(Action<Request, Response, RequestBuilder, Client> action) {
+    public <Request extends ActionRequest, Response extends ActionResponse, RequestBuilder extends ActionRequestBuilder<Request, Response, RequestBuilder>> ActionFuture<Response> execute(Action<Request, Response, RequestBuilder> action, Request request) {
         return null;
     }
 
     @Override
-    public void close() throws ElasticsearchException {
+    public <Request extends ActionRequest, Response extends ActionResponse, RequestBuilder extends ActionRequestBuilder<Request, Response, RequestBuilder>> void execute(Action<Request, Response, RequestBuilder> action, Request request, ActionListener<Response> actionListener) {
+
+    }
+
+    @Override
+    public <Request extends ActionRequest, Response extends ActionResponse, RequestBuilder extends ActionRequestBuilder<Request, Response, RequestBuilder>> RequestBuilder prepareExecute(Action<Request, Response, RequestBuilder> action) {
+        return null;
+    }
+
+    @Override
+    public ThreadPool threadPool() {
+        return null;
+    }
+
+    @Override
+    public void close() {
 
     }
 

@@ -7,6 +7,8 @@ elasticsearch-sql2dsl版本
 sql2dsl version | ES version
 -----------|-----------
 master | 1.4.5
+2.x    | 2.4.4
+1.x    | 1.4.5
 
 sql2dsl介绍
 -------------
@@ -134,7 +136,7 @@ select * from index.order where status='SUCCESS' limit 0,100
   "from" : 0,
   "size" : 100,
   "query" : {
-    "filtered" : {
+    "bool" : {
       "filter" : {
         "bool" : {
           "must" : {
@@ -157,7 +159,7 @@ select * from index.order where status='SUCCESS' and totalPrice > 1000 limit 0,1
   "from" : 0,
   "size" : 100,
   "query" : {
-    "filtered" : {
+    "bool" : {
       "filter" : {
         "bool" : {
           "must" : [ {
@@ -189,7 +191,7 @@ select * from index.order where status='SUCCESS' and totalPrice between 1000 and
   "from" : 0,
   "size" : 100,
   "query" : {
-    "filtered" : {
+    "bool" : {
       "filter" : {
         "bool" : {
           "must" : [ {
@@ -226,7 +228,7 @@ select * from index.order where status='SUCCESS' and lastUpdateTime > date('yyyy
   "from" : 0,
   "size" : 100,
   "query" : {
-    "filtered" : {
+    "bool" : {
       "filter" : {
         "bool" : {
           "must" : [ {
@@ -259,7 +261,7 @@ select * from index.order where status='SUCCESS' order by price asc, publishDate
   "from" : 0,
   "size" : 15,
   "query" : {
-    "filtered" : {
+    "bool" : {
       "filter" : {
         "bool" : {
           "must" : {
@@ -292,7 +294,7 @@ select * from index.order where status='SUCCESS' order by nvl(price, 0) asc, pub
   "from" : 0,
   "size" : 15,
   "query" : {
-    "filtered" : {
+    "bool" : {
       "filter" : {
         "bool" : {
           "must" : {
@@ -326,7 +328,7 @@ select * from index.order where status='SUCCESS' order by nvl(product.$providers
   "from" : 0,
   "size" : 15,
   "query" : {
-    "filtered" : {
+    "bool" : {
       "filter" : {
         "bool" : {
           "must" : {
@@ -362,7 +364,7 @@ select * from index.order where seller.name='JD' order by id desc
   "from" : 0,
   "size" : 15,
   "query" : {
-    "filtered" : {
+    "bool" : {
       "filter" : {
         "bool" : {
           "must" : {
@@ -391,7 +393,7 @@ select * from index.order where product.$providers.name in ('JD', 'TB') and prod
   "from" : 0,
   "size" : 15,
   "query" : {
-    "filtered" : {
+    "bool" : {
       "filter" : {
         "bool" : {
           "must" : [ {
@@ -439,7 +441,7 @@ order by id desc
   "from" : 0,
   "size" : 15,
   "query" : {
-    "filtered" : {
+    "bool" : {
       "filter" : {
         "bool" : {
           "must" : [ {
