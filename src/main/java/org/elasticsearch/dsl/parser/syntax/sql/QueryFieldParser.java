@@ -1,4 +1,4 @@
-package org.elasticsearch.dsl.parser.syntax;
+package org.elasticsearch.dsl.parser.syntax.sql;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLAllColumnExpr;

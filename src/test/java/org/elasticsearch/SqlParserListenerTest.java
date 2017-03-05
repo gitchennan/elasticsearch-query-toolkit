@@ -3,7 +3,7 @@ package org.elasticsearch;
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
 import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
 import org.elasticsearch.dsl.enums.SQLConditionOperator;
-import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
+import org.elasticsearch.dsl.parser.syntax.ElasticSql2DslParser;
 import org.elasticsearch.dsl.parser.listener.ParseActionListenerAdapter;
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,7 +15,7 @@ public class SqlParserListenerTest {
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, new ParseActionListenerAdapter() {
             @Override
-            public void onAtomConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
+            public void onExactAtomQueryConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
                 if (SQLConditionOperator.Equality == operator) {
                     Assert.assertEquals("status", paramName.getQueryFieldFullName());
                 }

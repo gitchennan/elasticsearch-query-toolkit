@@ -1,4 +1,4 @@
-package org.elasticsearch.dsl.parser.syntax;
+package org.elasticsearch.dsl.parser.syntax.sql;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
@@ -10,7 +10,6 @@ import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
 import org.elasticsearch.dsl.bean.RangeSegment;
 import org.elasticsearch.dsl.enums.QueryFieldType;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.dsl.parser.QueryParser;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.dsl.parser.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.parser.listener.ParseActionListener;

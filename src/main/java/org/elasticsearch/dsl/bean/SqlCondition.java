@@ -12,20 +12,19 @@ public class SQLCondition {
     //运算符
     private SQLBoolOperator operator;
     //条件集合
-    private List<AtomFilter> filterList;
+    private List<AtomQuery> queryList;
 
-    public SQLCondition(AtomFilter atomFilter) {
-        this.filterList = Lists.newArrayList(atomFilter);
-        this.conditionType = SQLConditionType.Atom;
+    public SQLCondition(AtomQuery atomQuery) {
+        this(atomQuery, SQLConditionType.Atom);
     }
 
-    public SQLCondition(AtomFilter atomFilter, SQLConditionType SQLConditionType) {
-        this.filterList = Lists.newArrayList(atomFilter);
+    public SQLCondition(AtomQuery atomQuery, SQLConditionType SQLConditionType) {
+        this.queryList = Lists.newArrayList(atomQuery);
         this.conditionType = SQLConditionType;
     }
 
-    public SQLCondition(List<AtomFilter> filterList, SQLBoolOperator operator) {
-        this.filterList = filterList;
+    public SQLCondition(List<AtomQuery> queryList, SQLBoolOperator operator) {
+        this.queryList = queryList;
         this.operator = operator;
         this.conditionType = SQLConditionType.Combine;
     }
@@ -39,7 +38,7 @@ public class SQLCondition {
         return operator;
     }
 
-    public List<AtomFilter> getFilterList() {
-        return filterList;
+    public List<AtomQuery> getQueryList() {
+        return queryList;
     }
 }
