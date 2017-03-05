@@ -1,4 +1,4 @@
-package org.elasticsearch.dsl.parser;
+package org.elasticsearch.dsl.parser.syntax;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
@@ -10,7 +10,7 @@ import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.parser.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.listener.ParseActionListenerAdapter;
-import org.elasticsearch.dsl.parser.syntax.*;
+import org.elasticsearch.dsl.parser.syntax.sql.*;
 import org.elasticsearch.sql.ElasticSqlExprParser;
 import org.elasticsearch.sql.ElasticSqlSelectQueryBlock;
 
@@ -78,7 +78,7 @@ public class ElasticSql2DslParser {
                 //解析SQL指定的索引和文档类型
                 new QueryFromParser(parseActionListener),
                 //解析SQL查询指定的match条件
-                new MatchQueryConditionParser(parseActionListener),
+                new QueryMatchConditionParser(parseActionListener),
                 //解析SQL查询指定的where条件
                 new QueryWhereConditionParser(parseActionListener),
                 //解析SQL排序条件

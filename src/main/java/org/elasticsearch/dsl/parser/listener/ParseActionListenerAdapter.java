@@ -11,7 +11,12 @@ public class ParseActionListenerAdapter implements ParseActionListener {
     }
 
     @Override
-    public void onAtomConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
+    public void onExactAtomQueryConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
+
+    }
+
+    @Override
+    public void onMatchAtomQueryConditionParse(ElasticSqlQueryField paramName, Object[] parameters) {
 
     }
 

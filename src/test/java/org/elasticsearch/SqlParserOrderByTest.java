@@ -1,14 +1,7 @@
 package org.elasticsearch;
 
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
-import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
-import org.elasticsearch.search.sort.SortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
-import org.elasticsearch.util.ElasticMockClient;
-import org.junit.Assert;
+import org.elasticsearch.dsl.parser.syntax.ElasticSql2DslParser;
 import org.junit.Test;
 
 

@@ -1,4 +1,4 @@
-package org.elasticsearch.dsl.parser;
+package org.elasticsearch.dsl.parser.syntax.sql;
 
 import org.elasticsearch.dsl.bean.ElasticDslContext;
 
