@@ -44,7 +44,7 @@ public abstract class AbstractAtomExactQueryParser {
 
     private void onExactAtomQueryConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
         try {
-            parseActionListener.onExactAtomQueryConditionParse(paramName, paramValues, operator);
+            parseActionListener.onAtomExactQueryConditionParse(paramName, paramValues, operator);
         }
         catch (Exception ex) {
             try {

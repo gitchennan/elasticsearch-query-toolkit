@@ -15,7 +15,7 @@ public class SqlParserListenerTest {
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, new ParseActionListenerAdapter() {
             @Override
-            public void onExactAtomQueryConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
+            public void onAtomExactQueryConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
                 if (SQLConditionOperator.Equality == operator) {
                     Assert.assertEquals("status", paramName.getQueryFieldFullName());
                 }
