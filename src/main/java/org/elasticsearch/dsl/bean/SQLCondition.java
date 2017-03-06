@@ -6,7 +6,7 @@ import org.elasticsearch.dsl.enums.SQLConditionType;
 
 import java.util.List;
 
-public class SQLConditionx {
+public class SQLCondition {
     //条件类型
     private SQLConditionType conditionType;
     //运算符
@@ -14,16 +14,16 @@ public class SQLConditionx {
     //条件集合
     private List<AtomQuery> queryList;
 
-    public SQLConditionx(AtomQuery atomQuery) {
+    public SQLCondition(AtomQuery atomQuery) {
         this(atomQuery, SQLConditionType.Atom);
     }
 
-    public SQLConditionx(AtomQuery atomQuery, SQLConditionType SQLConditionType) {
+    public SQLCondition(AtomQuery atomQuery, SQLConditionType SQLConditionType) {
         this.queryList = Lists.newArrayList(atomQuery);
         this.conditionType = SQLConditionType;
     }
 
-    public SQLConditionx(List<AtomQuery> queryList, SQLBoolOperator operator) {
+    public SQLCondition(List<AtomQuery> queryList, SQLBoolOperator operator) {
         this.queryList = queryList;
         this.operator = operator;
         this.conditionType = SQLConditionType.Combine;
