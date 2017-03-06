@@ -30,10 +30,10 @@ public abstract class AbstractAtomMethodQueryParser {
     protected abstract AtomQuery parseMethodQueryExpr(SQLMethodInvokeExpr matchQueryExpr, String queryAs, Object[] sqlArgs);
 
 
-    public final AtomQuery parseAtomMethodQuery(SQLMethodInvokeExpr matchQueryExpr, String queryAs, Object[] sqlArgs) {
-        checkQueryMethod(matchQueryExpr, queryAs, sqlArgs);
+    public final AtomQuery parseAtomMethodQuery(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
+        checkQueryMethod(methodQueryExpr, queryAs, sqlArgs);
 
-        return parseMethodQueryExpr(matchQueryExpr, queryAs, sqlArgs);
+        return parseMethodQueryExpr(methodQueryExpr, queryAs, sqlArgs);
     }
 
     protected AtomQuery parseCondition(SQLExpr queryFieldExpr, Object[] parameters, String queryAs, IConditionMethodQueryBuilder queryBuilder) {
@@ -73,12 +73,12 @@ public abstract class AbstractAtomMethodQueryParser {
         }
     }
 
-    protected Map<String, String> buildExtraMatchQueryParamsMap(String strMatchQueryParams) {
+    protected Map<String, String> buildExtraMethodQueryParamsMap(String strMatchQueryParams) {
         try {
             Map<String, String> extraParamMap = Maps.newHashMap();
             for (String paramPair : strMatchQueryParams.split(COMMA)) {
                 String[] paramPairArr = paramPair.split(COLON);
-                extraParamMap.put(paramPairArr[0], paramPairArr[1]);
+                extraParamMap.put(paramPairArr[0].trim(), paramPairArr[1].trim());
             }
             return extraParamMap;
         }

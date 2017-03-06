@@ -24,17 +24,17 @@ public class MatchAtomQueryParser extends AbstractAtomMethodQueryParser {
     }
 
     @Override
-    protected void checkQueryMethod(SQLMethodInvokeExpr matchQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == "match".equalsIgnoreCase(matchQueryExpr.getMethodName())) {
-            throw new ElasticSql2DslException(String.format("[syntax error] Expected match query method name is [match],but get [%s]", matchQueryExpr.getMethodName()));
+    protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
+        if (Boolean.FALSE == "match".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
+            throw new ElasticSql2DslException(String.format("[syntax error] Expected match query method name is [match],but get [%s]", methodQueryExpr.getMethodName()));
         }
 
-        int paramCount = matchQueryExpr.getParameters().size();
+        int paramCount = methodQueryExpr.getParameters().size();
         if (paramCount != 2 && paramCount != 3) {
             throw new ElasticSql2DslException(String.format("[syntax error] There's no %s args method: match", paramCount));
         }
 
-        SQLExpr textExpr = matchQueryExpr.getParameters().get(1);
+        SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
 
         String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false).toString();
         if(StringUtils.isEmpty(text)) {
@@ -44,16 +44,16 @@ public class MatchAtomQueryParser extends AbstractAtomMethodQueryParser {
 
     @Override
     @SuppressWarnings("unchecked")
-    protected AtomQuery parseMethodQueryExpr(SQLMethodInvokeExpr matchQueryExpr, String queryAs, Object[] sqlArgs) {
-        SQLExpr queryField = matchQueryExpr.getParameters().get(0);
-        SQLExpr textExpr = matchQueryExpr.getParameters().get(1);
+    protected AtomQuery parseMethodQueryExpr(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
+        SQLExpr queryField = methodQueryExpr.getParameters().get(0);
+        SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
 
         Map<String, String> extraParamMap = null;
-        if (matchQueryExpr.getParameters().size() == 3) {
-            SQLExpr ExtraParamExpr = matchQueryExpr.getParameters().get(2);
+        if (methodQueryExpr.getParameters().size() == 3) {
+            SQLExpr ExtraParamExpr = methodQueryExpr.getParameters().get(2);
             String extraParam = ElasticSqlArgTransferHelper.transferSqlArg(ExtraParamExpr, sqlArgs, false).toString();
 
-            extraParamMap = buildExtraMatchQueryParamsMap(extraParam);
+            extraParamMap = buildExtraMethodQueryParamsMap(extraParam);
         }
 
         Object text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false);

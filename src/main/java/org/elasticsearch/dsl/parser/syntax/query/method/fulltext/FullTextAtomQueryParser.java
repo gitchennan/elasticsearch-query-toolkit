@@ -19,20 +19,20 @@ public class FullTextAtomQueryParser {
         return matchAtomQueryParser.parseAtomMethodQuery(methodQueryExpr, queryAs, sqlArgs);
     }
 
-    private AbstractAtomMethodQueryParser getQueryParser(SQLMethodInvokeExpr matchQueryExpr) {
-        if (Boolean.TRUE == isMatchQuery(matchQueryExpr)) {
+    private AbstractAtomMethodQueryParser getQueryParser(SQLMethodInvokeExpr methodQueryExpr) {
+        if (Boolean.TRUE == isMatchQuery(methodQueryExpr)) {
             return new MatchAtomQueryParser(parseActionListener);
         }
-        else if (Boolean.TRUE == isMatchPrefixQuery(matchQueryExpr)) {
+        else if (Boolean.TRUE == isMatchPrefixQuery(methodQueryExpr)) {
             return new MultiMatchAtomQueryParser(parseActionListener);
         }
-        else if(Boolean.TRUE == isQueryStringQuery(matchQueryExpr)) {
+        else if(Boolean.TRUE == isQueryStringQuery(methodQueryExpr)) {
             return new QueryStringAtomQueryParser(parseActionListener);
         }
-        else if(Boolean.TRUE == isSimpleQueryStringQuery(matchQueryExpr)) {
+        else if(Boolean.TRUE == isSimpleQueryStringQuery(methodQueryExpr)) {
             return new SimpleQueryStringAtomQueryParser(parseActionListener);
         }
-        throw new ElasticSql2DslException(String.format("[syntax error] Can not support method query expr[%s] condition", matchQueryExpr.getMethodName()));
+        throw new ElasticSql2DslException(String.format("[syntax error] Can not support method query expr[%s] condition", methodQueryExpr.getMethodName()));
     }
 
     private Boolean isMatchQuery(SQLMethodInvokeExpr methodQueryExpr) {

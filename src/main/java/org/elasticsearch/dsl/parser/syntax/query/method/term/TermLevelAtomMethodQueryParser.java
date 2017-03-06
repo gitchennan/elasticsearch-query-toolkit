@@ -21,12 +21,12 @@ public class TermLevelAtomMethodQueryParser {
 
     private AbstractAtomMethodQueryParser getQueryParser(SQLMethodInvokeExpr methodQueryExpr) {
         if (Boolean.TRUE == isPrefixQuery(methodQueryExpr)) {
-            //todo ..
+            return new PrefixAtomQueryParser(parseActionListener);
         }
         throw new ElasticSql2DslException(String.format("[syntax error] Can not support method query expr[%s] condition", methodQueryExpr.getMethodName()));
     }
 
-    private Boolean isPrefixQuery(SQLMethodInvokeExpr matchQueryExpr) {
-        return "prefix".equalsIgnoreCase(matchQueryExpr.getMethodName());
+    private Boolean isPrefixQuery(SQLMethodInvokeExpr methodQueryExpr) {
+        return "prefix".equalsIgnoreCase(methodQueryExpr.getMethodName());
     }
 }
