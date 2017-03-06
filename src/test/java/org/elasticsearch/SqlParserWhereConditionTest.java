@@ -3,7 +3,7 @@ package org.elasticsearch;
 import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
-import org.elasticsearch.dsl.parser.syntax.ElasticSql2DslParser;
+import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
 import org.elasticsearch.index.query.NestedQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;

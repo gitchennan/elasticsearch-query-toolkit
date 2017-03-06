@@ -1,7 +1,7 @@
 package org.elasticsearch;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.elasticsearch.dsl.parser.syntax.ElasticSql2DslParser;
+import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
 import org.junit.Assert;
 import org.junit.Test;
