@@ -181,4 +181,78 @@ public class SqlParserWhereConditionTest {
         searchReq.addAggregation(topAgg);
 
     }
+
+    @Test
+    public void testNotExpr() {
+        String sql = "select *  from index.order where not(c = 0)";
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
+        QueryBuilder f1 = QueryBuilders.boolQuery().must(
+                QueryBuilders.boolQuery().mustNot(
+                        QueryBuilders.boolQuery().must(
+                                QueryBuilders.termQuery("c", 0)
+                        )
+                )
+        );
+        QueryBuilder f2 = parseResult.getWhereCondition();
+        Assert.assertEquals(f1.toString(), f2.toString());
+
+
+        sql = "select *  from index.order where a > 0 and not(c = 0)";
+        sql2DslParser = new ElasticSql2DslParser();
+        parseResult = sql2DslParser.parse(sql);
+
+        f1 = QueryBuilders.boolQuery().must(
+                QueryBuilders.rangeQuery("a").gt(0)).must(
+
+                QueryBuilders.boolQuery().mustNot(
+                        QueryBuilders.boolQuery().must(
+                                QueryBuilders.termQuery("c", 0)
+                        )
+                )
+        );
+        f2 = parseResult.getWhereCondition();
+        Assert.assertEquals(f1.toString(), f2.toString());
+
+
+        sql = "select *  from index.order where a > 0 and not(c = 0 or b = 1)";
+        sql2DslParser = new ElasticSql2DslParser();
+        parseResult = sql2DslParser.parse(sql);
+
+        f1 = QueryBuilders.boolQuery().must(
+                QueryBuilders.rangeQuery("a").gt(0)).must(
+
+                QueryBuilders.boolQuery().mustNot(
+                        QueryBuilders.boolQuery().should(
+                                QueryBuilders.termQuery("c", 0)).should(
+                                QueryBuilders.termQuery("b", 1)
+                        )
+                )
+        );
+        f2 = parseResult.getWhereCondition();
+        Assert.assertEquals(f1.toString(), f2.toString());
+
+
+        sql = "select *  from index.order where a > 0 and not(c = 0 or not(b = 1))";
+        sql2DslParser = new ElasticSql2DslParser();
+        parseResult = sql2DslParser.parse(sql);
+
+        f1 = QueryBuilders.boolQuery().must(
+                QueryBuilders.rangeQuery("a").gt(0)).must(
+
+                QueryBuilders.boolQuery().mustNot(
+                        QueryBuilders.boolQuery().should(
+                                QueryBuilders.termQuery("c", 0)).should(
+                                QueryBuilders.boolQuery().mustNot(
+                                        QueryBuilders.boolQuery().must(
+                                                QueryBuilders.termQuery("b", 1)
+                                        )
+                                )
+                        )
+                )
+        );
+        f2 = parseResult.getWhereCondition();
+        Assert.assertEquals(f1.toString(), f2.toString());
+    }
 }

@@ -14,7 +14,7 @@ import org.elasticsearch.dsl.parser.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.syntax.query.exact.BetweenAndAtomQueryParser;
 import org.elasticsearch.dsl.parser.syntax.query.exact.BinaryAtomQueryParser;
 import org.elasticsearch.dsl.parser.syntax.query.exact.InListAtomQueryParser;
-import org.elasticsearch.dsl.parser.syntax.query.fulltext.FullTextAtomQueryParser;
+import org.elasticsearch.dsl.parser.syntax.query.method.fulltext.FullTextAtomQueryParser;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -57,6 +57,20 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
                 return new SQLCondition(mergedQueryList, operator);
             }
         }
+        else if(conditionExpr instanceof SQLNotExpr) {
+            SQLCondition innerSqlCondition = recursiveParseQueryCondition(((SQLNotExpr) conditionExpr).getExpr(), queryAs, sqlArgs);
+
+            SQLBoolOperator operator = innerSqlCondition.getOperator();
+            if(SQLConditionType.Atom == innerSqlCondition.getSQLConditionType()) {
+                operator = SQLBoolOperator.AND;
+            }
+
+            BoolQueryBuilder boolQuery = mergeAtomQuery(innerSqlCondition.getQueryList(), operator);
+            boolQuery = QueryBuilders.boolQuery().mustNot(boolQuery);
+
+            return new SQLCondition(new AtomQuery(boolQuery), SQLConditionType.Atom);
+        }
+
         return new SQLCondition(parseAtomQueryCondition(conditionExpr, queryAs, sqlArgs), SQLConditionType.Atom);
     }
 

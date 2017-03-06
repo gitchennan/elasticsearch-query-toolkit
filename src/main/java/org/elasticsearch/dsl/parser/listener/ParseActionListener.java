@@ -7,9 +7,9 @@ public interface ParseActionListener {
 
     void onSelectFieldParse(ElasticSqlQueryField field);
 
-    void onExactAtomQueryConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator);
+    void onAtomExactQueryConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator);
 
-    void onMatchAtomQueryConditionParse(ElasticSqlQueryField paramName, Object[] parameters);
+    void onAtomMethodQueryConditionParse(ElasticSqlQueryField paramName, Object[] parameters);
 
     void onFailure(Throwable t);
 }
