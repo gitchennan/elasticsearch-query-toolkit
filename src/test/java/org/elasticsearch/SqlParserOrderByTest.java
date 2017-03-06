@@ -1,7 +1,7 @@
 package org.elasticsearch;
 
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
-import org.elasticsearch.dsl.parser.syntax.ElasticSql2DslParser;
+import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
 import org.junit.Test;
 
 
@@ -23,28 +23,28 @@ public class SqlParserOrderByTest {
 //        targetSort = SortBuilders.fieldSort("lastUpdateTime").order(SortOrder.ASC);
 //        Assert.assertEquals(parseResult.getOrderBy().get(2).toString(), targetSort.toString());
 //
-//        sql = "select id,status from index.order order by nvl(price, 0) asc";
+//        druid = "select id,status from index.order order by nvl(price, 0) asc";
 //        sql2DslParser = new ElasticSql2DslParser();
-//        parseResult = sql2DslParser.parse(sql);
+//        parseResult = sql2DslParser.parse(druid);
 //        targetSort = SortBuilders.fieldSort("price").order(SortOrder.ASC).missing(0);
 //        Assert.assertEquals(parseResult.getOrderBy().get(0).toString(), targetSort.toString());
 //
-//        sql = "select id,status from index.order order by nvl(product.price, 0) asc";
+//        druid = "select id,status from index.order order by nvl(product.price, 0) asc";
 //        sql2DslParser = new ElasticSql2DslParser();
-//        parseResult = sql2DslParser.parse(sql);
+//        parseResult = sql2DslParser.parse(druid);
 //        targetSort = SortBuilders.fieldSort("product.price").order(SortOrder.ASC).missing(0);
 //        Assert.assertEquals(parseResult.getOrderBy().get(0).toString(), targetSort.toString());
 //
-//        sql = "select id,status from index.order order by nvl($product.price, 0) asc";
+//        druid = "select id,status from index.order order by nvl($product.price, 0) asc";
 //        sql2DslParser = new ElasticSql2DslParser();
-//        parseResult = sql2DslParser.parse(sql);
+//        parseResult = sql2DslParser.parse(druid);
 //        targetSort = SortBuilders.fieldSort("product.price").order(SortOrder.ASC).missing(0).setNestedPath("product");
 //        Assert.assertEquals(parseResult.getOrderBy().get(0).toString(), targetSort.toString());
 //
 //
-//        sql = "select id,status from index.order order by nvl(product.price, 0) asc";
+//        druid = "select id,status from index.order order by nvl(product.price, 0) asc";
 //        sql2DslParser = new ElasticSql2DslParser();
-//        parseResult = sql2DslParser.parse(sql);
+//        parseResult = sql2DslParser.parse(druid);
 //        targetSort = SortBuilders.fieldSort("product.price").order(SortOrder.ASC).missing(0);
 //        Assert.assertEquals(parseResult.getOrderBy().get(0).toString(), targetSort.toString());
 //
@@ -63,7 +63,7 @@ public class SqlParserOrderByTest {
     @Test
     public void testX() {
 
-        //String sql = "select * from index.order where status='SUCCESS' match_query id=123 limit 0,100";
+        //String druid = "select * from index.order where status='SUCCESS' match_query id=123 limit 0,100";
 
         String sql = "select * from index.order query id=123 where status='SUCCESS' limit 0,100";
 
