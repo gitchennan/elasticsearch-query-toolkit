@@ -68,7 +68,8 @@ public class QueryStringAtomQueryParser extends AbstractAtomMethodQueryParser {
 
         if (methodQueryExpr.getParameters().size() == 2) {
             extraParamExpr = methodQueryExpr.getParameters().get(1);
-        } else if (methodQueryExpr.getParameters().size() == 3) {
+        }
+        else if (methodQueryExpr.getParameters().size() == 3) {
             queryFields = methodQueryExpr.getParameters().get(1);
             extraParamExpr = methodQueryExpr.getParameters().get(2);
         }
@@ -226,14 +227,14 @@ public class QueryStringAtomQueryParser extends AbstractAtomMethodQueryParser {
         if (extraParamMap.containsKey("fuzziness")) {
             String val = extraParamMap.get("fuzziness");
 
-            if ("ZERO".equalsIgnoreCase(val)) {
+            if ("ZERO".equalsIgnoreCase(val) || "0".equals(val)) {
                 queryStringQuery.fuzziness(Fuzziness.ZERO);
             }
-            if ("ONE".equalsIgnoreCase(val)) {
+            if ("ONE".equalsIgnoreCase(val) || "1".equals(val)) {
                 queryStringQuery.fuzziness(Fuzziness.ONE);
             }
 
-            if ("TWO".equalsIgnoreCase(val)) {
+            if ("TWO".equalsIgnoreCase(val) || "2".equals(val)) {
                 queryStringQuery.fuzziness(Fuzziness.TWO);
             }
 

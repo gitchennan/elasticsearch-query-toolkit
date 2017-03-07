@@ -30,4 +30,18 @@ public class SqlParserLimitTest {
 
         System.out.println(parseResult.toDsl());
     }
+
+    @Test
+    public void testX() {
+        //String sql = "select $bookCategories from index.library t where t.manager.managerName='lcy'";
+        //String sql = "select $bookCategories from index.library where $bookCategories.$books.bookStock > 10";
+        //String sql = "select $bookCategories from index.library where $bookCategories.$books.bookPublisher.$bookProvider.providerName='PVD_01'";
+        //String sql = "select $bookCategories from index.library where $bookCategories.$books.bookStock > 10 and $bookCategories.$books.bookPublisher.$bookProvider.providerName='PVD_01'";
+
+        String sql = "select * from index.library t query prefix(t.manager.managerName, 'lc') where $bookCategories.$books.bookStock > 10";
+
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+        System.out.println(parseResult.toDsl());
+    }
 }

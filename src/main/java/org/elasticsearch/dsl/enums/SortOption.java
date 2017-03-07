@@ -26,13 +26,6 @@ public enum SortOption {
         }
     };
 
-    public abstract String mode();
-
-    @Override
-    public String toString() {
-        return mode();
-    }
-
     public static SortOption get(String mode) {
         SortOption op = null;
         for (SortOption option : SortOption.values()) {
@@ -41,5 +34,12 @@ public enum SortOption {
             }
         }
         return op;
+    }
+
+    public abstract String mode();
+
+    @Override
+    public String toString() {
+        return mode();
     }
 }

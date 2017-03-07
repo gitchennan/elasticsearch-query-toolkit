@@ -5,6 +5,7 @@ import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr;
 import com.alibaba.druid.sql.ast.statement.SQLSelectItem;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
 import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
 import org.elasticsearch.dsl.enums.QueryFieldType;
@@ -14,7 +15,6 @@ import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 
 import java.util.List;
 
@@ -68,7 +68,8 @@ public class QuerySelectFieldListParser implements QueryParser {
                 for (AbstractAggregationBuilder aggItem : aggregations) {
                     lastLevelAggItem.subAggregation(aggItem);
                 }
-            } else {
+            }
+            else {
                 dslContext.getParseResult().setTopStatsAgg();
                 dslContext.getParseResult().setGroupBy(aggregations);
             }
@@ -102,10 +103,12 @@ public class QuerySelectFieldListParser implements QueryParser {
     private void onSelectFieldParse(ElasticSqlQueryField field) {
         try {
             parseActionListener.onSelectFieldParse(field);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             try {
                 parseActionListener.onFailure(ex);
-            } catch (Exception exp) {
+            }
+            catch (Exception exp) {
                 //ignore;
             }
         }

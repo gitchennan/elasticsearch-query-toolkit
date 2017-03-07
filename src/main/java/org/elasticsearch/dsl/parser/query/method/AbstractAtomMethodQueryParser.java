@@ -67,23 +67,34 @@ public abstract class AbstractAtomMethodQueryParser {
         catch (Exception ex) {
             try {
                 parseActionListener.onFailure(ex);
-            } catch (Exception exp) {
+            }
+            catch (Exception exp) {
                 //ignore;
             }
         }
     }
 
     protected Map<String, String> buildExtraMethodQueryParamsMap(String strMatchQueryParams) {
-        try {
-            Map<String, String> extraParamMap = Maps.newHashMap();
-            for (String paramPair : strMatchQueryParams.split(COMMA)) {
-                String[] paramPairArr = paramPair.split(COLON);
+        Map<String, String> extraParamMap = Maps.newHashMap();
+        for (String paramPair : strMatchQueryParams.split(COMMA)) {
+            String[] paramPairArr = paramPair.split(COLON);
+            if (paramPairArr.length == 2) {
                 extraParamMap.put(paramPairArr[0].trim(), paramPairArr[1].trim());
             }
-            return extraParamMap;
+            else {
+                throw new ElasticSql2DslException("[fulltext_query] Fulltext match query method param format error!");
+            }
         }
-        catch (Exception ex) {
-            throw new ElasticSql2DslException("[fulltext_query] Fulltext match query method param format error!");
+        return extraParamMap;
+    }
+
+    protected Boolean isExtraParamsString(String extraParams) {
+        for (String paramPair : extraParams.split(COMMA)) {
+            String[] paramPairArr = paramPair.split(COLON);
+            if (paramPairArr.length != 2) {
+                return Boolean.FALSE;
+            }
         }
+        return Boolean.TRUE;
     }
 }

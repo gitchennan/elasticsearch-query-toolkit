@@ -8,22 +8,21 @@ import com.alibaba.druid.sql.visitor.SQLASTVisitor;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class ElasticSqlSelectQueryBlock extends SQLSelectQueryBlock implements SQLObject {
-    /*DSL: from to*/
+    //DSL: from to
     private Limit limit;
 
     private Routing routing;
 
     private SQLExpr matchQuery;
 
-    public void setMatchQuery(SQLExpr matchQuery) {
-        this.matchQuery = matchQuery;
-    }
-
     public SQLExpr getMatchQuery() {
         return matchQuery;
+    }
+
+    public void setMatchQuery(SQLExpr matchQuery) {
+        this.matchQuery = matchQuery;
     }
 
     public Limit getLimit() {
@@ -48,12 +47,9 @@ public class ElasticSqlSelectQueryBlock extends SQLSelectQueryBlock implements S
         public Routing(List<SQLExpr> routingValues) {
             this.routingValues = routingValues;
             if (CollectionUtils.isNotEmpty(routingValues)) {
-                routingValues.stream().forEach(new Consumer<SQLExpr>() {
-                    @Override
-                    public void accept(SQLExpr sqlExpr) {
-                        sqlExpr.setParent(ElasticSqlSelectQueryBlock.Routing.this);
-                    }
-                });
+                for (SQLExpr sqlExpr : routingValues) {
+                    sqlExpr.setParent(ElasticSqlSelectQueryBlock.Routing.this);
+                }
             }
         }
 

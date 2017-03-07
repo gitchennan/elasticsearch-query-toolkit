@@ -21,6 +21,57 @@ public class QueryFieldParser {
     private static final String NESTED_DOC_IDF = "$";
     private static final String FIELD_REF_PATH_DOT = ".";
 
+    private static List<QueryFieldReferenceNode> parseQueryFieldExprToRefPath(SQLExpr queryFieldExpr) {
+        List<QueryFieldReferenceNode> referencePathNodes = Lists.newLinkedList();
+
+        if (queryFieldExpr instanceof SQLIdentifierExpr) {
+            String idfName = ((SQLIdentifierExpr) queryFieldExpr).getName();
+            QueryFieldReferenceNode referenceNode = buildReferenceNode(idfName);
+            referencePathNodes.add(referenceNode);
+
+            return referencePathNodes;
+        }
+
+        if (queryFieldExpr instanceof SQLPropertyExpr) {
+            List<String> queryFieldTextList = Lists.newLinkedList();
+
+            SQLExpr tmpLoopExpr = queryFieldExpr;
+
+            while ((tmpLoopExpr != null) && (tmpLoopExpr instanceof SQLPropertyExpr)) {
+                queryFieldTextList.add(((SQLPropertyExpr) tmpLoopExpr).getName());
+                tmpLoopExpr = ((SQLPropertyExpr) tmpLoopExpr).getOwner();
+            }
+
+            if (tmpLoopExpr instanceof SQLIdentifierExpr) {
+                queryFieldTextList.add(((SQLIdentifierExpr) tmpLoopExpr).getName());
+            }
+
+            Collections.reverse(queryFieldTextList);
+            for (String strRefNode : queryFieldTextList) {
+                QueryFieldReferenceNode referenceNode = buildReferenceNode(strRefNode);
+                referencePathNodes.add(referenceNode);
+            }
+
+            return referencePathNodes;
+        }
+
+        throw new ElasticSql2DslException(String.format("[syntax error] can not support query field type[%s]", queryFieldExpr.toString()));
+    }
+
+    private static QueryFieldReferenceNode buildReferenceNode(String strRefNodeName) {
+        QueryFieldReferenceNode referenceNode = null;
+        if (strRefNodeName.startsWith(NESTED_DOC_IDF)) {
+            if (NESTED_DOC_IDF.equals(strRefNodeName)) {
+                throw new ElasticSql2DslException("[syntax error] nested doc query field can not be blank");
+            }
+            referenceNode = new QueryFieldReferenceNode(strRefNodeName.substring(1), true);
+        }
+        else {
+            referenceNode = new QueryFieldReferenceNode(strRefNodeName, false);
+        }
+        return referenceNode;
+    }
+
     public ElasticSqlQueryField parseSelectQueryField(SQLExpr queryFieldExpr, String queryAs) {
         if (queryFieldExpr instanceof SQLAllColumnExpr) {
             return ElasticSqlQueryFields.newMatchAllRootDocField();
@@ -114,55 +165,5 @@ public class QueryFieldParser {
         }
 
         return referencePath;
-    }
-
-    private static List<QueryFieldReferenceNode> parseQueryFieldExprToRefPath(SQLExpr queryFieldExpr) {
-        List<QueryFieldReferenceNode> referencePathNodes = Lists.newLinkedList();
-
-        if (queryFieldExpr instanceof SQLIdentifierExpr) {
-            String idfName = ((SQLIdentifierExpr) queryFieldExpr).getName();
-            QueryFieldReferenceNode referenceNode = buildReferenceNode(idfName);
-            referencePathNodes.add(referenceNode);
-
-            return referencePathNodes;
-        }
-
-        if (queryFieldExpr instanceof SQLPropertyExpr) {
-            List<String> queryFieldTextList = Lists.newLinkedList();
-
-            SQLExpr tmpLoopExpr = queryFieldExpr;
-
-            while ((tmpLoopExpr != null) && (tmpLoopExpr instanceof SQLPropertyExpr)) {
-                queryFieldTextList.add(((SQLPropertyExpr) tmpLoopExpr).getName());
-                tmpLoopExpr = ((SQLPropertyExpr) tmpLoopExpr).getOwner();
-            }
-
-            if (tmpLoopExpr instanceof SQLIdentifierExpr) {
-                queryFieldTextList.add(((SQLIdentifierExpr) tmpLoopExpr).getName());
-            }
-
-            Collections.reverse(queryFieldTextList);
-            for (String strRefNode : queryFieldTextList) {
-                QueryFieldReferenceNode referenceNode = buildReferenceNode(strRefNode);
-                referencePathNodes.add(referenceNode);
-            }
-
-            return referencePathNodes;
-        }
-
-        throw new ElasticSql2DslException(String.format("[syntax error] can not support query field type[%s]", queryFieldExpr.toString()));
-    }
-
-    private static QueryFieldReferenceNode buildReferenceNode(String strRefNodeName) {
-        QueryFieldReferenceNode referenceNode = null;
-        if (strRefNodeName.startsWith(NESTED_DOC_IDF)) {
-            if(NESTED_DOC_IDF.equals(strRefNodeName)) {
-                throw new ElasticSql2DslException("[syntax error] nested doc query field can not be blank");
-            }
-            referenceNode = new QueryFieldReferenceNode(strRefNodeName.substring(1), true);
-        } else {
-            referenceNode = new QueryFieldReferenceNode(strRefNodeName, false);
-        }
-        return referenceNode;
     }
 }

@@ -36,11 +36,13 @@ public class ElasticSqlExprParser extends SQLExprParser {
                 limit.setOffset(temp);
                 lexer.nextToken();
                 limit.setRowCount(this.expr());
-            } else if (identifierEquals("OFFSET")) {
+            }
+            else if (identifierEquals("OFFSET")) {
                 limit.setRowCount(temp);
                 lexer.nextToken();
                 limit.setOffset(this.expr());
-            } else {
+            }
+            else {
                 limit.setRowCount(temp);
             }
             return limit;
@@ -50,7 +52,7 @@ public class ElasticSqlExprParser extends SQLExprParser {
     }
 
     public ElasticSqlSelectQueryBlock.Routing parseRoutingBy() {
-        if(lexer.token() == Token.INDEX && "ROUTING".equalsIgnoreCase(lexer.stringVal())) {
+        if (lexer.token() == Token.INDEX && "ROUTING".equalsIgnoreCase(lexer.stringVal())) {
             lexer.nextToken();
 
             accept(Token.BY);
@@ -58,7 +60,7 @@ public class ElasticSqlExprParser extends SQLExprParser {
             List<SQLExpr> routingValues = Lists.newLinkedList();
             routingValues.add(this.expr());
 
-            while(lexer.token() == (Token.COMMA)) {
+            while (lexer.token() == (Token.COMMA)) {
                 lexer.nextToken();
                 routingValues.add(this.expr());
             }

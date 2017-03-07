@@ -37,7 +37,7 @@ public class MatchAtomQueryParser extends AbstractAtomMethodQueryParser {
         SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
 
         String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false).toString();
-        if(StringUtils.isEmpty(text)) {
+        if (StringUtils.isEmpty(text)) {
             throw new ElasticSql2DslException("[syntax error] Search text can not be blank!");
         }
     }
@@ -50,8 +50,8 @@ public class MatchAtomQueryParser extends AbstractAtomMethodQueryParser {
 
         Map<String, String> extraParamMap = null;
         if (methodQueryExpr.getParameters().size() == 3) {
-            SQLExpr ExtraParamExpr = methodQueryExpr.getParameters().get(2);
-            String extraParam = ElasticSqlArgTransferHelper.transferSqlArg(ExtraParamExpr, sqlArgs, false).toString();
+            SQLExpr extraParamExpr = methodQueryExpr.getParameters().get(2);
+            String extraParam = ElasticSqlArgTransferHelper.transferSqlArg(extraParamExpr, sqlArgs, false).toString();
 
             extraParamMap = buildExtraMethodQueryParamsMap(extraParam);
         }

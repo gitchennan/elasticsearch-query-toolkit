@@ -3,15 +3,15 @@ package org.elasticsearch.druid;
 import com.alibaba.druid.sql.parser.Keywords;
 import com.alibaba.druid.sql.parser.Lexer;
 import com.alibaba.druid.sql.parser.Token;
+import com.google.common.collect.Maps;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class ElasticSqlLexer extends Lexer {
     public final static Keywords DEFAULT_ELASTIC_SQL_KEYWORDS;
 
     static {
-        Map<String, Token> map = new HashMap<String, Token>();
+        Map<String, Token> map = Maps.newHashMap();
 
         map.put("SELECT", Token.SELECT);
         map.put("DISTINCT", Token.DISTINCT);

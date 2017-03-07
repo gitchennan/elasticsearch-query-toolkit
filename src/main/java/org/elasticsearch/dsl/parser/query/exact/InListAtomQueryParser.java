@@ -20,8 +20,10 @@ public class InListAtomQueryParser extends AbstractAtomExactQueryParser {
         if (CollectionUtils.isEmpty(inListQueryExpr.getTargetList())) {
             throw new ElasticSql2DslException("[syntax error] In list expr target list cannot be blank");
         }
+
         Object[] targetInList = ElasticSqlArgTransferHelper.transferSqlArgs(inListQueryExpr.getTargetList(), sqlArgs);
         SQLConditionOperator operator = inListQueryExpr.isNot() ? SQLConditionOperator.NotIn : SQLConditionOperator.In;
+
         return parseCondition(inListQueryExpr.getExpr(), operator, targetInList, queryAs, new IConditionExactQueryBuilder() {
             @Override
             public QueryBuilder buildQuery(String queryFieldName, SQLConditionOperator operator, Object[] rightParamValues) {

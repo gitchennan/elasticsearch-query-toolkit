@@ -10,34 +10,34 @@ import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
 import org.elasticsearch.dsl.parser.query.method.IConditionMethodQueryBuilder;
-import org.elasticsearch.index.query.PrefixQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermQueryBuilder;
 
 import java.util.Map;
 
-public class PrefixAtomQueryParser extends AbstractAtomMethodQueryParser {
+public class TermAtomQueryParser extends AbstractAtomMethodQueryParser {
 
-    public PrefixAtomQueryParser(ParseActionListener parseActionListener) {
+    public TermAtomQueryParser(ParseActionListener parseActionListener) {
         super(parseActionListener);
     }
 
     @Override
     protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == "prefix".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
-            throw new ElasticSql2DslException(String.format("[syntax error] Expected prefix query method name is [prefix],but get [%s]", methodQueryExpr.getMethodName()));
+        if (Boolean.FALSE == "term".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
+            throw new ElasticSql2DslException(String.format("[syntax error] Expected term query method name is [term],but get [%s]", methodQueryExpr.getMethodName()));
         }
 
         int paramCount = methodQueryExpr.getParameters().size();
         if (paramCount != 2 && paramCount != 3) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There's no %s args method: match", paramCount));
+            throw new ElasticSql2DslException(String.format("[syntax error] There's no %s args method: term", paramCount));
         }
 
         SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
 
         String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false).toString();
         if (StringUtils.isEmpty(text)) {
-            throw new ElasticSql2DslException("[syntax error] Prefix text can not be blank!");
+            throw new ElasticSql2DslException("[syntax error] Term text can not be blank!");
         }
     }
 
@@ -60,29 +60,25 @@ public class PrefixAtomQueryParser extends AbstractAtomMethodQueryParser {
         return parseCondition(queryField, new Object[]{text, extraParamMap}, queryAs, new IConditionMethodQueryBuilder() {
             @Override
             public QueryBuilder buildQuery(String queryFieldName, Object[] parameters) {
-                PrefixQueryBuilder prefixQuery = QueryBuilders.prefixQuery(queryFieldName, parameters[0].toString());
+                TermQueryBuilder termQuery = QueryBuilders.termQuery(queryFieldName, parameters[0].toString());
 
                 if (parameters.length == 2 && parameters[1] != null) {
                     Map<String, String> tExtraParamMap = (Map<String, String>) parameters[1];
-                    setExtraMatchQueryParam(prefixQuery, tExtraParamMap);
+                    setExtraMatchQueryParam(termQuery, tExtraParamMap);
                 }
 
-                return prefixQuery;
+                return termQuery;
             }
         });
     }
 
-    private void setExtraMatchQueryParam(PrefixQueryBuilder prefixQuery, Map<String, String> extraParamMap) {
+    private void setExtraMatchQueryParam(TermQueryBuilder termQuery, Map<String, String> extraParamMap) {
         if (MapUtils.isEmpty(extraParamMap)) {
             return;
         }
         if (extraParamMap.containsKey("boost")) {
             String val = extraParamMap.get("boost");
-            prefixQuery.boost(Float.valueOf(val));
-        }
-        if (extraParamMap.containsKey("rewrite")) {
-            String val = extraParamMap.get("rewrite");
-            prefixQuery.rewrite(val);
+            termQuery.boost(Float.valueOf(val));
         }
     }
 }

@@ -3,11 +3,11 @@ package org.elasticsearch.dsl.parser.sql;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
+import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
+import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
-import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 
 public class QueryLimitSizeParser implements QueryParser {
 
@@ -26,7 +26,8 @@ public class QueryLimitSizeParser implements QueryParser {
 
             Integer size = parseLimitInteger(queryBlock.getLimit().getRowCount(), dslContext.getSqlArgs());
             dslContext.getParseResult().setSize(size);
-        } else {
+        }
+        else {
             dslContext.getParseResult().setFrom(0);
             dslContext.getParseResult().setSize(15);
         }
@@ -35,14 +36,16 @@ public class QueryLimitSizeParser implements QueryParser {
     public Integer parseLimitInteger(SQLExpr limitInt, Object[] args) {
         if (limitInt instanceof SQLIntegerExpr) {
             return ((SQLIntegerExpr) limitInt).getNumber().intValue();
-        } else if (limitInt instanceof SQLVariantRefExpr) {
+        }
+        else if (limitInt instanceof SQLVariantRefExpr) {
             SQLVariantRefExpr varLimitExpr = (SQLVariantRefExpr) limitInt;
-            final Object targetVal = ElasticSqlArgTransferHelper.transferSqlArg(varLimitExpr, args);
+            Object targetVal = ElasticSqlArgTransferHelper.transferSqlArg(varLimitExpr, args);
             if (!(targetVal instanceof Integer)) {
                 throw new ElasticSql2DslException("[syntax error] Sql limit expr should be a non-negative number");
             }
             return Integer.valueOf(targetVal.toString());
-        } else {
+        }
+        else {
             throw new ElasticSql2DslException("[syntax error] Sql limit expr should be a non-negative number");
         }
     }

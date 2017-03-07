@@ -49,6 +49,12 @@ import org.elasticsearch.threadpool.ThreadPool;
 
 public class ElasticMockClient implements Client {
 
+    private static final Client mockClient = new ElasticMockClient();
+
+    public static Client get() {
+        return mockClient;
+    }
+
     @Override
     public AdminClient admin() {
         return null;
@@ -482,11 +488,5 @@ public class ElasticMockClient implements Client {
     @Override
     public void close() {
 
-    }
-
-    private static final Client mockClient = new ElasticMockClient();
-
-    public static Client get() {
-        return mockClient;
     }
 }

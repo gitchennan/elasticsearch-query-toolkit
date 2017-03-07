@@ -3,11 +3,11 @@ package org.elasticsearch.dsl.bean;
 import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 
 public class ElasticDslContext {
-    /*SQL*/
+    //SQL
     private SQLQueryExpr queryExpr;
-    /*SQL Args*/
+    //SQL Args
     private Object[] sqlArgs;
-    /*Result*/
+    //Result
     private ElasticSqlParseResult parseResult;
 
     public ElasticDslContext(SQLQueryExpr queryExpr, Object[] sqlArgs) {

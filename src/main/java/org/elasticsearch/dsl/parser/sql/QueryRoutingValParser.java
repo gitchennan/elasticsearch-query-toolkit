@@ -5,11 +5,11 @@ import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
+import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
-import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 
 import java.util.List;
 
@@ -29,13 +29,15 @@ public class QueryRoutingValParser implements QueryParser {
             for (SQLExpr routingVal : queryBlock.getRouting().getRoutingValues()) {
                 if (routingVal instanceof SQLCharExpr) {
                     routingStringValues.add(((SQLCharExpr) routingVal).getText());
-                } else if (routingVal instanceof SQLVariantRefExpr) {
+                }
+                else if (routingVal instanceof SQLVariantRefExpr) {
                     Object targetVal = ElasticSqlArgTransferHelper.transferSqlArg(routingVal, dslContext.getSqlArgs());
                     if (!(targetVal instanceof String)) {
                         throw new ElasticSql2DslException("[syntax error] Index routing val must be a string");
                     }
                     routingStringValues.add((String) targetVal);
-                } else {
+                }
+                else {
                     throw new ElasticSql2DslException("[syntax error] Index routing val must be a string");
                 }
             }
