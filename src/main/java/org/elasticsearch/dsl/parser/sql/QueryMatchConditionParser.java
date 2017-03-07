@@ -1,9 +1,9 @@
 package org.elasticsearch.dsl.parser.sql;
 
+import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 
 public class QueryMatchConditionParser extends AbstractQueryConditionParser {
 

@@ -5,14 +5,14 @@ import com.alibaba.druid.sql.ast.expr.SQLQueryExpr;
 import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.Token;
 import com.google.common.collect.ImmutableList;
+import org.elasticsearch.druid.ElasticSqlExprParser;
+import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.listener.ParseActionListenerAdapter;
 import org.elasticsearch.dsl.parser.sql.*;
-import org.elasticsearch.druid.ElasticSqlExprParser;
-import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -39,7 +39,8 @@ public class ElasticSql2DslParser {
             SQLExpr sqlQueryExpr = elasticSqlExprParser.expr();
             check(elasticSqlExprParser, sqlQueryExpr, sqlArgs);
             queryExpr = (SQLQueryExpr) sqlQueryExpr;
-        } catch (ParserException ex) {
+        }
+        catch (ParserException ex) {
             throw new ElasticSql2DslException(ex);
         }
 
@@ -48,7 +49,8 @@ public class ElasticSql2DslParser {
             for (QueryParser sqlParser : buildSqlParserChain(parseActionListener)) {
                 sqlParser.parse(elasticDslContext);
             }
-        } else {
+        }
+        else {
             throw new ElasticSql2DslException("[syntax error] Sql only support Select Sql");
         }
         return elasticDslContext.getParseResult();

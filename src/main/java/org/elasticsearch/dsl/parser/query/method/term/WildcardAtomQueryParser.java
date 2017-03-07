@@ -10,34 +10,34 @@ import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
 import org.elasticsearch.dsl.parser.query.method.IConditionMethodQueryBuilder;
-import org.elasticsearch.index.query.PrefixQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.WildcardQueryBuilder;
 
 import java.util.Map;
 
-public class PrefixAtomQueryParser extends AbstractAtomMethodQueryParser {
+public class WildcardAtomQueryParser extends AbstractAtomMethodQueryParser {
 
-    public PrefixAtomQueryParser(ParseActionListener parseActionListener) {
+    public WildcardAtomQueryParser(ParseActionListener parseActionListener) {
         super(parseActionListener);
     }
 
     @Override
     protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == "prefix".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
-            throw new ElasticSql2DslException(String.format("[syntax error] Expected prefix query method name is [prefix],but get [%s]", methodQueryExpr.getMethodName()));
+        if (Boolean.FALSE == "wildcard".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
+            throw new ElasticSql2DslException(String.format("[syntax error] Expected wildcard query method name is [wildcard],but get [%s]", methodQueryExpr.getMethodName()));
         }
 
         int paramCount = methodQueryExpr.getParameters().size();
         if (paramCount != 2 && paramCount != 3) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There's no %s args method: match", paramCount));
+            throw new ElasticSql2DslException(String.format("[syntax error] There's no %s args method: wildcard", paramCount));
         }
 
         SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
 
         String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false).toString();
         if (StringUtils.isEmpty(text)) {
-            throw new ElasticSql2DslException("[syntax error] Prefix text can not be blank!");
+            throw new ElasticSql2DslException("[syntax error] Wildcard text can not be blank!");
         }
     }
 
@@ -60,29 +60,29 @@ public class PrefixAtomQueryParser extends AbstractAtomMethodQueryParser {
         return parseCondition(queryField, new Object[]{text, extraParamMap}, queryAs, new IConditionMethodQueryBuilder() {
             @Override
             public QueryBuilder buildQuery(String queryFieldName, Object[] parameters) {
-                PrefixQueryBuilder prefixQuery = QueryBuilders.prefixQuery(queryFieldName, parameters[0].toString());
+                WildcardQueryBuilder wildcardQuery = QueryBuilders.wildcardQuery(queryFieldName, parameters[0].toString());
 
                 if (parameters.length == 2 && parameters[1] != null) {
                     Map<String, String> tExtraParamMap = (Map<String, String>) parameters[1];
-                    setExtraMatchQueryParam(prefixQuery, tExtraParamMap);
+                    setExtraMatchQueryParam(wildcardQuery, tExtraParamMap);
                 }
 
-                return prefixQuery;
+                return wildcardQuery;
             }
         });
     }
 
-    private void setExtraMatchQueryParam(PrefixQueryBuilder prefixQuery, Map<String, String> extraParamMap) {
+    private void setExtraMatchQueryParam(WildcardQueryBuilder wildcardQuery, Map<String, String> extraParamMap) {
         if (MapUtils.isEmpty(extraParamMap)) {
             return;
         }
         if (extraParamMap.containsKey("boost")) {
             String val = extraParamMap.get("boost");
-            prefixQuery.boost(Float.valueOf(val));
+            wildcardQuery.boost(Float.valueOf(val));
         }
         if (extraParamMap.containsKey("rewrite")) {
             String val = extraParamMap.get("rewrite");
-            prefixQuery.rewrite(val);
+            wildcardQuery.rewrite(val);
         }
     }
 }

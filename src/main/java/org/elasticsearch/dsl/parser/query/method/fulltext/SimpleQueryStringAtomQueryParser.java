@@ -70,7 +70,8 @@ public class SimpleQueryStringAtomQueryParser extends AbstractAtomMethodQueryPar
 
         if (methodQueryExpr.getParameters().size() == 2) {
             extraParamExpr = methodQueryExpr.getParameters().get(1);
-        } else if (methodQueryExpr.getParameters().size() == 3) {
+        }
+        else if (methodQueryExpr.getParameters().size() == 3) {
             queryFields = methodQueryExpr.getParameters().get(1);
             extraParamExpr = methodQueryExpr.getParameters().get(2);
         }
@@ -93,7 +94,6 @@ public class SimpleQueryStringAtomQueryParser extends AbstractAtomMethodQueryPar
             String extraParam = ElasticSqlArgTransferHelper.transferSqlArg(extraParamExpr, sqlArgs, false).toString();
             extraParamMap = buildExtraMethodQueryParamsMap(extraParam);
         }
-
 
         setExtraMatchQueryParam(simpleQueryString, extraParamMap);
 

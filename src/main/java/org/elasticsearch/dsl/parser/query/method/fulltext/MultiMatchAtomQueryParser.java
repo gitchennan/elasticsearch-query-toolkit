@@ -54,8 +54,8 @@ public class MultiMatchAtomQueryParser extends AbstractAtomMethodQueryParser {
 
         Map<String, String> extraParamMap = null;
         if (methodQueryExpr.getParameters().size() == 3) {
-            SQLExpr ExtraParamExpr = methodQueryExpr.getParameters().get(2);
-            String extraParam = ElasticSqlArgTransferHelper.transferSqlArg(ExtraParamExpr, sqlArgs, false).toString();
+            SQLExpr extraParamExpr = methodQueryExpr.getParameters().get(2);
+            String extraParam = ElasticSqlArgTransferHelper.transferSqlArg(extraParamExpr, sqlArgs, false).toString();
 
             extraParamMap = buildExtraMethodQueryParamsMap(extraParam);
         }
@@ -160,14 +160,14 @@ public class MultiMatchAtomQueryParser extends AbstractAtomMethodQueryParser {
         if (extraParamMap.containsKey("fuzziness")) {
             String val = extraParamMap.get("fuzziness");
 
-            if ("ZERO".equalsIgnoreCase(val)) {
+            if ("ZERO".equalsIgnoreCase(val) || "0".equals(val)) {
                 multiMatchQuery.fuzziness(Fuzziness.ZERO);
             }
-            if ("ONE".equalsIgnoreCase(val)) {
+            if ("ONE".equalsIgnoreCase(val) || "1".equals(val)) {
                 multiMatchQuery.fuzziness(Fuzziness.ONE);
             }
 
-            if ("TWO".equalsIgnoreCase(val)) {
+            if ("TWO".equalsIgnoreCase(val) || "2".equals(val)) {
                 multiMatchQuery.fuzziness(Fuzziness.TWO);
             }
 

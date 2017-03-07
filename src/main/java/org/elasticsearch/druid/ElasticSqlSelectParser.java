@@ -44,10 +44,12 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
         if (lexer.token() == Token.DISTINCT) {
             queryBlock.setDistionOption(SQLSetQuantifier.DISTINCT);
             lexer.nextToken();
-        } else if (lexer.token() == Token.UNIQUE) {
+        }
+        else if (lexer.token() == Token.UNIQUE) {
             queryBlock.setDistionOption(SQLSetQuantifier.UNIQUE);
             lexer.nextToken();
-        } else if (lexer.token() == Token.ALL) {
+        }
+        else if (lexer.token() == Token.ALL) {
             queryBlock.setDistionOption(SQLSetQuantifier.ALL);
             lexer.nextToken();
         }

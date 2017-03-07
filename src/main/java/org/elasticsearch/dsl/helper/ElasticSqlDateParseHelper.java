@@ -15,6 +15,54 @@ public class ElasticSqlDateParseHelper {
     public static final Pattern SQL_DATE_REGEX_PATTERN_02 = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}");
     public static final Pattern SQL_DATE_REGEX_PATTERN_03 = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
 
+    public static boolean isDateMethod(SQLMethodInvokeExpr dateMethodExpr) {
+        return ElasticSqlMethodInvokeHelper.DATE_METHOD.equalsIgnoreCase(dateMethodExpr.getMethodName());
+    }
+
+    public static boolean isDateArgStringValue(String date) {
+        return SqlDateRegex.DATE_REGEX_01.getPattern().matcher(date).matches()
+                || SqlDateRegex.DATE_REGEX_02.getPattern().matcher(date).matches()
+                || SqlDateRegex.DATE_REGEX_03.getPattern().matcher(date).matches();
+    }
+
+    public static boolean isDateArgObjectValue(Object date) {
+        return date instanceof Date;
+    }
+
+    public static String formatDefaultEsDateStringValue(String date) {
+        if (SqlDateRegex.DATE_REGEX_01.getPattern().matcher(date).matches()) {
+            return formatDefaultEsDate(SqlDateRegex.DATE_REGEX_01.getPatternString(), date);
+        }
+        if (SqlDateRegex.DATE_REGEX_02.getPattern().matcher(date).matches()) {
+            return formatDefaultEsDate(SqlDateRegex.DATE_REGEX_02.getPatternString(), date);
+        }
+        if (SqlDateRegex.DATE_REGEX_03.getPattern().matcher(date).matches()) {
+            return formatDefaultEsDate(SqlDateRegex.DATE_REGEX_03.getPatternString(), date);
+        }
+        throw new ElasticSql2DslException("[syntax error] Sql cannot support such date type: " + date);
+    }
+
+    public static String formatDefaultEsDateObjectValue(Object date) {
+        if (date instanceof Date) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
+            return dateFormat.format(date);
+        }
+        throw new ElasticSql2DslException("[syntax error] Sql cannot support such date type: " + date.getClass());
+    }
+
+    public static String formatDefaultEsDate(String patternArg, String timeValArg) {
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat(patternArg);
+            Date date = dateFormat.parse(timeValArg);
+
+            dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
+            return dateFormat.format(date);
+        }
+        catch (ParseException pex) {
+            throw new ElasticSql2DslException("[syntax error] Parse time arg error: " + timeValArg);
+        }
+    }
+
     private enum SqlDateRegex {
         DATE_REGEX_01 {
             @Override
@@ -53,55 +101,5 @@ public class ElasticSqlDateParseHelper {
         abstract Pattern getPattern();
 
         abstract String getPatternString();
-    }
-
-    public static boolean isDateMethod(SQLMethodInvokeExpr dateMethodExpr) {
-        return ElasticSqlMethodInvokeHelper.DATE_METHOD.equalsIgnoreCase(dateMethodExpr.getMethodName());
-    }
-
-    public static boolean isDateArgStringValue(String date) {
-        return SqlDateRegex.DATE_REGEX_01.getPattern().matcher(date).matches()
-                || SqlDateRegex.DATE_REGEX_02.getPattern().matcher(date).matches()
-                || SqlDateRegex.DATE_REGEX_03.getPattern().matcher(date).matches();
-    }
-
-    public static boolean isDateArgObjectValue(Object date) {
-        if (date instanceof Date) {
-            return true;
-        }
-        return false;
-    }
-
-    public static String formatDefaultEsDateStringValue(String date) {
-        if (SqlDateRegex.DATE_REGEX_01.getPattern().matcher(date).matches()) {
-            return formatDefaultEsDate(SqlDateRegex.DATE_REGEX_01.getPatternString(), date);
-        }
-        if (SqlDateRegex.DATE_REGEX_02.getPattern().matcher(date).matches()) {
-            return formatDefaultEsDate(SqlDateRegex.DATE_REGEX_02.getPatternString(), date);
-        }
-        if (SqlDateRegex.DATE_REGEX_03.getPattern().matcher(date).matches()) {
-            return formatDefaultEsDate(SqlDateRegex.DATE_REGEX_03.getPatternString(), date);
-        }
-        throw new ElasticSql2DslException("[syntax error] Sql cannot support such date type: " + date);
-    }
-
-    public static String formatDefaultEsDateObjectValue(Object date) {
-        if (date instanceof Date) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
-            return dateFormat.format(date);
-        }
-        throw new ElasticSql2DslException("[syntax error] Sql cannot support such date type: " + date.getClass());
-    }
-
-    public static String formatDefaultEsDate(String patternArg, String timeValArg) {
-        try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(patternArg);
-            Date date = dateFormat.parse(timeValArg);
-
-            dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
-            return dateFormat.format(date);
-        } catch (ParseException pex) {
-            throw new ElasticSql2DslException("[syntax error] Parse time arg error: " + timeValArg);
-        }
     }
 }

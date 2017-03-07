@@ -11,10 +11,11 @@ import org.elasticsearch.dsl.enums.SQLBoolOperator;
 import org.elasticsearch.dsl.enums.SQLConditionType;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.listener.ParseActionListener;
-import org.elasticsearch.dsl.parser.query.exact.InListAtomQueryParser;
-import org.elasticsearch.dsl.parser.query.method.fulltext.FullTextAtomQueryParser;
 import org.elasticsearch.dsl.parser.query.exact.BetweenAndAtomQueryParser;
 import org.elasticsearch.dsl.parser.query.exact.BinaryAtomQueryParser;
+import org.elasticsearch.dsl.parser.query.exact.InListAtomQueryParser;
+import org.elasticsearch.dsl.parser.query.method.fulltext.FullTextAtomQueryParser;
+import org.elasticsearch.dsl.parser.query.method.term.TermLevelAtomQueryParser;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -57,11 +58,11 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
                 return new SQLCondition(mergedQueryList, operator);
             }
         }
-        else if(conditionExpr instanceof SQLNotExpr) {
+        else if (conditionExpr instanceof SQLNotExpr) {
             SQLCondition innerSqlCondition = recursiveParseQueryCondition(((SQLNotExpr) conditionExpr).getExpr(), queryAs, sqlArgs);
 
             SQLBoolOperator operator = innerSqlCondition.getOperator();
-            if(SQLConditionType.Atom == innerSqlCondition.getSQLConditionType()) {
+            if (SQLConditionType.Atom == innerSqlCondition.getSQLConditionType()) {
                 operator = SQLBoolOperator.AND;
             }
 
@@ -76,8 +77,17 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
 
     private AtomQuery parseAtomQueryCondition(SQLExpr sqlConditionExpr, String queryAs, Object[] sqlArgs) {
         if (sqlConditionExpr instanceof SQLMethodInvokeExpr) {
-            FullTextAtomQueryParser fullTextAtomQueryParser = new FullTextAtomQueryParser(parseActionListener);
-            return fullTextAtomQueryParser.parseFullTextAtomQuery((SQLMethodInvokeExpr) sqlConditionExpr, queryAs, sqlArgs);
+            SQLMethodInvokeExpr methodQueryExpr = (SQLMethodInvokeExpr) sqlConditionExpr;
+
+            if (FullTextAtomQueryParser.isFulltextAtomQuery(methodQueryExpr)) {
+                FullTextAtomQueryParser fullTextAtomQueryParser = new FullTextAtomQueryParser(parseActionListener);
+                return fullTextAtomQueryParser.parseFullTextAtomQuery(methodQueryExpr, queryAs, sqlArgs);
+            }
+
+            if (TermLevelAtomQueryParser.isTermLevelAtomQuery(methodQueryExpr)) {
+                TermLevelAtomQueryParser termLevelAtomQueryParser = new TermLevelAtomQueryParser(parseActionListener);
+                return termLevelAtomQueryParser.parseTermLevelAtomQuery(methodQueryExpr, queryAs, sqlArgs);
+            }
         }
         else if (sqlConditionExpr instanceof SQLBinaryOpExpr) {
             BinaryAtomQueryParser binaryQueryParser = new BinaryAtomQueryParser(parseActionListener);

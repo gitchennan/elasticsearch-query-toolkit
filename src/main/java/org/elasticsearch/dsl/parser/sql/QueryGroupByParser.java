@@ -5,6 +5,7 @@ import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.statement.SQLSelectGroupByClause;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
 import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
 import org.elasticsearch.dsl.bean.RangeSegment;
@@ -21,7 +22,6 @@ import org.elasticsearch.search.aggregations.bucket.range.RangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
-import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -39,6 +39,12 @@ public class QueryGroupByParser implements QueryParser {
 
     public QueryGroupByParser(ParseActionListener parseActionListener) {
         this.parseActionListener = parseActionListener;
+    }
+
+    public static Date getDateRangeVal(String date) {
+        final String dateRangeValPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(dateRangeValPattern);
+        return formatter.parseDateTime(date).toDate();
     }
 
     @Override
@@ -87,7 +93,7 @@ public class QueryGroupByParser implements QueryParser {
         QueryFieldParser queryFieldParser = new QueryFieldParser();
 
         ElasticSqlQueryField queryField = queryFieldParser.parseConditionQueryField(termsFieldExpr, queryAs);
-        if(queryField.getQueryFieldType() != QueryFieldType.RootDocField && queryField.getQueryFieldType() != QueryFieldType.InnerDocField) {
+        if (queryField.getQueryFieldType() != QueryFieldType.RootDocField && queryField.getQueryFieldType() != QueryFieldType.InnerDocField) {
             throw new ElasticSql2DslException(String.format("[syntax error] can not support terms aggregation for field type[%s]", queryField.getQueryFieldType()));
         }
 
@@ -99,7 +105,7 @@ public class QueryGroupByParser implements QueryParser {
         QueryFieldParser queryFieldParser = new QueryFieldParser();
 
         ElasticSqlQueryField queryField = queryFieldParser.parseConditionQueryField(rangeFieldExpr, queryAs);
-        if(queryField.getQueryFieldType() != QueryFieldType.RootDocField && queryField.getQueryFieldType() != QueryFieldType.InnerDocField) {
+        if (queryField.getQueryFieldType() != QueryFieldType.RootDocField && queryField.getQueryFieldType() != QueryFieldType.InnerDocField) {
             throw new ElasticSql2DslException(String.format("[syntax error] can not support range aggregation for field type[%s]", queryField.getQueryFieldType()));
         }
 
@@ -160,11 +166,5 @@ public class QueryGroupByParser implements QueryParser {
     private String formatDateRangeAggKey(Date date) {
         final String dateRangeKeyPattern = "yyyy-MM-dd HH:mm:ss";
         return new DateTime(date).toString(dateRangeKeyPattern);
-    }
-
-    public static Date getDateRangeVal(String date) {
-        final String dateRangeValPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(dateRangeValPattern);
-        return formatter.parseDateTime(date).toDate();
     }
 }

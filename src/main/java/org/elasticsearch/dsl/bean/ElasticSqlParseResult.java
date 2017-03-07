@@ -121,12 +121,12 @@ public class ElasticSqlParseResult {
         this.routingBy = routingBy;
     }
 
-    public void setGroupBy(List<AbstractAggregationBuilder> groupBy) {
-        this.groupBy = groupBy;
-    }
-
     public List<AbstractAggregationBuilder> getGroupBy() {
         return groupBy;
+    }
+
+    public void setGroupBy(List<AbstractAggregationBuilder> groupBy) {
+        this.groupBy = groupBy;
     }
 
     public void setTopStatsAgg() {
@@ -150,15 +150,18 @@ public class ElasticSqlParseResult {
         }
 
         if (whereCondition != null && whereCondition.hasClauses()) {
-            if(matchCondition != null && matchCondition.hasClauses()) {
-                requestBuilder.setQuery(QueryBuilders.boolQuery().must(matchCondition).filter(whereCondition));
-            } else {
+            if (matchCondition != null && matchCondition.hasClauses()) {
+                requestBuilder.setQuery(matchCondition.filter(whereCondition));
+            }
+            else {
                 requestBuilder.setQuery(QueryBuilders.boolQuery().filter(whereCondition));
             }
-        } else {
-            if(matchCondition != null && matchCondition.hasClauses()) {
-                requestBuilder.setQuery(QueryBuilders.boolQuery().must(matchCondition));
-            } else {
+        }
+        else {
+            if (matchCondition != null && matchCondition.hasClauses()) {
+                requestBuilder.setQuery(matchCondition);
+            }
+            else {
                 requestBuilder.setQuery(QueryBuilders.matchAllQuery());
             }
         }
@@ -189,7 +192,8 @@ public class ElasticSqlParseResult {
                     preAgg = (AggregationBuilder) aggItem;
                 }
                 requestBuilder.addAggregation(groupBy.get(0));
-            } else {
+            }
+            else {
                 for (AbstractAggregationBuilder aggItem : groupBy) {
                     requestBuilder.addAggregation(aggItem);
                 }

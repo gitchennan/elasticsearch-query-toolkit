@@ -10,6 +10,7 @@ import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.statement.SQLSelectOrderByItem;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 import org.elasticsearch.dsl.bean.ElasticDslContext;
 import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
 import org.elasticsearch.dsl.enums.QueryFieldType;
@@ -22,7 +23,6 @@ import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
-import org.elasticsearch.druid.ElasticSqlSelectQueryBlock;
 
 import java.util.List;
 
@@ -57,7 +57,8 @@ public class QueryOrderConditionParser implements QueryParser {
                 public FieldSortBuilder buildSort(String queryFieldName) {
                     if (SQLOrderingSpecification.ASC == orderByItem.getType()) {
                         return SortBuilders.fieldSort(queryFieldName).order(SortOrder.ASC);
-                    } else {
+                    }
+                    else {
                         return SortBuilders.fieldSort(queryFieldName).order(SortOrder.DESC);
                     }
                 }
@@ -76,7 +77,8 @@ public class QueryOrderConditionParser implements QueryParser {
 
                         if (SQLOrderingSpecification.ASC == orderByItem.getType()) {
                             fieldSortBuilder = SortBuilders.fieldSort(idfName).order(SortOrder.ASC).missing(valueArg);
-                        } else {
+                        }
+                        else {
                             fieldSortBuilder = SortBuilders.fieldSort(idfName).order(SortOrder.DESC).missing(valueArg);
                         }
 
@@ -99,17 +101,17 @@ public class QueryOrderConditionParser implements QueryParser {
         ElasticSqlQueryField sortField = queryFieldParser.parseConditionQueryField(sqlExpr, queryAs);
 
         SortBuilder rtnSortBuilder = null;
-        if(sortField.getQueryFieldType() == QueryFieldType.RootDocField || sortField.getQueryFieldType() == QueryFieldType.InnerDocField) {
+        if (sortField.getQueryFieldType() == QueryFieldType.RootDocField || sortField.getQueryFieldType() == QueryFieldType.InnerDocField) {
             rtnSortBuilder = sortBuilder.buildSort(sortField.getQueryFieldFullName());
         }
 
-        if(sortField.getQueryFieldType() == QueryFieldType.NestedDocField) {
+        if (sortField.getQueryFieldType() == QueryFieldType.NestedDocField) {
             FieldSortBuilder originalSort = sortBuilder.buildSort(sortField.getQueryFieldFullName());
             originalSort.setNestedPath(sortField.getNestedDocContextPath());
             rtnSortBuilder = originalSort;
         }
 
-        if(rtnSortBuilder == null) {
+        if (rtnSortBuilder == null) {
             throw new ElasticSql2DslException(String.format("[syntax error] sort condition field can not support type[%s]", sortField.getQueryFieldType()));
         }
 

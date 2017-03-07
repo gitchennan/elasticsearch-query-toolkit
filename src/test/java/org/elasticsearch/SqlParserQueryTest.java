@@ -56,4 +56,76 @@ public class SqlParserQueryTest {
 
         System.out.println(parseResult.toDsl());
     }
+
+    @Test
+    public void testParsePrefixQueryExpr() {
+        String sql = "select id,status from index.order t "
+                + "query prefix(t.productName, '皮鞋', 'boost:2.0f')"
+                + "where t.price > 1000 limit 5,15";
+
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
+        System.out.println(parseResult.toDsl());
+    }
+
+    @Test
+    public void testParseTermQueryExpr() {
+        String sql = "select id,status from index.order t "
+                + "query term(t.productName, '皮鞋', 'boost:2.0f')"
+                + "where t.price > 1000 limit 5,15";
+
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
+        System.out.println(parseResult.toDsl());
+    }
+
+    @Test
+    public void testParseTermsQueryExpr() {
+        String sql = "select id,status from index.order t "
+                + "query terms(t.productName, '皮鞋', '凉鞋', 'boost:2.0f')"
+                + "where t.price > 1000 limit 5,15";
+
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
+        System.out.println(parseResult.toDsl());
+    }
+
+    @Test
+    public void testParseWildcardQueryExpr() {
+        String sql = "select id,status from index.order t "
+                + "query wildcard(t.productName, '*鞋', 'boost:2.0f')"
+                + "where t.price > 1000 limit 5,15";
+
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
+        System.out.println(parseResult.toDsl());
+    }
+
+    @Test
+    public void testParseRegexpQueryExpr() {
+        String sql = "select id,status from index.order t "
+                + "query regexp(t.productName, '*鞋', 'boost:2.0f,flags:INTERSECTION|COMPLEMENT')"
+                + "where t.price > 1000 limit 5,15";
+
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
+        System.out.println(parseResult.toDsl());
+    }
+
+    @Test
+    public void testParseFuzzyQueryExpr() {
+        String sql = "select id,status from index.order t "
+                + "query fuzzy(t.productName, '鞋', 'boost:2.0f,fuzziness:2')"
+                + "where t.price > 1000 limit 5,15";
+
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
+        System.out.println(parseResult.toDsl());
+    }
 }
