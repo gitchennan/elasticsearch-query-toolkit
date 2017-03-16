@@ -1,4 +1,4 @@
-package org.elasticsearch;
+package org.elasticsearch.query;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;

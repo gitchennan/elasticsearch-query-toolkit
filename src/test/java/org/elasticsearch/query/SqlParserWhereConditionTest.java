@@ -1,4 +1,4 @@
-package org.elasticsearch;
+package org.elasticsearch.query;
 
 import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;

@@ -1,4 +1,4 @@
-package org.elasticsearch;
+package org.elasticsearch.query;
 
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
 import org.elasticsearch.dsl.bean.ElasticSqlQueryField;
