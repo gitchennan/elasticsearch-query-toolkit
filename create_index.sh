@@ -5,7 +5,7 @@ curl -XPUT 'http://192.168.0.109:9200/index/' -d '{
 	"settings": {
 		"index": {
 			"number_of_shards": 1,
-			"number_of_replicas": 3
+			"number_of_replicas": 0
 		}
 	},
 	"mappings": {

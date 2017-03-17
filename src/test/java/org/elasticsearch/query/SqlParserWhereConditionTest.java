@@ -1,4 +1,4 @@
-package org.elasticsearch;
+package org.elasticsearch.query;
 
 import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -10,7 +10,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
-import org.elasticsearch.util.ElasticMockClient;
+import org.elasticsearch.client.ElasticMockClient;
 import org.junit.Assert;
 import org.junit.Test;
 
