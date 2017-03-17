@@ -11,7 +11,7 @@ import java.util.Enumeration;
 
 public class ElasticDriverTest {
     private static final String driver = "org.elasticsearch.jdbc.ElasticDriver";
-    private static final String url = "jdbc:elastic:192.168.0.1:9200";
+    private static final String url = "jdbc:elastic:192.168.0.109:9300/judge_cluster";
 
 
     @Test
@@ -51,7 +51,7 @@ public class ElasticDriverTest {
         dataSource.setDriverClassName(driver);
 
         Connection connection = dataSource.getConnection();
-        ResultSet resultSet = connection.createStatement().executeQuery("select * from reserve_record.rsr_plan_work_inst where id > 0");
+        ResultSet resultSet = connection.createStatement().executeQuery("select * from index.library where manager.managerName='lcy'");
 
         while(resultSet.next()) {
             String json = resultSet.getString(1);

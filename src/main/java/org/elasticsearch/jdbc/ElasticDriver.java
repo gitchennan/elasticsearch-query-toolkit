@@ -27,8 +27,8 @@ public class ElasticDriver implements Driver {
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        String ipUrl = url.substring(ELASTIC_SEARCH_DRIVER_PREFIX.length() - 1);
-        Client client = TransportClientFactory.createTransportClientFromUrl(url);
+        String ipUrl = url.substring(ELASTIC_SEARCH_DRIVER_PREFIX.length());
+        Client client = TransportClientFactory.createTransportClientFromUrl(ipUrl);
         return new ElasticConnection(url, info, client);
     }
 

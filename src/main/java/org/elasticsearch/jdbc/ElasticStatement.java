@@ -23,6 +23,7 @@ public class ElasticStatement extends AbstractStatement {
     public ResultSet executeQuery(String sql) throws SQLException {
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
         SearchRequestBuilder searchRequest = parseResult.toRequest(connection.getClient());
         SearchResponse searchResponse = searchRequest.execute().actionGet();
 
