@@ -4,6 +4,7 @@ package org.elasticsearch.jdbc;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 
 
@@ -20,7 +21,7 @@ public abstract class AbstractDataSource implements DataSource {
      * Setting a login timeout is not supported.
      */
     public void setLoginTimeout(int timeout) throws SQLException {
-        throw new UnsupportedOperationException("setLoginTimeout");
+        throw new SQLFeatureNotSupportedException("setLoginTimeout");
     }
 
     /**
@@ -34,7 +35,7 @@ public abstract class AbstractDataSource implements DataSource {
      * LogWriter methods are not supported.
      */
     public void setLogWriter(PrintWriter pw) throws SQLException {
-        throw new UnsupportedOperationException("setLogWriter");
+        throw new SQLFeatureNotSupportedException("setLogWriter");
     }
 
 

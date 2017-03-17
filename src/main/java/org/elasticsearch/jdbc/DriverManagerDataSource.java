@@ -7,47 +7,21 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class DriverManagerDataSource extends AbstractDriverBasedDataSource {
-
-    /**
-     * Constructor for bean-style configuration.
-     */
     public DriverManagerDataSource() {
     }
 
-    /**
-     * Create a new DriverManagerDataSource with the given JDBC URL,
-     * not specifying a username or password for JDBC access.
-     *
-     * @param url the JDBC URL to use for accessing the DriverManager
-     * @see java.sql.DriverManager#getConnection(String)
-     */
+
     public DriverManagerDataSource(String url) {
         setUrl(url);
     }
 
-    /**
-     * Create a new DriverManagerDataSource with the given standard
-     * DriverManager parameters.
-     *
-     * @param url      the JDBC URL to use for accessing the DriverManager
-     * @param username the JDBC username to use for accessing the DriverManager
-     * @param password the JDBC password to use for accessing the DriverManager
-     * @see java.sql.DriverManager#getConnection(String, String, String)
-     */
+
     public DriverManagerDataSource(String url, String username, String password) {
         setUrl(url);
         setUsername(username);
         setPassword(password);
     }
 
-    /**
-     * Create a new DriverManagerDataSource with the given JDBC URL,
-     * not specifying a username or password for JDBC access.
-     *
-     * @param url      the JDBC URL to use for accessing the DriverManager
-     * @param conProps JDBC connection properties
-     * @see java.sql.DriverManager#getConnection(String)
-     */
     public DriverManagerDataSource(String url, Properties conProps) {
         setUrl(url);
         setConnectionProperties(conProps);
@@ -60,7 +34,6 @@ public class DriverManagerDataSource extends AbstractDriverBasedDataSource {
         setUsername(username);
         setPassword(password);
     }
-
 
 
     public void setDriverClassName(String driverClassName) {
@@ -101,16 +74,9 @@ public class DriverManagerDataSource extends AbstractDriverBasedDataSource {
     @Override
     protected Connection getConnectionFromDriver(Properties props) throws SQLException {
         String url = getUrl();
-
         return getConnectionFromDriverManager(url, props);
     }
 
-    /**
-     * Getting a Connection using the nasty static from DriverManager is extracted
-     * into a protected method to allow for easy unit testing.
-     *
-     * @see java.sql.DriverManager#getConnection(String, java.util.Properties)
-     */
     protected Connection getConnectionFromDriverManager(String url, Properties props) throws SQLException {
         return DriverManager.getConnection(url, props);
     }

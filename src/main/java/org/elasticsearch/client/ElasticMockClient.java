@@ -1,4 +1,4 @@
-package org.elasticsearch.util;
+package org.elasticsearch.client;
 
 import org.elasticsearch.action.*;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -41,8 +41,6 @@ import org.elasticsearch.action.termvectors.*;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.AdminClient;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.client.support.Headers;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.threadpool.ThreadPool;

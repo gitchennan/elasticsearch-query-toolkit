@@ -1,5 +1,7 @@
 package org.elasticsearch.jdbc;
 
+import org.elasticsearch.client.Client;
+
 import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -8,23 +10,27 @@ public class ElasticDriver implements Driver {
 
     private static final String ELASTIC_SEARCH_DRIVER_PREFIX = "jdbc:elastic:";
 
-    private static final ElasticDriver driverInstance;
+    private Client client;
 
     static {
-        driverInstance = new ElasticDriver();
         try {
-            DriverManager.registerDriver(driverInstance);
+            DriverManager.registerDriver(new ElasticDriver());
         }
         catch (SQLException ex) {
             // ignore
         }
     }
 
-    @Override
-    public Connection connect(String url, Properties info) throws SQLException {
-        return new ElasticConnection();
+    private ElasticDriver() {
+
     }
 
+    @Override
+    public Connection connect(String url, Properties info) throws SQLException {
+        String ipUrl = url.substring(ELASTIC_SEARCH_DRIVER_PREFIX.length() - 1);
+        Client client = TransportClientFactory.createTransportClientFromUrl(url);
+        return new ElasticConnection(url, info, client);
+    }
 
     @Override
     public boolean acceptsURL(String url) throws SQLException {
