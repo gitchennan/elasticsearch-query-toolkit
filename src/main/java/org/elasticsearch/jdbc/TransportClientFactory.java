@@ -24,7 +24,7 @@ public class TransportClientFactory {
 
     public static TransportClient createTransportClientFromUrl(String url) {
         if (clientMap.containsKey(url)) {
-            return clientMap.get(url);
+            clientMap.remove(url);
         }
 
         Settings.Builder settingBuilder = Settings.settingsBuilder();
