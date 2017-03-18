@@ -24,8 +24,13 @@ public class ElasticStatement extends AbstractStatement {
 
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
+        return executeQuery(sql, null);
+    }
+
+    @Override
+    public ResultSet executeQuery(String sql, Object[] args) throws SQLException {
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
-        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, args);
 
         SearchRequestBuilder searchRequest = parseResult.toRequest(connection.getClient());
         SearchResponse searchResponse = SearchActionExecutor.get().syncExecute(searchRequest);

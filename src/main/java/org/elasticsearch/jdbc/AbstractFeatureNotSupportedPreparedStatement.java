@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.sql.*;
+import java.util.Calendar;
 
 public abstract class AbstractFeatureNotSupportedPreparedStatement extends ElasticStatement implements PreparedStatement {
 
@@ -13,13 +14,8 @@ public abstract class AbstractFeatureNotSupportedPreparedStatement extends Elast
     }
 
     @Override
-    public ResultSet executeQuery() throws SQLException {
-        throw new SQLFeatureNotSupportedException("executeQuery");
-    }
-
-    @Override
     public int executeUpdate() throws SQLException {
-        throw new SQLFeatureNotSupportedException("executeQuery");
+        throw new SQLFeatureNotSupportedException("executeUpdate");
     }
 
     @Override
@@ -182,5 +178,25 @@ public abstract class AbstractFeatureNotSupportedPreparedStatement extends Elast
     @Override
     public void setNClob(int parameterIndex, Reader reader) throws SQLException {
         throw new SQLFeatureNotSupportedException("setNClob");
+    }
+
+    @Override
+    public void setNull(int parameterIndex, int sqlType, String typeName) throws SQLException {
+        throw new SQLFeatureNotSupportedException("setNull");
+    }
+
+    @Override
+    public void setDate(int parameterIndex, Date x, Calendar cal) throws SQLException {
+        throw new SQLFeatureNotSupportedException("setDate");
+    }
+
+    @Override
+    public void setTime(int parameterIndex, Time x, Calendar cal) throws SQLException {
+        throw new SQLFeatureNotSupportedException("setTime");
+    }
+
+    @Override
+    public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal) throws SQLException {
+        throw new SQLFeatureNotSupportedException("setTimestamp");
     }
 }

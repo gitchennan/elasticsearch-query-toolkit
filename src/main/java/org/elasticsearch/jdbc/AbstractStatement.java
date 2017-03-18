@@ -1,6 +1,8 @@
 package org.elasticsearch.jdbc;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
 
 public abstract class AbstractStatement extends AbstractFeatureNotSupportedStatement {
 
@@ -121,4 +123,7 @@ public abstract class AbstractStatement extends AbstractFeatureNotSupportedState
     public final boolean isWrapperFor(final Class<?> iface) throws SQLException {
         return iface.isInstance(this);
     }
+
+
+    protected abstract ResultSet executeQuery(String sql, Object[] args) throws SQLException;
 }
