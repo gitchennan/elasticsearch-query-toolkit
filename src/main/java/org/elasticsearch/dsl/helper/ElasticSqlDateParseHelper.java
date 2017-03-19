@@ -2,6 +2,7 @@ package org.elasticsearch.dsl.helper;
 
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
+import org.elasticsearch.utils.Constants;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,7 +10,6 @@ import java.util.Date;
 import java.util.regex.Pattern;
 
 public class ElasticSqlDateParseHelper {
-    public static final String DEFAULT_ES_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
     public static final Pattern SQL_DATE_REGEX_PATTERN_01 = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}");
     public static final Pattern SQL_DATE_REGEX_PATTERN_02 = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}");
@@ -44,7 +44,7 @@ public class ElasticSqlDateParseHelper {
 
     public static String formatDefaultEsDateObjectValue(Object date) {
         if (date instanceof Date) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
+            SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DEFAULT_ES_DATE_FORMAT);
             return dateFormat.format(date);
         }
         throw new ElasticSql2DslException("[syntax error] Sql cannot support such date type: " + date.getClass());
@@ -55,7 +55,7 @@ public class ElasticSqlDateParseHelper {
             SimpleDateFormat dateFormat = new SimpleDateFormat(patternArg);
             Date date = dateFormat.parse(timeValArg);
 
-            dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
+            dateFormat = new SimpleDateFormat(Constants.DEFAULT_ES_DATE_FORMAT);
             return dateFormat.format(date);
         }
         catch (ParseException pex) {

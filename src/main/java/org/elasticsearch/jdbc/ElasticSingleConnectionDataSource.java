@@ -1,6 +1,11 @@
 package org.elasticsearch.jdbc;
 
 
+import org.elasticsearch.client.Client;
+import org.elasticsearch.jdbc.search.TransportClientProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -10,11 +15,17 @@ import java.sql.SQLException;
 
 public class ElasticSingleConnectionDataSource extends DriverManagerDataSource implements SmartDataSource {
 
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSingleConnectionDataSource.class);
+
     private boolean suppressClose;
 
     private Connection target;
 
     private Connection connection;
+
+    private Client client;
+
+    private TransportClientProvider transportClientProvider;
 
     private final Object connectionMonitor = new Object();
 
@@ -27,42 +38,22 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
         this.suppressClose = suppressClose;
     }
 
-    public ElasticSingleConnectionDataSource(Connection target, boolean suppressClose) {
-        this.target = target;
-        this.suppressClose = suppressClose;
-        this.connection = (suppressClose ? getCloseSuppressingConnectionProxy(target) : target);
-    }
-
-    public ElasticSingleConnectionDataSource(String url, String username, String password, boolean suppressClose) {
-        super(url, username, password);
-        this.suppressClose = suppressClose;
+    public void setTransportClientProvider(TransportClientProvider transportClientProvider) {
+        this.transportClientProvider = transportClientProvider;
     }
 
     public void setSuppressClose(boolean suppressClose) {
         this.suppressClose = suppressClose;
     }
 
-
     protected boolean isSuppressClose() {
         return this.suppressClose;
     }
-
-
-    public void setAutoCommit(boolean autoCommit) {
-        // ignore
-    }
-
-
-    protected Boolean getAutoCommitValue() {
-        return Boolean.FALSE;
-    }
-
 
     @Override
     public Connection getConnection() throws SQLException {
         synchronized (this.connectionMonitor) {
             if (this.connection == null) {
-                // No underlying Connection -> lazy init via DriverManager.
                 initConnection();
             }
             if (this.connection.isClosed()) {
@@ -99,9 +90,25 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
         }
         synchronized (this.connectionMonitor) {
             closeConnection();
-            this.target = getConnectionFromDriver(getUsername(), getPassword());
-            prepareConnection(this.target);
-            this.connection = (isSuppressClose() ? getCloseSuppressingConnectionProxy(this.target) : this.target);
+
+            try {
+                if (transportClientProvider != null) {
+                    client = transportClientProvider.createTransportClientFromUrl(getUrl());
+                    if (client == null) {
+                        throw new SQLException(String.format("Failed to build transport client for url[%s]", getUrl()));
+                    }
+                    target = new ElasticConnection(getUrl(), null, client);
+                }
+                else {
+                    this.target = getConnectionFromDriver(getUsername(), getPassword());
+                }
+            }
+            catch (Exception exp) {
+                throw new SQLException(String.format("Failed to create connection for url[%s]", getUrl()), exp);
+            }
+
+            prepareConnection(target);
+            this.connection = (isSuppressClose() ? getCloseSuppressingConnectionProxy(target) : target);
         }
     }
 
@@ -129,7 +136,16 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
                 this.target.close();
             }
             catch (Throwable ex) {
-                //logger.warn("Could not close shared JDBC Connection", ex);
+                logger.warn("Could not close shared JDBC Connection", ex);
+            }
+        }
+
+        if (client != null) {
+            try {
+                client.close();
+            }
+            catch (Exception ex) {
+                logger.error("Could not close elasticsearch client", ex);
             }
         }
     }
@@ -145,6 +161,7 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
 
     private static class CloseSuppressingInvocationHandler implements InvocationHandler {
         private final Connection target;
+
         public CloseSuppressingInvocationHandler(Connection target) {
             this.target = target;
         }
@@ -190,6 +207,14 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
                 throw ex.getTargetException();
             }
         }
+    }
+
+    protected Boolean getAutoCommitValue() {
+        return Boolean.FALSE;
+    }
+
+    public void setAutoCommit(boolean autoCommit) {
+        // ignore
     }
 
 }

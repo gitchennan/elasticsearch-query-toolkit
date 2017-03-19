@@ -10,7 +10,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
-import org.elasticsearch.client.ElasticMockClient;
+import org.elasticsearch.utils.ElasticMockClient;
 import org.junit.Assert;
 import org.junit.Test;
 
