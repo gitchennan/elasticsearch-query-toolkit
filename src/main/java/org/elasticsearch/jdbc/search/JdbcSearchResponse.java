@@ -1,21 +1,17 @@
-package org.elasticsearch.jdbc;
+package org.elasticsearch.jdbc.search;
 
-import com.google.common.collect.Lists;
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.List;
 
-public class SearchResponseGson {
+public class JdbcSearchResponse<T> {
     private int totalShards;
     private int failedShards;
     private int successfulShards;
     private long tookInMillis;
     private long totalHits;
 
-    private List<String> docList;
-
+    private List<T> docList;
 
     public int getTotalShards() {
         return totalShards;
@@ -57,16 +53,11 @@ public class SearchResponseGson {
         this.tookInMillis = tookInMillis;
     }
 
-    public <T> List<T> getDocList(TypeToken<T> typeToken) {
-        List<T> docs = Lists.newLinkedList();
-        Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").create();
-        for (String docJson : docList) {
-            docs.add(gson.fromJson(docJson, typeToken.getType()));
-        }
-        return docs;
+    public List<T> getDocList() {
+        return docList;
     }
 
-    public void setDocList(List<String> docList) {
+    public void setDocList(List<T> docList) {
         this.docList = docList;
     }
 
@@ -76,7 +67,7 @@ public class SearchResponseGson {
     }
 
     public String toJson() {
-        return new Gson().toJson(this, SearchResponseGson.class);
+        return new Gson().toJson(this, JdbcSearchResponse.class);
     }
 
 }

@@ -6,7 +6,7 @@ import java.sql.Types;
 
 public class ElasticResultSetMetaData implements ResultSetMetaData {
 
-    protected static final String JSON_DATA_COL_NAME = "json_result";
+    protected static final String JSON_DATA_COL_NAME = "__INDEX_DOCS__";
 
     @Override
     public int getColumnCount() throws SQLException {

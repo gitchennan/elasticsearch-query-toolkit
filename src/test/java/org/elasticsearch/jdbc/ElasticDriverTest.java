@@ -1,7 +1,9 @@
 package org.elasticsearch.jdbc;
 
 
-import com.google.gson.Gson;
+import org.elasticsearch.jdbc.bean.Product;
+import org.elasticsearch.jdbc.search.JdbcSearchResponse;
+import org.elasticsearch.jdbc.search.JdbcSearchResponseResolver;
 import org.junit.Test;
 
 import java.sql.*;
@@ -14,7 +16,6 @@ public class ElasticDriverTest {
     @Test
     public void testLoadDriver() throws Exception {
         Class.forName(driver);
-
         Enumeration<Driver> driverEnumeration = DriverManager.getDrivers();
 
         while (driverEnumeration.hasMoreElements()) {
@@ -48,12 +49,14 @@ public class ElasticDriverTest {
         dataSource.setDriverClassName(driver);
 
         Connection connection = dataSource.getConnection();
-        ResultSet resultSet = connection.createStatement().executeQuery("select * from index.library where manager.managerName='lcy'");
+        ResultSet resultSet = connection.createStatement().executeQuery("select * from index.product where productCode='IP_6S'");
 
-        while (resultSet.next()) {
-            String json = resultSet.getString(1);
-            SearchResponseGson searchResponse = new Gson().fromJson(json, SearchResponseGson.class);
-            System.out.println(searchResponse.getTookInMillis());
+        String responseGson = resultSet.getString(1);
+        JdbcSearchResponseResolver jdbcSearchResponseResolver = new JdbcSearchResponseResolver(responseGson);
+        JdbcSearchResponse<Product> jdbcSearchResponse = jdbcSearchResponseResolver.resolveSearchResponse(Product.class);
+
+        for (Product product : jdbcSearchResponse.getDocList()) {
+            System.out.println(product.getProductName());
         }
     }
 
@@ -63,18 +66,40 @@ public class ElasticDriverTest {
         dataSource.setDriverClassName(driver);
 
         Connection connection = dataSource.getConnection();
-        String sql = "select * from index.library where (manager.managerName=? or manager.managerName=?)";
+        String sql = "select * from index.product where productCode=? and provider.providerLevel > ?";
 
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, "lcy");
-        preparedStatement.setString(2, "chennan");
+        preparedStatement.setString(1, "AW_OS2");
+        preparedStatement.setInt(2, 0);
 
         ResultSet resultSet = preparedStatement.executeQuery();
 
-        while (resultSet.next()) {
-            String json = resultSet.getString(1);
-            SearchResponseGson searchResponse = new Gson().fromJson(json, SearchResponseGson.class);
-            System.out.println(searchResponse.getTookInMillis());
+        String responseGson = resultSet.getString(1);
+        JdbcSearchResponseResolver jdbcSearchResponseResolver = new JdbcSearchResponseResolver(responseGson);
+        JdbcSearchResponse<Product> jdbcSearchResponse = jdbcSearchResponseResolver.resolveSearchResponse(Product.class);
+
+        for (Product product : jdbcSearchResponse.getDocList()) {
+            System.out.println(product.getProductName());
+        }
+    }
+
+    @Test
+    public void testPrefixQuery2() throws Exception {
+        ElasticSingleConnectionDataSource dataSource = new ElasticSingleConnectionDataSource(url, true);
+        dataSource.setDriverClassName(driver);
+
+        Connection connection = dataSource.getConnection();
+        String sql = "select * from index.product where prefix(productName, 'iphone') and $buyers.productPrice > 1000";
+
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        String responseGson = resultSet.getString(1);
+        JdbcSearchResponseResolver jdbcSearchResponseResolver = new JdbcSearchResponseResolver(responseGson);
+        JdbcSearchResponse<Product> jdbcSearchResponse = jdbcSearchResponseResolver.resolveSearchResponse(Product.class);
+
+        for (Product product : jdbcSearchResponse.getDocList()) {
+            System.out.println(product.getProductName());
         }
     }
 }

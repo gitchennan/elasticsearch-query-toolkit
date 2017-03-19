@@ -1,21 +1,21 @@
-package org.elasticsearch.jdbc;
+package org.elasticsearch.jdbc.search;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class SearchActionExecutor {
+public class JdbcSearchActionExecutor {
 
-    private static final Logger logger = LogManager.getLogger(SearchActionExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(JdbcSearchActionExecutor.class);
 
-    private static final SearchActionExecutor searchActionExecutor = new SearchActionExecutor();
+    private static final JdbcSearchActionExecutor JDBC_SEARCH_ACTION_EXECUTOR = new JdbcSearchActionExecutor();
 
-    private SearchActionExecutor() {
+    private JdbcSearchActionExecutor() {
 
     }
 
-    public static SearchActionExecutor get() {
-        return searchActionExecutor;
+    public static JdbcSearchActionExecutor get() {
+        return JDBC_SEARCH_ACTION_EXECUTOR;
     }
 
     public <Request extends ActionRequest, Response extends ActionResponse, RequestBuilder extends ActionRequestBuilder<Request, Response, RequestBuilder>> Response syncExecuteWithException(RequestBuilder requestBuilder) {
@@ -44,14 +44,13 @@ public class SearchActionExecutor {
         return new ActionListener<Response>() {
             @Override
             public void onResponse(Response response) {
-                System.out.println((String.format("[Search_Request] %s", requestBuilder.toString())));
-                //logger.debug(String.format("[Search_Request] %s", requestBuilder.toString()));
-                //logger.debug(String.format("[Search_Response] %s", response.toString()));
+                logger.debug(String.format("[Search_Request] %s", requestBuilder.toString()));
+                logger.debug(String.format("[Search_Response] %s", response.toString()));
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-
+                logger.error("Execute search req error!", throwable);
             }
         };
     }

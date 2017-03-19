@@ -5,6 +5,8 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.dsl.bean.ElasticSqlParseResult;
 import org.elasticsearch.dsl.parser.ElasticSql2DslParser;
+import org.elasticsearch.jdbc.search.JdbcSearchActionExecutor;
+import org.elasticsearch.jdbc.search.JdbcSearchResponse;
 import org.elasticsearch.search.SearchHit;
 
 import java.sql.Connection;
@@ -13,7 +15,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class ElasticStatement extends AbstractStatement {
-
     protected ElasticConnection connection;
 
     public ElasticStatement(ElasticConnection connection) {
@@ -29,26 +30,37 @@ public class ElasticStatement extends AbstractStatement {
 
     @Override
     public ResultSet executeQuery(String sql, Object[] args) throws SQLException {
-        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
-        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, args);
+        ElasticSqlParseResult parseResult;
+        try {
+            ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+            parseResult = sql2DslParser.parse(sql, args);
+        }
+        catch (Exception exp) {
+            throw new SQLException(String.format("[ElasticStatement] Failed to parse sql[%s]", sql), exp);
+        }
 
-        SearchRequestBuilder searchRequest = parseResult.toRequest(connection.getClient());
-        SearchResponse searchResponse = SearchActionExecutor.get().syncExecute(searchRequest);
+        SearchResponse searchResponse;
+        try {
+            SearchRequestBuilder searchRequest = parseResult.toRequest(connection.getClient());
+            searchResponse = JdbcSearchActionExecutor.get().syncExecuteWithException(searchRequest);
+        }
+        catch (Exception exp) {
+            throw new SQLException(String.format("[ElasticStatement] Failed to execute search request sql[%s]", sql), exp);
+        }
 
-        SearchResponseGson searchResponseGson = new SearchResponseGson();
-        searchResponseGson.setFailedShards(searchResponse.getFailedShards());
-        searchResponseGson.setSuccessfulShards(searchResponse.getSuccessfulShards());
-        searchResponseGson.setTookInMillis(searchResponse.getTookInMillis());
-        searchResponseGson.setTotalShards(searchResponse.getTotalShards());
-        searchResponseGson.setTotalHits(searchResponse.getHits().getTotalHits());
+        JdbcSearchResponse<String> jdbcSearchResponse = new JdbcSearchResponse<String>();
+        jdbcSearchResponse.setFailedShards(searchResponse.getFailedShards());
+        jdbcSearchResponse.setSuccessfulShards(searchResponse.getSuccessfulShards());
+        jdbcSearchResponse.setTookInMillis(searchResponse.getTookInMillis());
+        jdbcSearchResponse.setTotalShards(searchResponse.getTotalShards());
+        jdbcSearchResponse.setTotalHits(searchResponse.getHits().getTotalHits());
 
         List<String> hits = Lists.newLinkedList();
         for (SearchHit searchHit : searchResponse.getHits().getHits()) {
             hits.add(searchHit.getSourceAsString());
         }
-        searchResponseGson.setDocList(hits);
-
-        return executeResult = new ElasticResultSet(this, searchResponseGson.toJson());
+        jdbcSearchResponse.setDocList(hits);
+        return executeResult = new ElasticResultSet(this, jdbcSearchResponse.toJson());
     }
 
     @Override

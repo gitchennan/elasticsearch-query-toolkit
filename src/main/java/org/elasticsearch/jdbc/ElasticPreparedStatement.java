@@ -3,6 +3,7 @@ package org.elasticsearch.jdbc;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.elasticsearch.utils.Constants;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -13,9 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ElasticPreparedStatement extends AbstractFeatureNotSupportedPreparedStatement {
-
-    public static final String DEFAULT_ES_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-
     private Map<Integer, SQLParam> paramMap = Maps.newHashMap();
 
     private String sql;
@@ -107,21 +105,21 @@ public class ElasticPreparedStatement extends AbstractFeatureNotSupportedPrepare
 
     @Override
     public void setDate(int parameterIndex, Date x) throws SQLException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DEFAULT_ES_DATE_FORMAT);
         String dateStr = dateFormat.format(x);
         paramMap.put(parameterIndex, new SQLParam(parameterIndex, dateStr));
     }
 
     @Override
     public void setTime(int parameterIndex, Time x) throws SQLException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DEFAULT_ES_DATE_FORMAT);
         String dateStr = dateFormat.format(x);
         paramMap.put(parameterIndex, new SQLParam(parameterIndex, dateStr));
     }
 
     @Override
     public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DEFAULT_ES_DATE_FORMAT);
         String dateStr = dateFormat.format(x);
         paramMap.put(parameterIndex, new SQLParam(parameterIndex, dateStr));
     }
@@ -140,7 +138,7 @@ public class ElasticPreparedStatement extends AbstractFeatureNotSupportedPrepare
             setTime(parameterIndex, (Time) x);
         }
         else if (x instanceof java.util.Date) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(DEFAULT_ES_DATE_FORMAT);
+            SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DEFAULT_ES_DATE_FORMAT);
             String dateStr = dateFormat.format(x);
             paramMap.put(parameterIndex, new SQLParam(parameterIndex, dateStr));
         }
