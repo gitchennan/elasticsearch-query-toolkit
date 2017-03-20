@@ -1,9 +1,8 @@
 package org.elasticsearch.jdbc;
 
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.jdbc.search.TransportClientProvider;
-import org.elasticsearch.jdbc.search.TransportClientProviderImpl;
-import org.slf4j.LoggerFactory;
+import org.elasticsearch.jdbc.search.ElasticClientProvider;
+import org.elasticsearch.jdbc.search.ElasticClientProxy;
+import org.elasticsearch.jdbc.search.ElasticClientProxyProviderImpl;
 
 import java.sql.*;
 import java.util.Properties;
@@ -11,13 +10,11 @@ import java.util.logging.Logger;
 
 public class ElasticDriver implements Driver {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ElasticDriver.class);
-
     private static final String ELASTIC_SEARCH_DRIVER_PREFIX = "jdbc:elastic:";
 
-    private TransportClient transportClient = null;
+    private ElasticClientProxy elasticClientProxy = null;
 
-    private TransportClientProvider transportClientProvider;
+    private ElasticClientProvider elasticClientProvider;
 
     static {
         try {
@@ -35,15 +32,20 @@ public class ElasticDriver implements Driver {
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
         synchronized (ElasticDriver.class) {
-            if (transportClientProvider == null) {
-                transportClientProvider = new TransportClientProviderImpl();
+            if (elasticClientProxy != null && Boolean.FALSE == elasticClientProxy.isClosed()) {
+                return new ElasticConnection(url, info, elasticClientProxy);
             }
-            transportClient = transportClientProvider.createTransportClientFromUrl(url);
-            if (transportClient == null) {
-                throw new SQLException(String.format("ElasticDriver.connect] Failed to build transport client for url[%s]", url));
+
+            if (elasticClientProvider == null) {
+                elasticClientProvider = new ElasticClientProxyProviderImpl();
+            }
+
+            elasticClientProxy = (ElasticClientProxy) elasticClientProvider.createElasticClientFromUrl(url);
+            if (elasticClientProxy == null || elasticClientProxy.isClosed()) {
+                throw new SQLException(String.format("ElasticDriver.connect] Failed to build elastic client for url[%s]", url));
             }
         }
-        return new ElasticConnection(url, info, transportClient);
+        return new ElasticConnection(url, info, elasticClientProxy);
     }
 
     @Override

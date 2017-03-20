@@ -67,7 +67,7 @@ public abstract class AbstractConnection extends AbstractFeatureNotSupportedConn
 
     @Override
     public boolean getAutoCommit() throws SQLException {
-        return true;
+        return false;
     }
 
 

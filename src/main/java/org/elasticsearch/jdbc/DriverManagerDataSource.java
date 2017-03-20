@@ -15,24 +15,15 @@ public class DriverManagerDataSource extends AbstractDriverBasedDataSource {
         setUrl(url);
     }
 
-
-    public DriverManagerDataSource(String url, String username, String password) {
-        setUrl(url);
-        setUsername(username);
-        setPassword(password);
-    }
-
     public DriverManagerDataSource(String url, Properties conProps) {
         setUrl(url);
         setConnectionProperties(conProps);
     }
 
     @Deprecated
-    public DriverManagerDataSource(String driverClassName, String url, String username, String password) {
+    public DriverManagerDataSource(String driverClassName, String url) {
         setDriverClassName(driverClassName);
         setUrl(url);
-        setUsername(username);
-        setPassword(password);
     }
 
 
@@ -73,8 +64,7 @@ public class DriverManagerDataSource extends AbstractDriverBasedDataSource {
 
     @Override
     protected Connection getConnectionFromDriver(Properties props) throws SQLException {
-        String url = getUrl();
-        return getConnectionFromDriverManager(url, props);
+        return getConnectionFromDriverManager(getUrl(), props);
     }
 
     protected Connection getConnectionFromDriverManager(String url, Properties props) throws SQLException {

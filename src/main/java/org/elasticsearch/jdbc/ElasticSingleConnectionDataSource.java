@@ -2,9 +2,8 @@ package org.elasticsearch.jdbc;
 
 
 import org.elasticsearch.client.Client;
-import org.elasticsearch.jdbc.search.TransportClientProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.elasticsearch.jdbc.search.ElasticClientProvider;
+import org.elasticsearch.utils.Logger;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -14,9 +13,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class ElasticSingleConnectionDataSource extends DriverManagerDataSource implements SmartDataSource {
-
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSingleConnectionDataSource.class);
-
     private boolean suppressClose;
 
     private Connection target;
@@ -25,7 +21,7 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
 
     private Client client;
 
-    private TransportClientProvider transportClientProvider;
+    private ElasticClientProvider elasticClientProvider;
 
     private final Object connectionMonitor = new Object();
 
@@ -38,8 +34,8 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
         this.suppressClose = suppressClose;
     }
 
-    public void setTransportClientProvider(TransportClientProvider transportClientProvider) {
-        this.transportClientProvider = transportClientProvider;
+    public void setElasticClientProvider(ElasticClientProvider elasticClientProvider) {
+        this.elasticClientProvider = elasticClientProvider;
     }
 
     public void setSuppressClose(boolean suppressClose) {
@@ -92,15 +88,15 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
             closeConnection();
 
             try {
-                if (transportClientProvider != null) {
-                    client = transportClientProvider.createTransportClientFromUrl(getUrl());
+                if (elasticClientProvider != null) {
+                    client = elasticClientProvider.createElasticClientFromUrl(getUrl());
                     if (client == null) {
-                        throw new SQLException(String.format("Failed to build transport client for url[%s]", getUrl()));
+                        throw new SQLException(String.format("Failed to build elastic client for url[%s]", getUrl()));
                     }
                     target = new ElasticConnection(getUrl(), null, client);
                 }
                 else {
-                    this.target = getConnectionFromDriver(getUsername(), getPassword());
+                    this.target = getConnectionFromDriver();
                 }
             }
             catch (Exception exp) {
@@ -136,7 +132,7 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
                 this.target.close();
             }
             catch (Throwable ex) {
-                logger.warn("Could not close shared JDBC Connection", ex);
+                Logger.warn(this, "Could not close shared JDBC Connection", ex);
             }
         }
 
@@ -145,7 +141,7 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
                 client.close();
             }
             catch (Exception ex) {
-                logger.error("Could not close elasticsearch client", ex);
+                Logger.error(this, "Could not close elasticsearch client", ex);
             }
         }
     }
