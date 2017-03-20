@@ -1,12 +1,9 @@
 package org.elasticsearch.jdbc.search;
 
 import org.elasticsearch.action.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.elasticsearch.utils.Logger;
 
 public class JdbcSearchActionExecutor {
-
-    private static final Logger logger = LoggerFactory.getLogger(JdbcSearchActionExecutor.class);
 
     private static final JdbcSearchActionExecutor JDBC_SEARCH_ACTION_EXECUTOR = new JdbcSearchActionExecutor();
 
@@ -44,13 +41,13 @@ public class JdbcSearchActionExecutor {
         return new ActionListener<Response>() {
             @Override
             public void onResponse(Response response) {
-                logger.debug(String.format("[Search_Request] %s", requestBuilder.toString()));
-                logger.debug(String.format("[Search_Response] %s", response.toString()));
+                Logger.debug(this, String.format("[Search_Request] %s", requestBuilder.toString()));
+                Logger.debug(this, String.format("[Search_Response] %s", response.toString()));
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-                logger.error("Execute search req error!", throwable);
+                Logger.error(this, "Execute search req error!", throwable);
             }
         };
     }

@@ -4,6 +4,13 @@ import java.sql.*;
 
 public class ElasticDatabaseMetaData implements DatabaseMetaData {
 
+    private static final String ELASTIC_DRIVER_NAME = "org.elasticsearch.jdbc.ElasticDriver";
+    private static final String ELASTIC_DRIVER_PRODUCT_VERSION = "2.4.4";
+    private static final Integer ELASTIC_DRIVER_PRODUCT_MAJOR_VERSION = 2;
+    private static final Integer ELASTIC_DRIVER_PRODUCT_MINOR_VERSION = 4;
+    private static final String ELASTIC_DRIVER_PRODUCT_NAME = "elasticsearch-query-toolkit";
+
+
     private String url;
 
     public ElasticDatabaseMetaData(String url) {
@@ -57,32 +64,32 @@ public class ElasticDatabaseMetaData implements DatabaseMetaData {
 
     @Override
     public String getDatabaseProductName() throws SQLException {
-        return "elasticsearch_2.4.4";
+        return ELASTIC_DRIVER_PRODUCT_NAME;
     }
 
     @Override
     public String getDatabaseProductVersion() throws SQLException {
-        return "2.4.5";
+        return ELASTIC_DRIVER_PRODUCT_VERSION;
     }
 
     @Override
     public String getDriverName() throws SQLException {
-        return "org.elasticsearch.jdbc.ElasticDriver";
+        return ELASTIC_DRIVER_NAME;
     }
 
     @Override
     public String getDriverVersion() throws SQLException {
-        return "1.0";
+        return ELASTIC_DRIVER_PRODUCT_VERSION;
     }
 
     @Override
     public int getDriverMajorVersion() {
-        return 1;
+        return ELASTIC_DRIVER_PRODUCT_MAJOR_VERSION;
     }
 
     @Override
     public int getDriverMinorVersion() {
-        return 0;
+        return ELASTIC_DRIVER_PRODUCT_MINOR_VERSION;
     }
 
     @Override
