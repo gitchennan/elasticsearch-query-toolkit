@@ -1,4 +1,4 @@
-package org.elasticsearch.jdbc.search;
+package org.elasticsearch.jdbc.es;
 
 import org.elasticsearch.action.*;
 import org.elasticsearch.utils.Logger;
@@ -47,7 +47,7 @@ public class JdbcSearchActionExecutor {
 
             @Override
             public void onFailure(Throwable throwable) {
-                Logger.error(this, "Execute search req error!", throwable);
+                Logger.error(this, "Execute es req error!", throwable);
             }
         };
     }

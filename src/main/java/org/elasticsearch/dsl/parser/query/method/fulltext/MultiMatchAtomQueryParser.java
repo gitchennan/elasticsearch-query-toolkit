@@ -2,29 +2,38 @@ package org.elasticsearch.dsl.parser.query.method.fulltext;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
+import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
+import java.util.List;
 import java.util.Map;
 
 public class MultiMatchAtomQueryParser extends AbstractAtomMethodQueryParser {
+
+    private static final List<String> MULTI_MATCH_METHOD = ImmutableList.of("multiMatch", "multi_match", "multi_match_query", "multiMatchQuery");
 
     public MultiMatchAtomQueryParser(ParseActionListener parseActionListener) {
         super(parseActionListener);
     }
 
+    public static Boolean isMultiMatch(SQLMethodInvokeExpr methodQueryExpr) {
+        return ElasticSqlMethodInvokeHelper.isMethodOf(MULTI_MATCH_METHOD, methodQueryExpr.getMethodName());
+    }
+
     @Override
     protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == "multiMatch".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
+        if (Boolean.FALSE == isMultiMatch(methodQueryExpr)) {
             throw new ElasticSql2DslException(String.format("[syntax error] Expected multiMatch query method name is [multiMatch],but get [%s]", methodQueryExpr.getMethodName()));
         }
 

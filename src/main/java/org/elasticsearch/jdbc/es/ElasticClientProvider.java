@@ -1,4 +1,4 @@
-package org.elasticsearch.jdbc.search;
+package org.elasticsearch.jdbc.es;
 
 import org.elasticsearch.client.Client;
 

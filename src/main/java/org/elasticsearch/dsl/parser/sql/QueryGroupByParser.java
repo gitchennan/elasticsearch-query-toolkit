@@ -63,7 +63,7 @@ public class QueryGroupByParser implements QueryParser {
                 SQLMethodInvokeExpr aggMethodExpr = (SQLMethodInvokeExpr) groupByItem;
 
                 //Terms Aggregation
-                if (ElasticSqlMethodInvokeHelper.AGG_TERMS_METHOD.equalsIgnoreCase(aggMethodExpr.getMethodName())) {
+                if (ElasticSqlMethodInvokeHelper.isMethodOf(ElasticSqlMethodInvokeHelper.AGG_TERMS_METHOD, aggMethodExpr.getMethodName())) {
                     ElasticSqlMethodInvokeHelper.checkTermsAggMethod(aggMethodExpr);
 
                     SQLExpr termsFieldExpr = aggMethodExpr.getParameters().get(0);
@@ -74,7 +74,7 @@ public class QueryGroupByParser implements QueryParser {
 
 
                 //Range Aggregation
-                if (ElasticSqlMethodInvokeHelper.AGG_RANGE_METHOD.equalsIgnoreCase(aggMethodExpr.getMethodName())) {
+                if (ElasticSqlMethodInvokeHelper.isMethodOf(ElasticSqlMethodInvokeHelper.AGG_RANGE_METHOD, aggMethodExpr.getMethodName())) {
                     ElasticSqlMethodInvokeHelper.checkRangeAggMethod(aggMethodExpr);
 
                     List<RangeSegment> rangeSegments = parseRangeSegments(aggMethodExpr, dslContext.getSqlArgs());

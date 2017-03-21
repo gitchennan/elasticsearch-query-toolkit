@@ -16,6 +16,7 @@ import org.elasticsearch.dsl.parser.query.exact.BinaryAtomQueryParser;
 import org.elasticsearch.dsl.parser.query.exact.InListAtomQueryParser;
 import org.elasticsearch.dsl.parser.query.method.fulltext.FullTextAtomQueryParser;
 import org.elasticsearch.dsl.parser.query.method.term.TermLevelAtomQueryParser;
+import org.elasticsearch.dsl.parser.query.method.script.ScriptAtomQueryParser;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -78,6 +79,11 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
     private AtomQuery parseAtomQueryCondition(SQLExpr sqlConditionExpr, String queryAs, Object[] sqlArgs) {
         if (sqlConditionExpr instanceof SQLMethodInvokeExpr) {
             SQLMethodInvokeExpr methodQueryExpr = (SQLMethodInvokeExpr) sqlConditionExpr;
+
+            if(ScriptAtomQueryParser.isScriptAtomQuery(methodQueryExpr)) {
+                ScriptAtomQueryParser scriptAtomQueryParser = new ScriptAtomQueryParser(parseActionListener);
+                return scriptAtomQueryParser.parseAtomMethodQuery(methodQueryExpr, queryAs, sqlArgs);
+            }
 
             if (FullTextAtomQueryParser.isFulltextAtomQuery(methodQueryExpr)) {
                 FullTextAtomQueryParser fullTextAtomQueryParser = new FullTextAtomQueryParser(parseActionListener);

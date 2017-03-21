@@ -14,34 +14,10 @@ public class TermLevelAtomQueryParser {
         this.parseActionListener = parseActionListener;
     }
 
-    private static Boolean isPrefixQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return "prefix".equalsIgnoreCase(methodQueryExpr.getMethodName());
-    }
-
-    private static Boolean isTermQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return "term".equalsIgnoreCase(methodQueryExpr.getMethodName());
-    }
-
-    private static Boolean isTermsQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return "terms".equalsIgnoreCase(methodQueryExpr.getMethodName());
-    }
-
-    private static Boolean isWildcardQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return "wildcard".equalsIgnoreCase(methodQueryExpr.getMethodName());
-    }
-
-    private static Boolean isRegexpQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return "regexp".equalsIgnoreCase(methodQueryExpr.getMethodName());
-    }
-
-    private static Boolean isFuzzyQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return "fuzzy".equalsIgnoreCase(methodQueryExpr.getMethodName());
-    }
-
     public static Boolean isTermLevelAtomQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return isPrefixQuery(methodQueryExpr) || isTermQuery(methodQueryExpr) ||
-                isTermsQuery(methodQueryExpr) || isWildcardQuery(methodQueryExpr) ||
-                isRegexpQuery(methodQueryExpr) || isFuzzyQuery(methodQueryExpr);
+        return PrefixAtomQueryParser.isPrefixQuery(methodQueryExpr) || TermAtomQueryParser.isTermQuery(methodQueryExpr) ||
+                TermsAtomQueryParser.isTermsQuery(methodQueryExpr) || WildcardAtomQueryParser.isWildcardQuery(methodQueryExpr) ||
+                RegexpAtomQueryParser.isRegexpQuery(methodQueryExpr) || FuzzyAtomQueryParser.isFuzzyQuery(methodQueryExpr);
     }
 
     public AtomQuery parseTermLevelAtomQuery(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
@@ -50,22 +26,22 @@ public class TermLevelAtomQueryParser {
     }
 
     private AbstractAtomMethodQueryParser getQueryParser(SQLMethodInvokeExpr methodQueryExpr) {
-        if (Boolean.TRUE == isPrefixQuery(methodQueryExpr)) {
+        if (Boolean.TRUE == PrefixAtomQueryParser.isPrefixQuery(methodQueryExpr)) {
             return new PrefixAtomQueryParser(parseActionListener);
         }
-        if (Boolean.TRUE == isTermQuery(methodQueryExpr)) {
+        if (Boolean.TRUE == TermAtomQueryParser.isTermQuery(methodQueryExpr)) {
             return new TermAtomQueryParser(parseActionListener);
         }
-        if (Boolean.TRUE == isTermsQuery(methodQueryExpr)) {
+        if (Boolean.TRUE == TermsAtomQueryParser.isTermsQuery(methodQueryExpr)) {
             return new TermsAtomQueryParser(parseActionListener);
         }
-        if (Boolean.TRUE == isWildcardQuery(methodQueryExpr)) {
+        if (Boolean.TRUE == WildcardAtomQueryParser.isWildcardQuery(methodQueryExpr)) {
             return new WildcardAtomQueryParser(parseActionListener);
         }
-        if (Boolean.TRUE == isRegexpQuery(methodQueryExpr)) {
+        if (Boolean.TRUE == RegexpAtomQueryParser.isRegexpQuery(methodQueryExpr)) {
             return new RegexpAtomQueryParser(parseActionListener);
         }
-        if (Boolean.TRUE == isFuzzyQuery(methodQueryExpr)) {
+        if (Boolean.TRUE == FuzzyAtomQueryParser.isFuzzyQuery(methodQueryExpr)) {
             return new FuzzyAtomQueryParser(parseActionListener);
         }
         throw new ElasticSql2DslException(String.format("[syntax error] Can not support method query expr[%s] condition", methodQueryExpr.getMethodName()));

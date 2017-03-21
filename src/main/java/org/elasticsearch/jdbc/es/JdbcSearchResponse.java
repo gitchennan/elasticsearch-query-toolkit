@@ -1,4 +1,4 @@
-package org.elasticsearch.jdbc.search;
+package org.elasticsearch.jdbc.es;
 
 import com.google.gson.Gson;
 
@@ -9,20 +9,12 @@ public class JdbcSearchResponse<T> {
     private int failedShards;
     private int successfulShards;
     private long tookInMillis;
-    private long totalHits;
 
-    private List<T> docList;
+    private long totalCount;
+    private List<T> resultList;
 
     public int getTotalShards() {
         return totalShards;
-    }
-
-    public long getTotalHits() {
-        return totalHits;
-    }
-
-    public void setTotalHits(long totalHits) {
-        this.totalHits = totalHits;
     }
 
     public void setTotalShards(int totalShards) {
@@ -53,12 +45,20 @@ public class JdbcSearchResponse<T> {
         this.tookInMillis = tookInMillis;
     }
 
-    public List<T> getDocList() {
-        return docList;
+    public List<T> getResultList() {
+        return resultList;
     }
 
-    public void setDocList(List<T> docList) {
-        this.docList = docList;
+    public void setResultList(List<T> resultList) {
+        this.resultList = resultList;
+    }
+
+    public long getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(long totalCount) {
+        this.totalCount = totalCount;
     }
 
     @Override
@@ -69,5 +69,4 @@ public class JdbcSearchResponse<T> {
     public String toJson() {
         return new Gson().toJson(this, JdbcSearchResponse.class);
     }
-
 }

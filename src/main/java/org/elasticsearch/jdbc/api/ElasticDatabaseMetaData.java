@@ -1,10 +1,10 @@
-package org.elasticsearch.jdbc;
+package org.elasticsearch.jdbc.api;
 
 import java.sql.*;
 
 public class ElasticDatabaseMetaData implements DatabaseMetaData {
 
-    private static final String ELASTIC_DRIVER_NAME = "org.elasticsearch.jdbc.ElasticDriver";
+    private static final String ELASTIC_DRIVER_NAME = "org.elasticsearch.jdbc.api.ElasticDriver";
     private static final String ELASTIC_DRIVER_PRODUCT_VERSION = "2.4.4";
     private static final Integer ELASTIC_DRIVER_PRODUCT_MAJOR_VERSION = 2;
     private static final Integer ELASTIC_DRIVER_PRODUCT_MINOR_VERSION = 4;
