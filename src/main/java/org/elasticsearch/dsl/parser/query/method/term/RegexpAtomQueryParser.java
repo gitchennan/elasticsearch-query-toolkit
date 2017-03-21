@@ -2,12 +2,14 @@ package org.elasticsearch.dsl.parser.query.method.term;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
+import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
 import org.elasticsearch.dsl.parser.query.method.IConditionMethodQueryBuilder;
@@ -21,13 +23,19 @@ import java.util.Map;
 
 public class RegexpAtomQueryParser extends AbstractAtomMethodQueryParser {
 
+    private static List<String> REGEXP_QUERY_METHOD = ImmutableList.of("regexp", "regexp_query", "regexpQuery");
+
     public RegexpAtomQueryParser(ParseActionListener parseActionListener) {
         super(parseActionListener);
     }
 
+    public static Boolean isRegexpQuery(SQLMethodInvokeExpr methodQueryExpr) {
+        return ElasticSqlMethodInvokeHelper.isMethodOf(REGEXP_QUERY_METHOD, methodQueryExpr.getMethodName());
+    }
+
     @Override
     protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == "regexp".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
+        if (Boolean.FALSE == isRegexpQuery(methodQueryExpr)) {
             throw new ElasticSql2DslException(String.format("[syntax error] Expected regexp query method name is [regexp],but get [%s]", methodQueryExpr.getMethodName()));
         }
 

@@ -2,29 +2,38 @@ package org.elasticsearch.dsl.parser.query.method.fulltext;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
+import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 public class QueryStringAtomQueryParser extends AbstractAtomMethodQueryParser {
 
+    private static List<String> QUERY_STRING_METHOD = ImmutableList.of("queryString", "query_string");
+
     public QueryStringAtomQueryParser(ParseActionListener parseActionListener) {
         super(parseActionListener);
     }
 
+    public static Boolean isQueryStringQuery(SQLMethodInvokeExpr methodQueryExpr) {
+        return ElasticSqlMethodInvokeHelper.isMethodOf(QUERY_STRING_METHOD, methodQueryExpr.getMethodName());
+    }
+
     @Override
     protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == "queryString".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
+        if (Boolean.FALSE == isQueryStringQuery(methodQueryExpr)) {
             throw new ElasticSql2DslException(String.format("[syntax error] Expected queryString query method name is [queryString],but get [%s]", methodQueryExpr.getMethodName()));
         }
 

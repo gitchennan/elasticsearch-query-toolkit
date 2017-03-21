@@ -109,19 +109,19 @@ public class SqlParserWhereConditionTest {
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
         System.out.println(parseResult.toDsl());
 
-        sql = "select id,status from index.order t where t.lastUpdateTime > date('yyyy/MM/dd hh:mm:ss', '2017/01/25 13:32:59')";
+        sql = "select id,status from index.order t where t.lastUpdateTime > to_date('yyyy/MM/dd hh:mm:ss', '2017/01/25 13:32:59')";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T13:32:59.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
         System.out.println(parseResult.toDsl());
 
-        sql = "select id,status from index.order t where t.lastUpdateTime > date('yyyy/MM/dd hh-mm', '2017/01/25 13-32')";
+        sql = "select id,status from index.order t where t.lastUpdateTime > to_date('yyyy/MM/dd hh-mm', '2017/01/25 13-32')";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.rangeQuery("lastUpdateTime").gt("2017-01-25T13:32:00.000+0800"));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
         System.out.println(parseResult.toDsl());
 
-        sql = "select id,status from index.order t where t.lastUpdateTime between date('yyyy/MM/dd hh-mm', '2017/01/25 13-32') and '2018-10-25'";
+        sql = "select id,status from index.order t where t.lastUpdateTime between to_date('yyyy/MM/dd hh-mm', '2017/01/25 13-32') and '2018-10-25'";
         parseResult = sql2DslParser.parse(sql);
         targetFilter = QueryBuilders.boolQuery().must(
                 QueryBuilders.rangeQuery("lastUpdateTime")

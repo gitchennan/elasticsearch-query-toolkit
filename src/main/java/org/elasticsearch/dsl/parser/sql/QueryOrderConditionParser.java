@@ -67,7 +67,7 @@ public class QueryOrderConditionParser implements QueryParser {
         if (orderByItem.getExpr() instanceof SQLMethodInvokeExpr) {
             SQLMethodInvokeExpr methodInvokeExpr = (SQLMethodInvokeExpr) orderByItem.getExpr();
             //nvl method
-            if (ElasticSqlMethodInvokeHelper.NVL_METHOD.equalsIgnoreCase(methodInvokeExpr.getMethodName())) {
+            if (ElasticSqlMethodInvokeHelper.isMethodOf(ElasticSqlMethodInvokeHelper.NVL_METHOD, methodInvokeExpr.getMethodName())) {
                 ElasticSqlMethodInvokeHelper.checkNvlMethod(methodInvokeExpr);
                 Object valueArg = ElasticSqlArgTransferHelper.transferSqlArg(methodInvokeExpr.getParameters().get(1), sqlArgs);
                 return parseCondition(methodInvokeExpr.getParameters().get(0), queryAs, new ConditionSortBuilder() {

@@ -1,4 +1,4 @@
-package org.elasticsearch.jdbc.search;
+package org.elasticsearch.jdbc.es;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -37,21 +37,21 @@ public class JdbcSearchResponseResolver {
         return resolveSearchResponse(typeToken, defaultEsDateFormatGson);
     }
 
-    public <T> JdbcSearchResponse<T> resolveSearchResponse(Class<T> clazz, String dataPattern) throws ResolveSearchResponseException {
-        Gson dateFormatGson = new GsonBuilder().setDateFormat(dataPattern).create();
+    public <T> JdbcSearchResponse<T> resolveSearchResponse(Class<T> clazz, String datePattern) throws ResolveSearchResponseException {
+        Gson dateFormatGson = new GsonBuilder().setDateFormat(datePattern).create();
         return resolveSearchResponse(clazz, dateFormatGson);
     }
 
-    public <T> JdbcSearchResponse<T> resolveSearchResponse(TypeToken<T> typeToken, String dataPattern) throws ResolveSearchResponseException {
-        Gson dateFormatGson = new GsonBuilder().setDateFormat(dataPattern).create();
+    public <T> JdbcSearchResponse<T> resolveSearchResponse(TypeToken<T> typeToken, String datePattern) throws ResolveSearchResponseException {
+        Gson dateFormatGson = new GsonBuilder().setDateFormat(datePattern).create();
         return resolveSearchResponse(typeToken, dateFormatGson);
     }
 
     public <T> JdbcSearchResponse<T> resolveSearchResponse(Class<T> clazz, Gson gson) throws ResolveSearchResponseException {
         return resolveSearchResponse(new ResolveStrategy<T>() {
             @Override
-            public T resolve(String document) {
-                return gson.fromJson(document, clazz);
+            public T resolve(String resultItem) {
+                return gson.fromJson(resultItem, clazz);
             }
         });
     }
@@ -59,8 +59,8 @@ public class JdbcSearchResponseResolver {
     public <T> JdbcSearchResponse<T> resolveSearchResponse(TypeToken<T> typeToken, Gson gson) throws ResolveSearchResponseException {
         return resolveSearchResponse(new ResolveStrategy<T>() {
             @Override
-            public T resolve(String document) {
-                return gson.fromJson(document, typeToken.getType());
+            public T resolve(String resultItem) {
+                return gson.fromJson(resultItem, typeToken.getType());
             }
         });
     }
@@ -71,33 +71,30 @@ public class JdbcSearchResponseResolver {
         JdbcSearchResponse<T> retJdbcSearchResponse = new JdbcSearchResponse<T>();
         setBasicPropertyForResponse(retJdbcSearchResponse, searchRespStrGson);
 
-        // resolve query result set
-        List<T> docList = resolveDocumentList(searchRespStrGson.getDocList(), resolveStrategy);
-        retJdbcSearchResponse.setDocList(docList);
-
-        // todo resolve aggregation result set
+        List<T> resultList = resolveResultList(searchRespStrGson.getResultList(), resolveStrategy);
+        retJdbcSearchResponse.setResultList(resultList);
 
         return retJdbcSearchResponse;
     }
 
-    protected <T> List<T> resolveDocumentList(List<String> documentList, ResolveStrategy<T> resolveStrategy) {
-        if (CollectionUtils.isEmpty(documentList)) {
+    protected <T> List<T> resolveResultList(List<String> resultList, ResolveStrategy<T> resolveStrategy) {
+        if (CollectionUtils.isEmpty(resultList)) {
             return Collections.emptyList();
         }
 
-        List<T> resolvedDocList = null;
+        List<T> resolvedList = null;
         try {
-            resolvedDocList = Lists.transform(documentList, new Function<String, T>() {
+            resolvedList = Lists.transform(resultList, new Function<String, T>() {
                 @Override
-                public T apply(String doc) {
-                    return resolveStrategy.resolve(doc);
+                public T apply(String resultItem) {
+                    return resolveStrategy.resolve(resultItem);
                 }
             });
         }
         catch (Exception ex) {
-            throw new ResolveSearchResponseException("Failed to resolve doc gson");
+            throw new ResolveSearchResponseException("Failed to resolve gson from response");
         }
-        return resolvedDocList;
+        return resolvedList;
     }
 
     protected JdbcSearchResponse<String> parseSearchResponseGson(String searchRespGson) {
@@ -113,13 +110,13 @@ public class JdbcSearchResponseResolver {
 
     protected <T> void setBasicPropertyForResponse(JdbcSearchResponse<T> targetResponse, JdbcSearchResponse<String> sourceResponse) {
         targetResponse.setTotalShards(sourceResponse.getTotalShards());
-        targetResponse.setTotalHits(sourceResponse.getTotalHits());
+        targetResponse.setTotalCount(sourceResponse.getTotalCount());
         targetResponse.setTookInMillis(sourceResponse.getTookInMillis());
         targetResponse.setFailedShards(sourceResponse.getFailedShards());
         targetResponse.setSuccessfulShards(sourceResponse.getSuccessfulShards());
     }
 
     public interface ResolveStrategy<T> {
-        T resolve(String document);
+        T resolve(String resultItem);
     }
 }

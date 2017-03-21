@@ -1,6 +1,5 @@
-package org.elasticsearch.jdbc;
+package org.elasticsearch.jdbc.api;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
@@ -48,17 +47,17 @@ public abstract class AbstractResultSet extends AbstractFeatureNotSupportedResul
 
     @Override
     public int getFetchDirection() throws SQLException {
-        return ResultSet.FETCH_FORWARD;
+        return FETCH_FORWARD;
     }
 
     @Override
     public int getType() throws SQLException {
-        return ResultSet.TYPE_FORWARD_ONLY;
+        return TYPE_FORWARD_ONLY;
     }
 
     @Override
     public int getConcurrency() throws SQLException {
-        return ResultSet.CONCUR_READ_ONLY;
+        return CONCUR_READ_ONLY;
     }
 
     @Override
@@ -68,7 +67,7 @@ public abstract class AbstractResultSet extends AbstractFeatureNotSupportedResul
 
     @Override
     public int getHoldability() throws SQLException {
-        return ResultSet.CLOSE_CURSORS_AT_COMMIT;
+        return CLOSE_CURSORS_AT_COMMIT;
     }
 
     @Override

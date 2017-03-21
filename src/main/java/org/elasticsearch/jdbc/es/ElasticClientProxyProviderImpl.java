@@ -1,4 +1,4 @@
-package org.elasticsearch.jdbc.search;
+package org.elasticsearch.jdbc.es;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

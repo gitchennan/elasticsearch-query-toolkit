@@ -1,4 +1,4 @@
-package org.elasticsearch.jdbc;
+package org.elasticsearch.jdbc.api;
 
 
 import javax.sql.DataSource;

@@ -16,7 +16,7 @@ public class ElasticSqlDateParseHelper {
     public static final Pattern SQL_DATE_REGEX_PATTERN_03 = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
 
     public static boolean isDateMethod(SQLMethodInvokeExpr dateMethodExpr) {
-        return ElasticSqlMethodInvokeHelper.DATE_METHOD.equalsIgnoreCase(dateMethodExpr.getMethodName());
+        return ElasticSqlMethodInvokeHelper.isMethodOf(ElasticSqlMethodInvokeHelper.DATE_METHOD, dateMethodExpr.getMethodName());
     }
 
     public static boolean isDateArgStringValue(String date) {

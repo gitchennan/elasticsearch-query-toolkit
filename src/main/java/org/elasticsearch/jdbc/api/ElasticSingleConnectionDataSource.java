@@ -1,8 +1,8 @@
-package org.elasticsearch.jdbc;
+package org.elasticsearch.jdbc.api;
 
 
 import org.elasticsearch.client.Client;
-import org.elasticsearch.jdbc.search.ElasticClientProvider;
+import org.elasticsearch.jdbc.es.ElasticClientProvider;
 import org.elasticsearch.utils.Logger;
 
 import java.lang.reflect.InvocationHandler;

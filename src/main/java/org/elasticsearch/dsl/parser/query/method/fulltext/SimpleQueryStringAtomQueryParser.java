@@ -2,12 +2,14 @@ package org.elasticsearch.dsl.parser.query.method.fulltext;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
+import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -20,8 +22,14 @@ import java.util.Map;
 
 public class SimpleQueryStringAtomQueryParser extends AbstractAtomMethodQueryParser {
 
+    private static List<String> SIMPLE_QUERY_STRING_METHOD = ImmutableList.of("simpleQueryString", "simple_query_string");
+
     public SimpleQueryStringAtomQueryParser(ParseActionListener parseActionListener) {
         super(parseActionListener);
+    }
+
+    public static Boolean isSimpleQueryStringQuery(SQLMethodInvokeExpr methodQueryExpr) {
+        return ElasticSqlMethodInvokeHelper.isMethodOf(SIMPLE_QUERY_STRING_METHOD, methodQueryExpr.getMethodName());
     }
 
     @Override

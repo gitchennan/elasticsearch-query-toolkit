@@ -1,8 +1,8 @@
-package org.elasticsearch.jdbc;
+package org.elasticsearch.jdbc.api;
 
-import org.elasticsearch.jdbc.search.ElasticClientProvider;
-import org.elasticsearch.jdbc.search.ElasticClientProxy;
-import org.elasticsearch.jdbc.search.ElasticClientProxyProviderImpl;
+import org.elasticsearch.jdbc.es.ElasticClientProvider;
+import org.elasticsearch.jdbc.es.ElasticClientProxy;
+import org.elasticsearch.jdbc.es.ElasticClientProxyProviderImpl;
 
 import java.sql.*;
 import java.util.Properties;

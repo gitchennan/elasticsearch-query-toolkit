@@ -2,39 +2,60 @@ package org.elasticsearch.dsl.helper;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.dsl.enums.SortOption;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 
+import java.util.List;
+
 public class ElasticSqlMethodInvokeHelper {
+    public static final List<String> DATE_METHOD = ImmutableList.of("date", "to_date", "toDate");
+    public static final List<String> NVL_METHOD = ImmutableList.of("nvl", "is_null", "isnull");
 
-    public static final String DATE_METHOD = "date";
-    public static final String NVL_METHOD = "nvl";
-
-    public static final String AGG_TERMS_METHOD = "terms";
-    public static final String AGG_RANGE_METHOD = "range";
-    public static final String AGG_RANGE_SEGMENT_METHOD = "segment";
+    public static final List<String> AGG_TERMS_METHOD = ImmutableList.of("terms", "terms_agg");
+    public static final List<String> AGG_RANGE_METHOD = ImmutableList.of("range", "range_agg");
+    public static final List<String> AGG_RANGE_SEGMENT_METHOD = ImmutableList.of("segment", "segment_agg");
 
     public static final String AGG_MIN_METHOD = "min";
     public static final String AGG_MAX_METHOD = "max";
     public static final String AGG_AVG_METHOD = "avg";
     public static final String AGG_SUM_METHOD = "sum";
 
+    public static Boolean isMethodOf(List<String> methodAlias, String method) {
+        if (CollectionUtils.isEmpty(methodAlias)) {
+            return Boolean.FALSE;
+        }
+        for (String alias : methodAlias) {
+            if (alias.equalsIgnoreCase(method)) {
+                return Boolean.TRUE;
+            }
+        }
+        return Boolean.FALSE;
+    }
+
+    public static Boolean isMethodOf(String methodAlias, String method) {
+        if (StringUtils.isBlank(methodAlias)) {
+            return Boolean.FALSE;
+        }
+        return methodAlias.equalsIgnoreCase(method);
+    }
 
     public static void checkTermsAggMethod(SQLMethodInvokeExpr aggInvokeExpr) {
-        if (!AGG_TERMS_METHOD.equalsIgnoreCase(aggInvokeExpr.getMethodName())) {
+        if (!isMethodOf(AGG_TERMS_METHOD, aggInvokeExpr.getMethodName())) {
             throw new ElasticSql2DslException("[syntax error] Sql not support method:" + aggInvokeExpr.getMethodName());
         }
     }
 
     public static void checkRangeAggMethod(SQLMethodInvokeExpr aggInvokeExpr) {
-        if (!AGG_RANGE_METHOD.equalsIgnoreCase(aggInvokeExpr.getMethodName())) {
+        if (!isMethodOf(AGG_RANGE_METHOD, aggInvokeExpr.getMethodName())) {
             throw new ElasticSql2DslException("[syntax error] Sql not support method:" + aggInvokeExpr.getMethodName());
         }
     }
 
     public static void checkRangeItemAggMethod(SQLMethodInvokeExpr aggInvokeExpr) {
-        if (!AGG_RANGE_SEGMENT_METHOD.equalsIgnoreCase(aggInvokeExpr.getMethodName())) {
+        if (!isMethodOf(AGG_RANGE_SEGMENT_METHOD, aggInvokeExpr.getMethodName())) {
             throw new ElasticSql2DslException("[syntax error] Sql not support method:" + aggInvokeExpr.getMethodName());
         }
     }
@@ -49,7 +70,7 @@ public class ElasticSqlMethodInvokeHelper {
     }
 
     public static void checkDateMethod(SQLMethodInvokeExpr dateInvokeExpr) {
-        if (!DATE_METHOD.equalsIgnoreCase(dateInvokeExpr.getMethodName())) {
+        if (!isMethodOf(DATE_METHOD, dateInvokeExpr.getMethodName())) {
             throw new ElasticSql2DslException("[syntax error] Sql not support method:" + dateInvokeExpr.getMethodName());
         }
 
@@ -71,7 +92,7 @@ public class ElasticSqlMethodInvokeHelper {
     }
 
     public static void checkNvlMethod(SQLMethodInvokeExpr nvlInvokeExpr) {
-        if (!NVL_METHOD.equalsIgnoreCase(nvlInvokeExpr.getMethodName())) {
+        if (!isMethodOf(NVL_METHOD, nvlInvokeExpr.getMethodName())) {
             throw new ElasticSql2DslException("[syntax error] Sql sort condition only support nvl method invoke");
         }
 

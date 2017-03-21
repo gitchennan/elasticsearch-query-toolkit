@@ -2,11 +2,13 @@ package org.elasticsearch.dsl.parser.query.method.term;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
+import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
 import org.elasticsearch.dsl.parser.query.method.IConditionMethodQueryBuilder;
@@ -14,17 +16,24 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.WildcardQueryBuilder;
 
+import java.util.List;
 import java.util.Map;
 
 public class WildcardAtomQueryParser extends AbstractAtomMethodQueryParser {
+
+    private static List<String> WILDCARD_QUERY_METHOD = ImmutableList.of("wildcard", "wildcard_query", "wildcardQuery");
 
     public WildcardAtomQueryParser(ParseActionListener parseActionListener) {
         super(parseActionListener);
     }
 
+    public static Boolean isWildcardQuery(SQLMethodInvokeExpr methodQueryExpr) {
+        return ElasticSqlMethodInvokeHelper.isMethodOf(WILDCARD_QUERY_METHOD, methodQueryExpr.getMethodName());
+    }
+
     @Override
     protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == "wildcard".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
+        if (Boolean.FALSE == isWildcardQuery(methodQueryExpr)) {
             throw new ElasticSql2DslException(String.format("[syntax error] Expected wildcard query method name is [wildcard],but get [%s]", methodQueryExpr.getMethodName()));
         }
 
