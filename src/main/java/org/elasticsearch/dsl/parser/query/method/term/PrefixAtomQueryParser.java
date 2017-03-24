@@ -33,7 +33,7 @@ public class PrefixAtomQueryParser extends AbstractAtomMethodQueryParser {
 
     @Override
     protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == "prefix".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
+        if (Boolean.FALSE == isPrefixQuery(methodQueryExpr)) {
             throw new ElasticSql2DslException(String.format("[syntax error] Expected prefix query method name is [prefix],but get [%s]", methodQueryExpr.getMethodName()));
         }
 

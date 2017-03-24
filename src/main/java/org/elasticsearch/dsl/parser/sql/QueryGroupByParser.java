@@ -67,8 +67,11 @@ public class QueryGroupByParser implements QueryParser {
                     ElasticSqlMethodInvokeHelper.checkTermsAggMethod(aggMethodExpr);
 
                     SQLExpr termsFieldExpr = aggMethodExpr.getParameters().get(0);
-
-                    AggregationBuilder termsBuilder = parseTermsAggregation(queryAs, termsFieldExpr);
+                    SQLExpr shardSizeExpr = null;
+                    if (aggMethodExpr.getParameters().size() == 2) {
+                        shardSizeExpr = aggMethodExpr.getParameters().get(1);
+                    }
+                    AggregationBuilder termsBuilder = parseTermsAggregation(queryAs, dslContext.getSqlArgs(), termsFieldExpr, shardSizeExpr);
                     aggregationList.add(termsBuilder);
                 }
 
@@ -89,7 +92,7 @@ public class QueryGroupByParser implements QueryParser {
 
     }
 
-    private AggregationBuilder parseTermsAggregation(String queryAs, SQLExpr termsFieldExpr) {
+    private AggregationBuilder parseTermsAggregation(String queryAs, Object[] args, SQLExpr termsFieldExpr, SQLExpr shardSizeExpr) {
         QueryFieldParser queryFieldParser = new QueryFieldParser();
 
         ElasticSqlQueryField queryField = queryFieldParser.parseConditionQueryField(termsFieldExpr, queryAs);
@@ -97,6 +100,10 @@ public class QueryGroupByParser implements QueryParser {
             throw new ElasticSql2DslException(String.format("[syntax error] can not support terms aggregation for field type[%s]", queryField.getQueryFieldType()));
         }
 
+        if(shardSizeExpr != null) {
+            Number termBuckets = (Number) ElasticSqlArgTransferHelper.transferSqlArg(shardSizeExpr, args);
+            return createTermsBuilder(queryField.getQueryFieldFullName(), termBuckets.intValue());
+        }
         return createTermsBuilder(queryField.getQueryFieldFullName());
     }
 
@@ -128,11 +135,15 @@ public class QueryGroupByParser implements QueryParser {
         return rangeSegmentList;
     }
 
-    private TermsBuilder createTermsBuilder(String termsFieldName) {
+    private TermsBuilder createTermsBuilder(String termsFieldName, int termBuckets) {
         return AggregationBuilders.terms(AGG_BUCKET_KEY_PREFIX + termsFieldName)
                 .field(termsFieldName)
                 .minDocCount(1).shardMinDocCount(1)
-                .shardSize(MAX_GROUP_BY_SIZE << 1).size(MAX_GROUP_BY_SIZE).order(Terms.Order.count(false));
+                .shardSize(termBuckets << 1).size(termBuckets).order(Terms.Order.count(false));
+    }
+
+    private TermsBuilder createTermsBuilder(String termsFieldName) {
+        return createTermsBuilder(termsFieldName, MAX_GROUP_BY_SIZE);
     }
 
     private AbstractRangeBuilder createRangeBuilder(String rangeFieldName, List<RangeSegment> rangeSegments) {

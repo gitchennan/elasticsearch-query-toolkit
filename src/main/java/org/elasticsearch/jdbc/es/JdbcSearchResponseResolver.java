@@ -92,7 +92,7 @@ public class JdbcSearchResponseResolver {
             });
         }
         catch (Exception ex) {
-            throw new ResolveSearchResponseException("Failed to resolve gson from response");
+            throw new ResolveSearchResponseException("Failed to resolve gson from response", ex);
         }
         return resolvedList;
     }
@@ -103,7 +103,7 @@ public class JdbcSearchResponseResolver {
             searchRespStrGson = new Gson().fromJson(oriSearchResponseGson, new TypeToken<JdbcSearchResponse<String>>() {}.getType());
         }
         catch (Exception exp) {
-            throw new ResolveSearchResponseException(String.format("Failed to parse responseGson[%s] to JdbcSearchResponse", oriSearchResponseGson));
+            throw new ResolveSearchResponseException(String.format("Failed to parse responseGson[%s] to JdbcSearchResponse", oriSearchResponseGson), exp);
         }
         return searchRespStrGson;
     }
