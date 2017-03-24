@@ -4,10 +4,10 @@ elasticsearch-query-tookit
 版本
 -------------
 
-sql2dsl version | ES version
+toolkit version | ES version
 -----------|-----------
 master | 2.4.4
-2.x    | 2.4.4
+2.4.4.1 | 2.4.4
 1.x    | 1.4.5
 
 介绍
@@ -17,7 +17,7 @@ master | 2.4.4
 
 ## 一、SQL解析生成DSL使用示例
 
-**[SQL语法搜索戳这里: https://github.com/gitchennan/elasticsearch-query-toolkit/wiki/elasticsearch-query-toolkit-help-doc](https://github.com/gitchennan/elasticsearch-query-toolkit/wiki/elasticsearch-query-toolkit-help-doc)**
+**[SQL语法帮助手册戳这里: https://github.com/gitchennan/elasticsearch-query-toolkit/wiki/elasticsearch-query-toolkit-help-doc](https://github.com/gitchennan/elasticsearch-query-toolkit/wiki/elasticsearch-query-toolkit-help-doc)**
 ```java
 String sql = "select * from index.order where status='SUCCESS' and price > 100 order by nvl(pride, 0) asc routing by 'JD' limit 0, 20";
 
