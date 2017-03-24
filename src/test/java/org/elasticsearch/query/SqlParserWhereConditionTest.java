@@ -12,6 +12,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.elasticsearch.utils.ElasticMockClient;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -156,6 +157,7 @@ public class SqlParserWhereConditionTest {
     }
 
     @Test
+    @Ignore
     public void testCreateAggDsl() {
         SearchRequestBuilder searchReq = new SearchRequestBuilder(new ElasticMockClient(), SearchAction.INSTANCE);
         searchReq.setSize(0);

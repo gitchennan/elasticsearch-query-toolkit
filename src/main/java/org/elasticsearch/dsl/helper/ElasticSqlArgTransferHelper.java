@@ -29,30 +29,36 @@ public class ElasticSqlArgTransferHelper {
             if (varRefExpr.getIndex() >= sqlArgs.length) {
                 throw new ElasticSql2DslException("[syntax error] Sql args out of index: " + varRefExpr.getIndex());
             }
-            //解析date类型
+            //parse date
             if (recognizeDateArg && ElasticSqlDateParseHelper.isDateArgObjectValue(sqlArgs[varRefExpr.getIndex()])) {
                 return ElasticSqlDateParseHelper.formatDefaultEsDateObjectValue(sqlArgs[varRefExpr.getIndex()]);
             }
             return sqlArgs[varRefExpr.getIndex()];
         }
+
+        //numbers
         if (expr instanceof SQLIntegerExpr) {
             return ((SQLIntegerExpr) expr).getNumber().longValue();
         }
         if (expr instanceof SQLNumberExpr) {
             return ((SQLNumberExpr) expr).getNumber().doubleValue();
         }
+
+        //string
         if (expr instanceof SQLCharExpr) {
             Object textObject = ((SQLCharExpr) expr).getValue();
-            //解析date类型
+            //parse date
             if (recognizeDateArg && (textObject instanceof String) && ElasticSqlDateParseHelper.isDateArgStringValue((String) textObject)) {
                 return ElasticSqlDateParseHelper.formatDefaultEsDateStringValue((String) textObject);
             }
             return textObject;
         }
+
+        //method call
         if (expr instanceof SQLMethodInvokeExpr) {
             SQLMethodInvokeExpr methodExpr = (SQLMethodInvokeExpr) expr;
 
-            //解析date函数
+            //parse date method
             if (ElasticSqlDateParseHelper.isDateMethod(methodExpr)) {
                 ElasticSqlMethodInvokeHelper.checkDateMethod(methodExpr);
                 String patternArg = (String) ElasticSqlArgTransferHelper.transferSqlArg(methodExpr.getParameters().get(0), sqlArgs, false);

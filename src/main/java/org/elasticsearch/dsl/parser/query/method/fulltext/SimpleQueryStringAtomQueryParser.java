@@ -34,7 +34,7 @@ public class SimpleQueryStringAtomQueryParser extends AbstractAtomMethodQueryPar
 
     @Override
     protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == "simpleQueryString".equalsIgnoreCase(methodQueryExpr.getMethodName())) {
+        if (Boolean.FALSE == isSimpleQueryStringQuery(methodQueryExpr)) {
             throw new ElasticSql2DslException(String.format("[syntax error] Expected simpleQueryString query method name is [simpleQueryString],but get [%s]", methodQueryExpr.getMethodName()));
         }
 

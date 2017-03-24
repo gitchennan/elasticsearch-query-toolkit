@@ -82,7 +82,7 @@ public abstract class AbstractAtomMethodQueryParser {
                 extraParamMap.put(paramPairArr[0].trim(), paramPairArr[1].trim());
             }
             else {
-                throw new ElasticSql2DslException("[fulltext_query] Fulltext match query method param format error!");
+                throw new ElasticSql2DslException("Failed to parse query method params!");
             }
         }
         return extraParamMap;

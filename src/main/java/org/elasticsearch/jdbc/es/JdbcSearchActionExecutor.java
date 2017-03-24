@@ -41,6 +41,7 @@ public class JdbcSearchActionExecutor {
         return new ActionListener<Response>() {
             @Override
             public void onResponse(Response response) {
+                //System.out.println(requestBuilder.toString());
                 Logger.debug(this, String.format("[Search_Request] %s", requestBuilder.toString()));
                 Logger.debug(this, String.format("[Search_Response] %s", response.toString()));
             }
