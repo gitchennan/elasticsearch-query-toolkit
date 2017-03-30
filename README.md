@@ -71,12 +71,12 @@ SearchResponse response = searchReq.execute().actionGet();
 ## 二、集成MyBatis、Spring
 首先在Spring配置文件中增加如下代码
 1. 指定driverClassName：org.elasticsearch.jdbc.api.ElasticDriver
-2. 指定连接ES的连接串：jdbc:elastic:192.168.0.109:9300/product_cluster
+2. 指定连接ES的连接串：jdbc:elastic:172.19.22.34:9300/product_cluster
 3. 创建一个SqlMapClient对象，并指定sqlMapConfig.xml路径
 ```bash
 <bean id="elasticDataSource" class="org.elasticsearch.jdbc.api.ElasticSingleConnectionDataSource" destroy-method="destroy">
     <property name="driverClassName" value="org.elasticsearch.jdbc.api.ElasticDriver" />
-    <property name="url" value="jdbc:elastic:192.168.0.109:9300/product_cluster" />
+    <property name="url" value="jdbc:elastic:172.19.22.34:9300/product_cluster" />
 </bean>
 
 <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
