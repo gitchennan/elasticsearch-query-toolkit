@@ -29,6 +29,10 @@ public abstract class AbstractAtomMethodQueryParser {
 
     protected abstract AtomQuery parseMethodQueryExpr(SQLMethodInvokeExpr matchQueryExpr, String queryAs, Object[] sqlArgs);
 
+    protected interface IConditionMethodQueryBuilder {
+        QueryBuilder buildQuery(String queryFieldName, Object[] parameters);
+    }
+
 
     public final AtomQuery parseAtomMethodQuery(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
         checkQueryMethod(methodQueryExpr, queryAs, sqlArgs);

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-curl -XDELETE 'http://172.19.22.34:9200/index/'
+curl -XDELETE 'http://192.168.0.109:9200/index/'
 
-curl -XPUT 'http://172.19.22.34:9200/index/' -d '{
+curl -XPUT 'http://192.168.0.109:9200/index/' -d '{
 	"settings": {
 		"index": {
 			"number_of_shards": 1,
@@ -55,7 +55,7 @@ curl -XPUT 'http://172.19.22.34:9200/index/' -d '{
 }'
 
 
-curl -XPUT 'http://172.19.22.34:9200/index/product/1' -d '{
+curl -XPUT 'http://192.168.0.109:9200/index/product/1' -d '{
 	"productName" : "iphone 6s",
 	"productCode" : "IP_6S",
 	"minPrice" : 2288.00,
@@ -78,7 +78,7 @@ curl -XPUT 'http://172.19.22.34:9200/index/product/1' -d '{
 	}]
 }'
 
-curl -XPUT 'http://172.19.22.34:9200/index/product/2' -d '{
+curl -XPUT 'http://192.168.0.109:9200/index/product/2' -d '{
 	"productName" : "apple watch os2",
 	"productCode" : "AW_OS2",
 	"minPrice" : 1000.00,
@@ -101,4 +101,4 @@ curl -XPUT 'http://172.19.22.34:9200/index/product/2' -d '{
 	}]
 }'
 
-curl -XPOST 'http://172.19.22.34:9200/index/_refresh'
+curl -XPOST 'http://192.168.0.109:9200/index/_refresh'
