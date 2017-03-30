@@ -11,9 +11,7 @@ import org.junit.Test;
 import java.sql.*;
 import java.util.Enumeration;
 
-public class ElasticDriverTest {
-    private static final String driver = "org.elasticsearch.jdbc.api.ElasticDriver";
-    private static final String url = "jdbc:elastic:192.168.0.109:9300/lu-search-cluster";
+public class ElasticDriverTest extends BaseJdbcTest{
 
     @Test
     public void testLoadDriver() throws Exception {

@@ -11,9 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-public class GroupByTest {
-    private static final String driver = "org.elasticsearch.jdbc.api.ElasticDriver";
-    private static final String url = "jdbc:elastic:192.168.0.109:9300/lu-search-cluster";
+public class GroupByTest extends BaseJdbcTest {
 
     @Test
     public void testGroupBy() throws Exception {
