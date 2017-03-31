@@ -14,9 +14,10 @@ import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.exact.BetweenAndAtomQueryParser;
 import org.elasticsearch.dsl.parser.query.exact.BinaryAtomQueryParser;
 import org.elasticsearch.dsl.parser.query.exact.InListAtomQueryParser;
+import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
 import org.elasticsearch.dsl.parser.query.method.fulltext.FullTextAtomQueryParser;
-import org.elasticsearch.dsl.parser.query.method.term.TermLevelAtomQueryParser;
 import org.elasticsearch.dsl.parser.query.method.script.ScriptAtomQueryParser;
+import org.elasticsearch.dsl.parser.query.method.term.TermLevelAtomQueryParser;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -25,10 +26,20 @@ import java.util.List;
 
 public abstract class AbstractQueryConditionParser implements QueryParser {
 
-    protected ParseActionListener parseActionListener;
+    private final TermLevelAtomQueryParser termLevelAtomQueryParser;
+    private final ScriptAtomQueryParser scriptAtomQueryParser;
+    private final FullTextAtomQueryParser fullTextAtomQueryParser;
+    private final BinaryAtomQueryParser binaryQueryParser;
+    private final InListAtomQueryParser inListQueryParser;
+    private final BetweenAndAtomQueryParser betweenAndQueryParser;
 
     public AbstractQueryConditionParser(ParseActionListener parseActionListener) {
-        this.parseActionListener = parseActionListener;
+        termLevelAtomQueryParser = new TermLevelAtomQueryParser(parseActionListener);
+        scriptAtomQueryParser = new ScriptAtomQueryParser(parseActionListener);
+        fullTextAtomQueryParser = new FullTextAtomQueryParser(parseActionListener);
+        binaryQueryParser = new BinaryAtomQueryParser(parseActionListener);
+        inListQueryParser = new InListAtomQueryParser(parseActionListener);
+        betweenAndQueryParser = new BetweenAndAtomQueryParser(parseActionListener);
     }
 
     protected BoolQueryBuilder parseQueryConditionExpr(SQLExpr conditionExpr, String queryAs, Object[] sqlArgs) {
@@ -80,31 +91,27 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
         if (sqlConditionExpr instanceof SQLMethodInvokeExpr) {
             SQLMethodInvokeExpr methodQueryExpr = (SQLMethodInvokeExpr) sqlConditionExpr;
 
-            if(ScriptAtomQueryParser.isScriptAtomQuery(methodQueryExpr)) {
-                ScriptAtomQueryParser scriptAtomQueryParser = new ScriptAtomQueryParser(parseActionListener);
-                return scriptAtomQueryParser.parseAtomMethodQuery(methodQueryExpr, queryAs, sqlArgs);
+            MethodInvocation methodInvocation = new MethodInvocation(methodQueryExpr, queryAs, sqlArgs);
+
+            if (scriptAtomQueryParser.isMatchMethodInvocation(methodInvocation)) {
+                return scriptAtomQueryParser.parseAtomMethodQuery(methodInvocation);
             }
 
-            if (FullTextAtomQueryParser.isFulltextAtomQuery(methodQueryExpr)) {
-                FullTextAtomQueryParser fullTextAtomQueryParser = new FullTextAtomQueryParser(parseActionListener);
+            if (fullTextAtomQueryParser.isFulltextAtomQuery(methodQueryExpr)) {
                 return fullTextAtomQueryParser.parseFullTextAtomQuery(methodQueryExpr, queryAs, sqlArgs);
             }
 
-            if (TermLevelAtomQueryParser.isTermLevelAtomQuery(methodQueryExpr)) {
-                TermLevelAtomQueryParser termLevelAtomQueryParser = new TermLevelAtomQueryParser(parseActionListener);
+            if (termLevelAtomQueryParser.isTermLevelAtomQuery(methodInvocation)) {
                 return termLevelAtomQueryParser.parseTermLevelAtomQuery(methodQueryExpr, queryAs, sqlArgs);
             }
         }
         else if (sqlConditionExpr instanceof SQLBinaryOpExpr) {
-            BinaryAtomQueryParser binaryQueryParser = new BinaryAtomQueryParser(parseActionListener);
             return binaryQueryParser.parseBinaryQuery((SQLBinaryOpExpr) sqlConditionExpr, queryAs, sqlArgs);
         }
         else if (sqlConditionExpr instanceof SQLInListExpr) {
-            InListAtomQueryParser inListQueryParser = new InListAtomQueryParser(parseActionListener);
             return inListQueryParser.parseInListQuery((SQLInListExpr) sqlConditionExpr, queryAs, sqlArgs);
         }
         else if (sqlConditionExpr instanceof SQLBetweenExpr) {
-            BetweenAndAtomQueryParser betweenAndQueryParser = new BetweenAndAtomQueryParser(parseActionListener);
             return betweenAndQueryParser.parseBetweenAndQuery((SQLBetweenExpr) sqlConditionExpr, queryAs, sqlArgs);
         }
         throw new ElasticSql2DslException(String.format("[syntax error] Can not support query condition type[%s]", sqlConditionExpr.toString()));

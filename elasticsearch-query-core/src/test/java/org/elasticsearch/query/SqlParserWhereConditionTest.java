@@ -15,6 +15,10 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
 
 public class SqlParserWhereConditionTest {
     @Test
@@ -256,5 +260,13 @@ public class SqlParserWhereConditionTest {
         );
         f2 = parseResult.getWhereCondition();
         Assert.assertEquals(f1.toString(), f2.toString());
+    }
+
+    @Test
+    public void testMatchQuery() throws Exception {
+        String sql = "select * from index query term(name, 'abc', 'boost:2.0f') and term(code, '123')";
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+        System.out.println(parseResult.toDsl());
     }
 }

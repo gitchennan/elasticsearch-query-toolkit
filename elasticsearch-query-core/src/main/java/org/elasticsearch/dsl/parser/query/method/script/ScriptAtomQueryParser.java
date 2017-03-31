@@ -12,6 +12,7 @@ import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
+import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
@@ -27,13 +28,14 @@ public class ScriptAtomQueryParser extends AbstractAtomMethodQueryParser {
         super(parseActionListener);
     }
 
-    public static Boolean isScriptAtomQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return ElasticSqlMethodInvokeHelper.isMethodOf(SCRIPT_METHOD, methodQueryExpr.getMethodName());
+    @Override
+    public boolean isMatchMethodInvocation(MethodInvocation invocation) {
+        return ElasticSqlMethodInvokeHelper.isMethodOf(SCRIPT_METHOD, invocation.getMatchQueryExpr().getMethodName());
     }
 
     @Override
     protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == isScriptAtomQuery(methodQueryExpr)) {
+        if (Boolean.FALSE == isMatchMethodInvocation(new MethodInvocation(methodQueryExpr, queryAs, sqlArgs))) {
             throw new ElasticSql2DslException(String.format("[syntax error] Expected script query method name is [script],but get [%s]", methodQueryExpr.getMethodName()));
         }
 

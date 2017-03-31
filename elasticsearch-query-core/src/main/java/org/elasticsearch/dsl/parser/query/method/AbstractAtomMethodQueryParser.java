@@ -13,7 +13,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 
 import java.util.Map;
 
-public abstract class AbstractAtomMethodQueryParser {
+public abstract class AbstractAtomMethodQueryParser implements MethodQueryParser {
 
     protected static final String COMMA = ",";
 
@@ -34,10 +34,10 @@ public abstract class AbstractAtomMethodQueryParser {
     }
 
 
-    public final AtomQuery parseAtomMethodQuery(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        checkQueryMethod(methodQueryExpr, queryAs, sqlArgs);
+    public final AtomQuery parseAtomMethodQuery(MethodInvocation invocation) {
+        checkQueryMethod(invocation.getMatchQueryExpr(), invocation.getQueryAs(), invocation.getSqlArgs());
 
-        return parseMethodQueryExpr(methodQueryExpr, queryAs, sqlArgs);
+        return parseMethodQueryExpr(invocation.getMatchQueryExpr(), invocation.getQueryAs(), invocation.getSqlArgs());
     }
 
     protected AtomQuery parseCondition(SQLExpr queryFieldExpr, Object[] parameters, String queryAs, IConditionMethodQueryBuilder queryBuilder) {

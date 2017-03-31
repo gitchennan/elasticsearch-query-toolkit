@@ -1,18 +1,17 @@
 package org.elasticsearch.dsl.parser.query.method;
 
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 
 public abstract class CheckableMethodQueryParser implements MethodQueryParser {
 
-    abstract void checkQueryMethod(SQLMethodInvokeExpr matchQueryExpr, String queryAs, Object[] sqlArgs);
+    protected abstract void checkQueryMethod(MethodInvocation invocation) throws ElasticSql2DslException;
 
-    abstract AtomQuery parseMethodQueryExpr(SQLMethodInvokeExpr matchQueryExpr, String queryAs, Object[] sqlArgs);
+    protected abstract AtomQuery parseMethodQueryWithCheck(MethodInvocation invocation) throws ElasticSql2DslException;
 
     @Override
-    public AtomQuery parseAtomMethodQuery(SQLMethodInvokeExpr methodExpr, String queryAs, Object[] sqlArgs) throws ElasticSql2DslException {
-        checkQueryMethod(methodExpr, queryAs, sqlArgs);
-        return parseMethodQueryExpr(methodExpr, queryAs, sqlArgs);
+    public AtomQuery parseAtomMethodQuery(MethodInvocation invocation) throws ElasticSql2DslException {
+        checkQueryMethod(invocation);
+        return parseMethodQueryWithCheck(invocation);
     }
 }
