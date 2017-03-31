@@ -12,6 +12,7 @@ import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
+import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 
@@ -29,6 +30,11 @@ public class QueryStringAtomQueryParser extends AbstractAtomMethodQueryParser {
 
     public static Boolean isQueryStringQuery(SQLMethodInvokeExpr methodQueryExpr) {
         return ElasticSqlMethodInvokeHelper.isMethodOf(QUERY_STRING_METHOD, methodQueryExpr.getMethodName());
+    }
+
+    @Override
+    public boolean isMatchMethodInvocation(MethodInvocation invocation) {
+        return false;
     }
 
     @Override

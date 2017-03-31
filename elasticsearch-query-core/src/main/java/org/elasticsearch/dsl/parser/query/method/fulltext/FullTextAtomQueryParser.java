@@ -5,6 +5,7 @@ import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
+import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
 
 public class FullTextAtomQueryParser {
 
@@ -14,14 +15,15 @@ public class FullTextAtomQueryParser {
         this.parseActionListener = parseActionListener;
     }
 
-    public static Boolean isFulltextAtomQuery(SQLMethodInvokeExpr methodQueryExpr) {
+    public Boolean isFulltextAtomQuery(SQLMethodInvokeExpr methodQueryExpr) {
         return MatchAtomQueryParser.isMatchQuery(methodQueryExpr) || MultiMatchAtomQueryParser.isMultiMatch(methodQueryExpr) ||
                 QueryStringAtomQueryParser.isQueryStringQuery(methodQueryExpr) || SimpleQueryStringAtomQueryParser.isSimpleQueryStringQuery(methodQueryExpr);
     }
 
     public AtomQuery parseFullTextAtomQuery(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
         AbstractAtomMethodQueryParser matchAtomQueryParser = getQueryParser(methodQueryExpr);
-        return matchAtomQueryParser.parseAtomMethodQuery(methodQueryExpr, queryAs, sqlArgs);
+        MethodInvocation methodInvocation = new MethodInvocation(methodQueryExpr, queryAs, sqlArgs);
+        return matchAtomQueryParser.parseAtomMethodQuery(methodInvocation);
     }
 
     private AbstractAtomMethodQueryParser getQueryParser(SQLMethodInvokeExpr methodQueryExpr) {

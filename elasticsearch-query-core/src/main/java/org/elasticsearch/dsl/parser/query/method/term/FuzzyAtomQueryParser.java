@@ -6,12 +6,12 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
-import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
-import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
+import org.elasticsearch.dsl.parser.query.method.AbstractFieldSpecificMethodQueryParser;
+import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
 import org.elasticsearch.index.query.FuzzyQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -19,7 +19,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import java.util.List;
 import java.util.Map;
 
-public class FuzzyAtomQueryParser extends AbstractAtomMethodQueryParser {
+public class FuzzyAtomQueryParser extends AbstractFieldSpecificMethodQueryParser {
 
     private static List<String> FUZZY_QUERY_METHOD = ImmutableList.of("fuzzy", "fuzzy_query", "fuzzyQuery");
 
@@ -27,15 +27,21 @@ public class FuzzyAtomQueryParser extends AbstractAtomMethodQueryParser {
         super(parseActionListener);
     }
 
-    public static Boolean isFuzzyQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return ElasticSqlMethodInvokeHelper.isMethodOf(FUZZY_QUERY_METHOD, methodQueryExpr.getMethodName());
+    @Override
+    public boolean isMatchMethodInvocation(MethodInvocation invocation) {
+        return ElasticSqlMethodInvokeHelper.isMethodOf(FUZZY_QUERY_METHOD, invocation.getMatchQueryExpr().getMethodName());
     }
 
     @Override
-    protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == isFuzzyQuery(methodQueryExpr)) {
-            throw new ElasticSql2DslException(String.format("[syntax error] Expected fuzzy query method name is [fuzzy],but get [%s]", methodQueryExpr.getMethodName()));
+    protected void checkQueryMethod(MethodInvocation invocation) {
+
+        if (Boolean.FALSE == isMatchMethodInvocation(invocation)) {
+            throw new ElasticSql2DslException(
+                    String.format("[syntax error] Expected fuzzy query method name is [fuzzy],but get [%s]",
+                            invocation.getMatchQueryExpr().getMethodName()));
         }
+
+        SQLMethodInvokeExpr methodQueryExpr = invocation.getMatchQueryExpr();
 
         int paramCount = methodQueryExpr.getParameters().size();
         if (paramCount != 2 && paramCount != 3) {
@@ -44,41 +50,38 @@ public class FuzzyAtomQueryParser extends AbstractAtomMethodQueryParser {
 
         SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
 
-        String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false).toString();
+        String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, invocation.getSqlArgs(), false).toString();
         if (StringUtils.isEmpty(text)) {
             throw new ElasticSql2DslException("[syntax error] Fuzzy text can not be blank!");
         }
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected AtomQuery parseMethodQueryExpr(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        SQLExpr queryField = methodQueryExpr.getParameters().get(0);
-        SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
-
-        Map<String, String> extraParamMap = null;
-        if (methodQueryExpr.getParameters().size() == 3) {
-            SQLExpr ExtraParamExpr = methodQueryExpr.getParameters().get(2);
-            String extraParam = ElasticSqlArgTransferHelper.transferSqlArg(ExtraParamExpr, sqlArgs, false).toString();
-
-            extraParamMap = buildExtraMethodQueryParamsMap(extraParam);
+    protected String getExtraParamString(MethodInvocation invocation) {
+        SQLMethodInvokeExpr methodInvokeExpr = invocation.getMatchQueryExpr();
+        if (methodInvokeExpr.getParameters().size() == 3) {
+            SQLExpr extraParamExpr = methodInvokeExpr.getParameters().get(2);
+            Object[] sqlArgs = invocation.getSqlArgs();
+            return ElasticSqlArgTransferHelper.transferSqlArg(extraParamExpr, sqlArgs, false).toString();
         }
+        return StringUtils.EMPTY;
+    }
 
-        Object text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false);
+    @Override
+    protected QueryBuilder buildQuery(MethodInvocation invocation, String fieldName, Map<String, String> extraParams) {
+        SQLMethodInvokeExpr methodInvokeExpr = invocation.getMatchQueryExpr();
 
-        return parseCondition(queryField, new Object[]{text, extraParamMap}, queryAs, new IConditionMethodQueryBuilder() {
-            @Override
-            public QueryBuilder buildQuery(String queryFieldName, Object[] parameters) {
-                FuzzyQueryBuilder fuzzyQuery = QueryBuilders.fuzzyQuery(queryFieldName, parameters[0].toString());
+        SQLExpr textExpr = methodInvokeExpr.getParameters().get(1);
+        Object text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, invocation.getSqlArgs(), false);
 
-                if (parameters.length == 2 && parameters[1] != null) {
-                    Map<String, String> tExtraParamMap = (Map<String, String>) parameters[1];
-                    setExtraMatchQueryParam(fuzzyQuery, tExtraParamMap);
-                }
+        FuzzyQueryBuilder fuzzyQuery = QueryBuilders.fuzzyQuery(fieldName, text);
+        setExtraMatchQueryParam(fuzzyQuery, extraParams);
+        return fuzzyQuery;
+    }
 
-                return fuzzyQuery;
-            }
-        });
+    @Override
+    protected SQLExpr getFieldExpr(MethodInvocation invocation) {
+        return invocation.getMatchQueryExpr().getParameters().get(0);
     }
 
     private void setExtraMatchQueryParam(FuzzyQueryBuilder fuzzyQuery, Map<String, String> extraParamMap) {

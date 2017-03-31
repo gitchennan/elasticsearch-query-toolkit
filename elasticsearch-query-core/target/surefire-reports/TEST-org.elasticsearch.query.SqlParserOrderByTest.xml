@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="1" failures="0" name="org.elasticsearch.query.SqlParserOrderByTest" time="0.033" errors="0" skipped="0">
+<testsuite tests="1" failures="0" name="org.elasticsearch.query.SqlParserOrderByTest" time="0.006" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="sun.boot.library.path" value="E:\dev\Java\jdk1.8.0_66\jre\bin"/>
@@ -61,5 +61,5 @@
     <property name="sun.desktop" value="windows"/>
     <property name="sun.cpu.isalist" value="amd64"/>
   </properties>
-  <testcase classname="org.elasticsearch.query.SqlParserOrderByTest" name="testParseEqExpr" time="0.019"/>
+  <testcase classname="org.elasticsearch.query.SqlParserOrderByTest" name="testParseEqExpr" time="0.006"/>
 </testsuite>

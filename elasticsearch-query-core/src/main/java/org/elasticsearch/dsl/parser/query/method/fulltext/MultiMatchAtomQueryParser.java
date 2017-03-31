@@ -12,6 +12,7 @@ import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
 import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
+import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -29,6 +30,11 @@ public class MultiMatchAtomQueryParser extends AbstractAtomMethodQueryParser {
 
     public static Boolean isMultiMatch(SQLMethodInvokeExpr methodQueryExpr) {
         return ElasticSqlMethodInvokeHelper.isMethodOf(MULTI_MATCH_METHOD, methodQueryExpr.getMethodName());
+    }
+
+    @Override
+    public boolean isMatchMethodInvocation(MethodInvocation invocation) {
+        return false;
     }
 
     @Override
