@@ -1,14 +1,11 @@
 package org.elasticsearch.dsl.parser.query.method.term;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
-import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractFieldSpecificMethodQueryParser;
 import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
@@ -21,67 +18,58 @@ import java.util.Map;
 
 public class FuzzyAtomQueryParser extends AbstractFieldSpecificMethodQueryParser {
 
-    private static List<String> FUZZY_QUERY_METHOD = ImmutableList.of("fuzzy", "fuzzy_query", "fuzzyQuery");
+    private static final List<String> FUZZY_QUERY_METHOD = ImmutableList.of("fuzzy", "fuzzy_query", "fuzzyQuery");
 
     public FuzzyAtomQueryParser(ParseActionListener parseActionListener) {
         super(parseActionListener);
     }
 
     @Override
-    public boolean isMatchMethodInvocation(MethodInvocation invocation) {
-        return ElasticSqlMethodInvokeHelper.isMethodOf(FUZZY_QUERY_METHOD, invocation.getMatchQueryExpr().getMethodName());
+    public List<String> defineMethodNames() {
+        return FUZZY_QUERY_METHOD;
     }
 
     @Override
-    protected void checkQueryMethod(MethodInvocation invocation) {
+    protected SQLExpr defineFieldExpr(MethodInvocation invocation) {
+        return invocation.getParameter(0);
+    }
 
-        if (Boolean.FALSE == isMatchMethodInvocation(invocation)) {
+    @Override
+    protected String defineExtraParamString(MethodInvocation invocation) {
+        int extraParamIdx = 2;
+
+        return (invocation.getParameterCount() == extraParamIdx + 1)
+                ? invocation.getParameterAsString(extraParamIdx) : StringUtils.EMPTY;
+    }
+
+    @Override
+    protected void checkMethodInvokeArgs(MethodInvocation invocation) {
+        if (invocation.getParameterCount() != 2 && invocation.getParameterCount() != 3) {
             throw new ElasticSql2DslException(
-                    String.format("[syntax error] Expected fuzzy query method name is [fuzzy],but get [%s]",
-                            invocation.getMatchQueryExpr().getMethodName()));
+                    String.format("[syntax error] There's no %s args method named [%s].",
+                            invocation.getParameterCount(), invocation.getMethodName()));
         }
 
-        SQLMethodInvokeExpr methodQueryExpr = invocation.getMatchQueryExpr();
-
-        int paramCount = methodQueryExpr.getParameters().size();
-        if (paramCount != 2 && paramCount != 3) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There's no %s args method: fuzzy", paramCount));
-        }
-
-        SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
-
-        String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, invocation.getSqlArgs(), false).toString();
+        String text = invocation.getParameterAsString(1);
         if (StringUtils.isEmpty(text)) {
-            throw new ElasticSql2DslException("[syntax error] Fuzzy text can not be blank!");
+            throw new ElasticSql2DslException("[syntax error] Fuzzy search text can not be blank!");
         }
-    }
 
-    @Override
-    protected String getExtraParamString(MethodInvocation invocation) {
-        SQLMethodInvokeExpr methodInvokeExpr = invocation.getMatchQueryExpr();
-        if (methodInvokeExpr.getParameters().size() == 3) {
-            SQLExpr extraParamExpr = methodInvokeExpr.getParameters().get(2);
-            Object[] sqlArgs = invocation.getSqlArgs();
-            return ElasticSqlArgTransferHelper.transferSqlArg(extraParamExpr, sqlArgs, false).toString();
+        if (invocation.getParameterCount() == 3) {
+            String extraParamString = defineExtraParamString(invocation);
+            if (StringUtils.isEmpty(extraParamString)) {
+                throw new ElasticSql2DslException("[syntax error] The extra param of fuzzy method can not be blank");
+            }
         }
-        return StringUtils.EMPTY;
     }
 
     @Override
     protected QueryBuilder buildQuery(MethodInvocation invocation, String fieldName, Map<String, String> extraParams) {
-        SQLMethodInvokeExpr methodInvokeExpr = invocation.getMatchQueryExpr();
-
-        SQLExpr textExpr = methodInvokeExpr.getParameters().get(1);
-        Object text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, invocation.getSqlArgs(), false);
-
+        String text = invocation.getParameterAsString(1);
         FuzzyQueryBuilder fuzzyQuery = QueryBuilders.fuzzyQuery(fieldName, text);
+
         setExtraMatchQueryParam(fuzzyQuery, extraParams);
         return fuzzyQuery;
-    }
-
-    @Override
-    protected SQLExpr getFieldExpr(MethodInvocation invocation) {
-        return invocation.getMatchQueryExpr().getParameters().get(0);
     }
 
     private void setExtraMatchQueryParam(FuzzyQueryBuilder fuzzyQuery, Map<String, String> extraParamMap) {

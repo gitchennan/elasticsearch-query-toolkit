@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: org.elasticsearch.jdbc.MethodQueryTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 sec
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.049 sec

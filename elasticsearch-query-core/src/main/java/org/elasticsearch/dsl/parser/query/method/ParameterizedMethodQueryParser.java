@@ -10,11 +10,11 @@ import java.util.Map;
 
 public abstract class ParameterizedMethodQueryParser extends CheckableMethodQueryParser {
 
-    private static final String COMMA = ",";
+    protected static final String COMMA = ",";
 
-    private static final String COLON = ":";
+    protected static final String COLON = ":";
 
-    protected abstract String getExtraParamString(MethodInvocation invocation);
+    protected abstract String defineExtraParamString(MethodInvocation invocation);
 
     protected abstract AtomQuery parseMethodQueryWithExtraParams(
             MethodInvocation invocation, Map<String, String> extraParamMap) throws ElasticSql2DslException;
@@ -26,7 +26,7 @@ public abstract class ParameterizedMethodQueryParser extends CheckableMethodQuer
     }
 
     private Map<String, String> buildExtraParamMap(MethodInvocation invocation) {
-        String extraParamString = getExtraParamString(invocation);
+        String extraParamString = defineExtraParamString(invocation);
 
         if (StringUtils.isBlank(extraParamString)) {
             return Collections.emptyMap();
@@ -46,6 +46,9 @@ public abstract class ParameterizedMethodQueryParser extends CheckableMethodQuer
     }
 
     protected Boolean isExtraParamsString(String extraParams) {
+        if (StringUtils.isBlank(extraParams)) {
+            return Boolean.FALSE;
+        }
         for (String paramPair : extraParams.split(COMMA)) {
             String[] paramPairArr = paramPair.split(COLON);
             if (paramPairArr.length != 2) {

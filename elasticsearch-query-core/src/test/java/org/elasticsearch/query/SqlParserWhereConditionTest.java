@@ -264,7 +264,7 @@ public class SqlParserWhereConditionTest {
 
     @Test
     public void testMatchQuery() throws Exception {
-        String sql = "select * from index query term(name, 'abc', 'boost:2.0f') and term(code, '123')";
+        String sql = "select * from index where term(name, 'abc', 'boost:2.0f') and term(code, '123')";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
         System.out.println(parseResult.toDsl());

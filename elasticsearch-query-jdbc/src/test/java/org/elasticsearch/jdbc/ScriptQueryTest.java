@@ -1,10 +1,10 @@
 package org.elasticsearch.jdbc;
 
 
-import org.elasticsearch.jdbc.api.ElasticSingleConnectionDataSource;
+import org.elasticsearch.api.ElasticSingleConnectionDataSource;
 import org.elasticsearch.jdbc.bean.Product;
-import org.elasticsearch.jdbc.es.JdbcSearchResponse;
-import org.elasticsearch.jdbc.es.JdbcSearchResponseResolver;
+import org.elasticsearch.es.JdbcSearchResponse;
+import org.elasticsearch.es.JdbcSearchResponseResolver;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -32,12 +32,5 @@ public class ScriptQueryTest extends BaseJdbcTest {
         for (Product product : jdbcSearchResponse.getResultList()) {
             System.out.println(String.format("productName:%s, minPrice:%s, advicePrice:%s", product.getProductName(), product.getMinPrice(), product.getAdvicePrice()));
         }
-
-
-//        sql = "";
-//        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
-//        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
-//        String dsl = parseResult.toDsl();
-//        System.out.println(dsl);
     }
 }

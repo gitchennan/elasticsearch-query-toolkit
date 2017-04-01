@@ -1,17 +1,13 @@
 package org.elasticsearch.dsl.parser.query.method.fulltext;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
-import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
-import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
-import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
+import org.elasticsearch.dsl.parser.query.method.AbstractFieldSpecificMethodQueryParser;
 import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -20,7 +16,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import java.util.List;
 import java.util.Map;
 
-public class MatchAtomQueryParser extends AbstractAtomMethodQueryParser {
+public class MatchAtomQueryParser extends AbstractFieldSpecificMethodQueryParser {
 
     private static final List<String> MATCH_METHOD = ImmutableList.of("match", "match_query", "matchQuery");
 
@@ -28,63 +24,52 @@ public class MatchAtomQueryParser extends AbstractAtomMethodQueryParser {
         super(parseActionListener);
     }
 
-    public static Boolean isMatchQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return ElasticSqlMethodInvokeHelper.isMethodOf(MATCH_METHOD, methodQueryExpr.getMethodName());
+    @Override
+    public List<String> defineMethodNames() {
+        return MATCH_METHOD;
     }
 
     @Override
-    public boolean isMatchMethodInvocation(MethodInvocation invocation) {
-        return false;
+    protected QueryBuilder buildQuery(MethodInvocation invocation, String fieldName, Map<String, String> extraParams) {
+        String text = invocation.getParameterAsString(1);
+        MatchQueryBuilder matchQuery = QueryBuilders.matchQuery(fieldName, text);
+
+        setExtraMatchQueryParam(matchQuery, extraParams);
+        return matchQuery;
     }
 
     @Override
-    protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == isMatchQuery(methodQueryExpr)) {
-            throw new ElasticSql2DslException(String.format("[syntax error] Expected match query method name is [match],but get [%s]", methodQueryExpr.getMethodName()));
+    protected String defineExtraParamString(MethodInvocation invocation) {
+        int extraParamIdx = 2;
+
+        return (invocation.getParameterCount() == extraParamIdx + 1)
+                ? invocation.getParameterAsString(extraParamIdx) : StringUtils.EMPTY;
+    }
+
+    @Override
+    protected SQLExpr defineFieldExpr(MethodInvocation invocation) {
+        return invocation.getParameter(0);
+    }
+
+    @Override
+    protected void checkMethodInvokeArgs(MethodInvocation invocation) throws ElasticSql2DslException {
+        if (invocation.getParameterCount() != 2 && invocation.getParameterCount() != 3) {
+            throw new ElasticSql2DslException(
+                    String.format("[syntax error] There's no %s args method named [%s].",
+                            invocation.getParameterCount(), invocation.getMethodName()));
         }
 
-        int paramCount = methodQueryExpr.getParameters().size();
-        if (paramCount != 2 && paramCount != 3) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There's no %s args method: match", paramCount));
-        }
-
-        SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
-
-        String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false).toString();
+        String text = invocation.getParameterAsString(1);
         if (StringUtils.isEmpty(text)) {
-            throw new ElasticSql2DslException("[syntax error] Search text can not be blank!");
-        }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    protected AtomQuery parseMethodQueryExpr(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        SQLExpr queryField = methodQueryExpr.getParameters().get(0);
-        SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
-
-        Map<String, String> extraParamMap = null;
-        if (methodQueryExpr.getParameters().size() == 3) {
-            SQLExpr extraParamExpr = methodQueryExpr.getParameters().get(2);
-            String extraParam = ElasticSqlArgTransferHelper.transferSqlArg(extraParamExpr, sqlArgs, false).toString();
-
-            extraParamMap = buildExtraMethodQueryParamsMap(extraParam);
+            throw new ElasticSql2DslException("[syntax error] Match search text can not be blank!");
         }
 
-        Object text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false);
-
-        return parseCondition(queryField, new Object[]{text, extraParamMap}, queryAs, new IConditionMethodQueryBuilder() {
-            @Override
-            public QueryBuilder buildQuery(String queryFieldName, Object[] parameters) {
-                MatchQueryBuilder matchQuery = QueryBuilders.matchQuery(queryFieldName, parameters[0]);
-
-                if (parameters.length == 2 && parameters[1] != null) {
-                    Map<String, String> tExtraParamMap = (Map<String, String>) parameters[1];
-                    setExtraMatchQueryParam(matchQuery, tExtraParamMap);
-                }
-
-                return matchQuery;
+        if (invocation.getParameterCount() == 3) {
+            String extraParamString = defineExtraParamString(invocation);
+            if (StringUtils.isEmpty(extraParamString)) {
+                throw new ElasticSql2DslException("[syntax error] The extra param of match method can not be blank");
             }
-        });
+        }
     }
 
     private void setExtraMatchQueryParam(MatchQueryBuilder matchQuery, Map<String, String> extraParamMap) {
