@@ -35,11 +35,12 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
 
     public AbstractQueryConditionParser(ParseActionListener parseActionListener) {
         termLevelAtomQueryParser = new TermLevelAtomQueryParser(parseActionListener);
-        scriptAtomQueryParser = new ScriptAtomQueryParser(parseActionListener);
         fullTextAtomQueryParser = new FullTextAtomQueryParser(parseActionListener);
         binaryQueryParser = new BinaryAtomQueryParser(parseActionListener);
         inListQueryParser = new InListAtomQueryParser(parseActionListener);
         betweenAndQueryParser = new BetweenAndAtomQueryParser(parseActionListener);
+
+        scriptAtomQueryParser = new ScriptAtomQueryParser();
     }
 
     protected BoolQueryBuilder parseQueryConditionExpr(SQLExpr conditionExpr, String queryAs, Object[] sqlArgs) {
@@ -97,7 +98,7 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
                 return scriptAtomQueryParser.parseAtomMethodQuery(methodInvocation);
             }
 
-            if (fullTextAtomQueryParser.isFulltextAtomQuery(methodQueryExpr)) {
+            if (fullTextAtomQueryParser.isFulltextAtomQuery(methodInvocation)) {
                 return fullTextAtomQueryParser.parseFullTextAtomQuery(methodQueryExpr, queryAs, sqlArgs);
             }
 

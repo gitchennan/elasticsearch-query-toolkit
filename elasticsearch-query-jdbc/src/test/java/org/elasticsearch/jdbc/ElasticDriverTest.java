@@ -1,11 +1,11 @@
 package org.elasticsearch.jdbc;
 
 
-import org.elasticsearch.jdbc.api.ElasticConnection;
-import org.elasticsearch.jdbc.api.ElasticSingleConnectionDataSource;
+import org.elasticsearch.api.ElasticConnection;
+import org.elasticsearch.api.ElasticSingleConnectionDataSource;
 import org.elasticsearch.jdbc.bean.Product;
-import org.elasticsearch.jdbc.es.JdbcSearchResponse;
-import org.elasticsearch.jdbc.es.JdbcSearchResponseResolver;
+import org.elasticsearch.es.JdbcSearchResponse;
+import org.elasticsearch.es.JdbcSearchResponseResolver;
 import org.junit.Test;
 
 import java.sql.*;

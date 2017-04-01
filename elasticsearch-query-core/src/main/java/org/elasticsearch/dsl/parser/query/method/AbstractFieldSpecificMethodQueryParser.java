@@ -21,22 +21,18 @@ public abstract class AbstractFieldSpecificMethodQueryParser extends Parameteriz
 
     protected abstract QueryBuilder buildQuery(MethodInvocation invocation, String fieldName, Map<String, String> extraParams);
 
-    protected abstract SQLExpr getFieldExpr(MethodInvocation invocation);
+    protected abstract SQLExpr defineFieldExpr(MethodInvocation invocation);
 
     @Override
-    protected String getExtraParamString(MethodInvocation invocation) {
+    protected String defineExtraParamString(MethodInvocation invocation) {
         //ignore extra params, subclass can override if necessary
         return null;
     }
 
     @Override
     protected AtomQuery parseMethodQueryWithExtraParams(MethodInvocation invocation, Map<String, String> extraParamMap) throws ElasticSql2DslException {
-        return parseCondition(invocation, extraParamMap);
-    }
-
-    private AtomQuery parseCondition(MethodInvocation invocation, Map<String, String> extraParamMap) {
         QueryFieldParser queryFieldParser = new QueryFieldParser();
-        ElasticSqlQueryField queryField = queryFieldParser.parseConditionQueryField(getFieldExpr(invocation), invocation.getQueryAs());
+        ElasticSqlQueryField queryField = queryFieldParser.parseConditionQueryField(defineFieldExpr(invocation), invocation.getQueryAs());
 
         AtomQuery atomQuery = null;
         if (queryField.getQueryFieldType() == QueryFieldType.RootDocField || queryField.getQueryFieldType() == QueryFieldType.InnerDocField) {
@@ -50,14 +46,14 @@ public abstract class AbstractFieldSpecificMethodQueryParser extends Parameteriz
         }
 
         if (atomQuery == null) {
-            throw new ElasticSql2DslException(String.format("[syntax error] query condition field can not support type[%s]", queryField.getQueryFieldType()));
+            throw new ElasticSql2DslException(
+                    String.format("[syntax error] query field can not support type[%s]", queryField.getQueryFieldType()));
         }
 
         onAtomMethodQueryConditionParse(queryField, invocation.getSqlArgs());
 
         return atomQuery;
     }
-
 
     private void onAtomMethodQueryConditionParse(ElasticSqlQueryField paramName, Object[] parameters) {
         try {

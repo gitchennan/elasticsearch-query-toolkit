@@ -1,48 +1,51 @@
 package org.elasticsearch.dsl.parser.query.method.fulltext;
 
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import com.google.common.collect.ImmutableList;
 import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
 import org.elasticsearch.dsl.listener.ParseActionListener;
-import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
 import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
+import org.elasticsearch.dsl.parser.query.method.MethodQueryParser;
+
+import java.util.List;
+import java.util.function.Predicate;
 
 public class FullTextAtomQueryParser {
 
-    protected ParseActionListener parseActionListener;
+    private final List<MethodQueryParser> methodQueryParsers;
 
     public FullTextAtomQueryParser(ParseActionListener parseActionListener) {
-        this.parseActionListener = parseActionListener;
+        methodQueryParsers = ImmutableList.of(
+                new MatchAtomQueryParser(parseActionListener),
+                new MultiMatchAtomQueryParser(),
+                new QueryStringAtomQueryParser(),
+                new SimpleQueryStringAtomQueryParser()
+        );
     }
 
-    public Boolean isFulltextAtomQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return MatchAtomQueryParser.isMatchQuery(methodQueryExpr) || MultiMatchAtomQueryParser.isMultiMatch(methodQueryExpr) ||
-                QueryStringAtomQueryParser.isQueryStringQuery(methodQueryExpr) || SimpleQueryStringAtomQueryParser.isSimpleQueryStringQuery(methodQueryExpr);
+    public Boolean isFulltextAtomQuery(MethodInvocation invocation) {
+        return methodQueryParsers.stream().anyMatch(new Predicate<MethodQueryParser>() {
+            @Override
+            public boolean test(MethodQueryParser methodQueryParser) {
+                return methodQueryParser.isMatchMethodInvocation(invocation);
+            }
+        });
     }
 
     public AtomQuery parseFullTextAtomQuery(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        AbstractAtomMethodQueryParser matchAtomQueryParser = getQueryParser(methodQueryExpr);
         MethodInvocation methodInvocation = new MethodInvocation(methodQueryExpr, queryAs, sqlArgs);
+        MethodQueryParser matchAtomQueryParser = getQueryParser(methodInvocation);
         return matchAtomQueryParser.parseAtomMethodQuery(methodInvocation);
     }
 
-    private AbstractAtomMethodQueryParser getQueryParser(SQLMethodInvokeExpr methodQueryExpr) {
-        if (Boolean.TRUE == MatchAtomQueryParser.isMatchQuery(methodQueryExpr)) {
-            return new MatchAtomQueryParser(parseActionListener);
+    private MethodQueryParser getQueryParser(MethodInvocation invocation) {
+        for (MethodQueryParser methodQueryParser : methodQueryParsers) {
+            if (methodQueryParser.isMatchMethodInvocation(invocation)) {
+                return methodQueryParser;
+            }
         }
-
-        if (Boolean.TRUE == MultiMatchAtomQueryParser.isMultiMatch(methodQueryExpr)) {
-            return new MultiMatchAtomQueryParser(parseActionListener);
-        }
-
-        if (Boolean.TRUE == QueryStringAtomQueryParser.isQueryStringQuery(methodQueryExpr)) {
-            return new QueryStringAtomQueryParser(parseActionListener);
-        }
-
-        if (Boolean.TRUE == SimpleQueryStringAtomQueryParser.isSimpleQueryStringQuery(methodQueryExpr)) {
-            return new SimpleQueryStringAtomQueryParser(parseActionListener);
-        }
-
-        throw new ElasticSql2DslException(String.format("[syntax error] Can not support method query expr[%s] condition", methodQueryExpr.getMethodName()));
+        throw new ElasticSql2DslException(
+                String.format("[syntax error] Can not support method query expr[%s] condition", invocation.getMethodName()));
     }
 }

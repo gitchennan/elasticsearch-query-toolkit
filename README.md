@@ -7,7 +7,7 @@ elasticsearch-query-tookit
 toolkit version | ES version
 -----------|-----------
 master | 2.4.4
-2.4.4.1 | 2.4.4
+2.4.4.2 | 2.4.4
 1.x    | 1.4.5
 
 介绍
@@ -32,6 +32,7 @@ SearchRequestBuilder searchReq = parseResult.toRequest(esClient);
 //执行查询
 SearchResponse response = searchReq.execute().actionGet();
 ```
+注：其中routing by用于指定查询路由值，也可以不指定
 生成的DSL如下：
 ```bash
 {
@@ -74,14 +75,19 @@ SearchResponse response = searchReq.execute().actionGet();
 2. 指定连接ES的连接串：jdbc:elastic:192.168.0.109:9300/product_cluster
 3. 创建一个SqlMapClient对象，并指定sqlMapConfig.xml路径
 ```bash
-<bean id="elasticDataSource" class="org.elasticsearch.jdbc.api.ElasticSingleConnectionDataSource" destroy-method="destroy">
-    <property name="driverClassName" value="org.elasticsearch.jdbc.api.ElasticDriver" />
-    <property name="url" value="jdbc:elastic:192.168.0.109:9300/product_cluster" />
+<bean id="elasticDataSource" class="org.elasticsearch.api.ElasticSingleConnectionDataSource" destroy-method="destroy">
+    <property name="driverClassName" value="org.elasticsearch.api.ElasticDriver" />
+    <property name="url" value="jdbc:elastic:192.168.0.109:9300/lu-search-cluster" />
+    <property name="suppressClose" value="true" />
 </bean>
 
 <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
     <property name="dataSource" ref="elasticDataSource" />
     <property name="configLocation" value="classpath:sqlMapConfig.xml"/>
+</bean>
+
+<bean id="sqlMapClientTemplate" class="org.elasticsearch.ElasticSqlMapClientTemplate">
+    <property name="sqlMapClient" ref="sqlMapClient"/>
 </bean>
 ```
 
@@ -123,9 +129,8 @@ PRODUCT.xml文件中声明select sql语句
 @Repository
 public class ProductDao {
     @Autowired
-    @Qualifier("sqlMapClient")
-    private SqlMapClient sqlMapClient;
-
+    @Qualifier("sqlMapClientTemplate")
+    private ElasticSqlMapExecutor sqlMapClientTemplate;
 
     public List<Product> getProductByCodeAndMatchWord(String matchWord, String productCode) throws SQLException {
         Map<String, Object> paramMap = Maps.newHashMap();
@@ -134,13 +139,8 @@ public class ProductDao {
         paramMap.put("routingVal", "A");
         paramMap.put("matchWord", matchWord);
         paramMap.put("prefixWord", matchWord);
-        String responseGson = (String) sqlMapClient.queryForObject("PRODUCT.getProductByCodeAndMatchWord", paramMap);
-        
-        //反序列化查询结果
-        JdbcSearchResponseResolver responseResolver = new JdbcSearchResponseResolver(responseGson);
-        JdbcSearchResponse<Product> searchResponse = responseResolver.resolveSearchResponse(Product.class);
 
-        return searchResponse.getDocList();
+        return sqlMapClientTemplate.queryForList("PRODUCT.getProductByCodeAndMatchWord", paramMap, Product.class);
 
     }
 }
@@ -150,8 +150,9 @@ public class ProductDao {
 @Test
 public void testProductQuery() throws Exception {
     BeanFactory factory = new ClassPathXmlApplicationContext("application-context.xml");
+
     ProductDao productDao = factory.getBean(ProductDao.class);
-    
+
     List<Product> productList = productDao.getProductByCodeAndMatchWord("iphone 6s", "IP_6S");
     for (Product product : productList) {
         System.out.println(product.getProductName());

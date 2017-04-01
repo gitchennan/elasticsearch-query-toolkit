@@ -1,18 +1,13 @@
 package org.elasticsearch.dsl.parser.query.method.fulltext;
 
-import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
-import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
-import org.elasticsearch.dsl.listener.ParseActionListener;
-import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
 import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
+import org.elasticsearch.dsl.parser.query.method.ParameterizedMethodQueryParser;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 
@@ -20,44 +15,65 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class QueryStringAtomQueryParser extends AbstractAtomMethodQueryParser {
+public class QueryStringAtomQueryParser extends ParameterizedMethodQueryParser {
 
     private static List<String> QUERY_STRING_METHOD = ImmutableList.of("queryString", "query_string");
 
-    public QueryStringAtomQueryParser(ParseActionListener parseActionListener) {
-        super(parseActionListener);
-    }
-
-    public static Boolean isQueryStringQuery(SQLMethodInvokeExpr methodQueryExpr) {
-        return ElasticSqlMethodInvokeHelper.isMethodOf(QUERY_STRING_METHOD, methodQueryExpr.getMethodName());
+    @Override
+    public List<String> defineMethodNames() {
+        return QUERY_STRING_METHOD;
     }
 
     @Override
-    public boolean isMatchMethodInvocation(MethodInvocation invocation) {
-        return false;
+    protected String defineExtraParamString(MethodInvocation invocation) {
+        return isExtraParamsString(invocation.getLastParameterAsString())
+                ? invocation.getLastParameterAsString() : StringUtils.EMPTY;
     }
 
     @Override
-    protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == isQueryStringQuery(methodQueryExpr)) {
-            throw new ElasticSql2DslException(String.format("[syntax error] Expected queryString query method name is [queryString],but get [%s]", methodQueryExpr.getMethodName()));
+    protected AtomQuery parseMethodQueryWithExtraParams(MethodInvocation invocation, Map<String, String> extraParamMap) throws ElasticSql2DslException {
+        String text = invocation.getParameterAsString(0);
+        QueryStringQueryBuilder queryStringQuery = QueryBuilders.queryStringQuery(text);
+
+        String queryFields = null;
+        if (invocation.getParameterCount() == 3) {
+            queryFields = invocation.getParameterAsString(1);
         }
 
-        int paramCount = methodQueryExpr.getParameters().size();
+        if (StringUtils.isNotBlank(queryFields)) {
+            String[] tArr = queryFields.split(COLON);
+            if ("fields".equalsIgnoreCase(tArr[0])) {
+                for (String fieldItem : tArr[1].split(COMMA)) {
+                    queryStringQuery.field(fieldItem);
+                }
+            }
+
+            if ("default_field".equalsIgnoreCase(tArr[0])) {
+                queryStringQuery.defaultField(tArr[1]);
+            }
+        }
+
+        setExtraMatchQueryParam(queryStringQuery, extraParamMap);
+        return new AtomQuery(queryStringQuery);
+    }
+
+    @Override
+    protected void checkMethodInvokeArgs(MethodInvocation invocation) throws ElasticSql2DslException {
+        int paramCount = invocation.getParameterCount();
         if (paramCount != 1 && paramCount != 2 && paramCount != 3) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There's no %s args method: queryString", paramCount));
+            throw new ElasticSql2DslException(
+                    String.format("[syntax error] There's no %s args method named [%s].",
+                            invocation.getParameterCount(), invocation.getMethodName()));
         }
 
-        SQLExpr textExpr = methodQueryExpr.getParameters().get(0);
-        String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false).toString();
+        String text = invocation.getParameterAsString(0);
 
         if (StringUtils.isEmpty(text)) {
             throw new ElasticSql2DslException("[syntax error] Search text can not be blank!");
         }
 
         if (paramCount == 3) {
-            SQLExpr fieldsExpr = methodQueryExpr.getParameters().get(1);
-            String strFields = ElasticSqlArgTransferHelper.transferSqlArg(fieldsExpr, sqlArgs, false).toString();
+            String strFields = invocation.getParameterAsString(1);
 
             if (StringUtils.isEmpty(text)) {
                 throw new ElasticSql2DslException("[syntax error] Search fields can not be empty!");
@@ -72,50 +88,6 @@ public class QueryStringAtomQueryParser extends AbstractAtomMethodQueryParser {
                 throw new ElasticSql2DslException("[syntax error] Search fields name should one of [fields, default_field]");
             }
         }
-    }
-
-    @Override
-    protected AtomQuery parseMethodQueryExpr(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        SQLExpr textExpr = methodQueryExpr.getParameters().get(0);
-
-        SQLExpr queryFields = null;
-        SQLExpr extraParamExpr = null;
-
-        if (methodQueryExpr.getParameters().size() == 2) {
-            extraParamExpr = methodQueryExpr.getParameters().get(1);
-        }
-        else if (methodQueryExpr.getParameters().size() == 3) {
-            queryFields = methodQueryExpr.getParameters().get(1);
-            extraParamExpr = methodQueryExpr.getParameters().get(2);
-        }
-
-
-        String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false).toString();
-        QueryStringQueryBuilder queryStringQuery = QueryBuilders.queryStringQuery(text);
-
-        if (queryFields != null) {
-            String[] tArr = ElasticSqlArgTransferHelper.transferSqlArg(queryFields, sqlArgs, false).toString().split(COLON);
-            if ("fields".equalsIgnoreCase(tArr[0])) {
-                for (String fieldItem : tArr[1].split(COMMA)) {
-                    queryStringQuery.field(fieldItem);
-                }
-            }
-
-            if ("default_field".equalsIgnoreCase(tArr[0])) {
-                queryStringQuery.defaultField(tArr[1]);
-            }
-        }
-
-        Map<String, String> extraParamMap = null;
-        if (extraParamExpr != null) {
-            String extraParam = ElasticSqlArgTransferHelper.transferSqlArg(extraParamExpr, sqlArgs, false).toString();
-            extraParamMap = buildExtraMethodQueryParamsMap(extraParam);
-        }
-
-
-        setExtraMatchQueryParam(queryStringQuery, extraParamMap);
-
-        return new AtomQuery(queryStringQuery);
     }
 
     private void setExtraMatchQueryParam(QueryStringQueryBuilder queryStringQuery, Map<String, String> extraParamMap) {

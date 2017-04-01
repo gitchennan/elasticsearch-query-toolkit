@@ -1,14 +1,11 @@
 package org.elasticsearch.dsl.parser.query.method.term;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
-import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.elasticsearch.dsl.listener.ParseActionListener;
 import org.elasticsearch.dsl.parser.query.method.AbstractFieldSpecificMethodQueryParser;
 import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
@@ -29,60 +26,54 @@ public class RegexpAtomQueryParser extends AbstractFieldSpecificMethodQueryParse
     }
 
     @Override
-    public boolean isMatchMethodInvocation(MethodInvocation invocation) {
-        return ElasticSqlMethodInvokeHelper.isMethodOf(REGEXP_QUERY_METHOD, invocation.getMatchQueryExpr().getMethodName());
+    public List<String> defineMethodNames() {
+        return REGEXP_QUERY_METHOD;
     }
 
     @Override
-    protected String getExtraParamString(MethodInvocation invocation) {
-        SQLMethodInvokeExpr methodInvokeExpr = invocation.getMatchQueryExpr();
-        if (methodInvokeExpr.getParameters().size() == 3) {
-            SQLExpr extraParamExpr = methodInvokeExpr.getParameters().get(2);
-            Object[] sqlArgs = invocation.getSqlArgs();
-            return ElasticSqlArgTransferHelper.transferSqlArg(extraParamExpr, sqlArgs, false).toString();
+    protected SQLExpr defineFieldExpr(MethodInvocation invocation) {
+        return invocation.getParameter(0);
+    }
+
+    @Override
+    protected String defineExtraParamString(MethodInvocation invocation) {
+        int extraParamIdx = 2;
+
+        return (invocation.getParameterCount() == extraParamIdx + 1)
+                ? invocation.getParameterAsString(extraParamIdx) : StringUtils.EMPTY;
+    }
+
+    @Override
+    protected void checkMethodInvokeArgs(MethodInvocation invocation) throws ElasticSql2DslException {
+        if (invocation.getParameterCount() != 2 && invocation.getParameterCount() != 3) {
+            throw new ElasticSql2DslException(
+                    String.format("[syntax error] There's no %s args method named [%s].",
+                            invocation.getParameterCount(), invocation.getMethodName()));
         }
-        return StringUtils.EMPTY;
+
+        String text = invocation.getParameterAsString(1);
+        if (StringUtils.isEmpty(text)) {
+            throw new ElasticSql2DslException("[syntax error] Regexp search text can not be blank!");
+        }
+
+        if (invocation.getParameterCount() == 3) {
+            String extraParamString = defineExtraParamString(invocation);
+            if (StringUtils.isEmpty(extraParamString)) {
+                throw new ElasticSql2DslException("[syntax error] The extra param of regexp method can not be blank");
+            }
+        }
     }
 
     @Override
     protected QueryBuilder buildQuery(MethodInvocation invocation, String fieldName, Map<String, String> extraParams) {
-        SQLMethodInvokeExpr methodInvokeExpr = invocation.getMatchQueryExpr();
+        String text = invocation.getParameterAsString(1);
+        RegexpQueryBuilder regexpQuery = QueryBuilders.regexpQuery(fieldName, text);
 
-        SQLExpr textExpr = methodInvokeExpr.getParameters().get(1);
-        Object text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, invocation.getSqlArgs(), false);
-
-        RegexpQueryBuilder regexpQuery = QueryBuilders.regexpQuery(fieldName, text.toString());
         setExtraMatchQueryParam(regexpQuery, extraParams);
         return regexpQuery;
     }
 
-    @Override
-    protected SQLExpr getFieldExpr(MethodInvocation invocation) {
-        return invocation.getMatchQueryExpr().getParameters().get(0);
-    }
 
-    @Override
-    protected void checkQueryMethod(MethodInvocation invocation) throws ElasticSql2DslException {
-        if (Boolean.FALSE == isMatchMethodInvocation(invocation)) {
-            throw new ElasticSql2DslException(
-                    String.format("[syntax error] Expected regexp query method name is [regexp],but get [%s]",
-                            invocation.getMatchQueryExpr().getMethodName()));
-        }
-
-        SQLMethodInvokeExpr methodQueryExpr = invocation.getMatchQueryExpr();
-
-        int paramCount = methodQueryExpr.getParameters().size();
-        if (paramCount != 2 && paramCount != 3) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There's no %s args method: regexp", paramCount));
-        }
-
-        SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
-
-        String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, invocation.getSqlArgs(), false).toString();
-        if (StringUtils.isEmpty(text)) {
-            throw new ElasticSql2DslException("[syntax error] Regexp text can not be blank!");
-        }
-    }
 
     private void setExtraMatchQueryParam(RegexpQueryBuilder regexpQuery, Map<String, String> extraParamMap) {
         if (MapUtils.isEmpty(extraParamMap)) {

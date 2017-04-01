@@ -1,18 +1,13 @@
 package org.elasticsearch.dsl.parser.query.method.fulltext;
 
-import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.dsl.bean.AtomQuery;
 import org.elasticsearch.dsl.exception.ElasticSql2DslException;
-import org.elasticsearch.dsl.helper.ElasticSqlArgTransferHelper;
-import org.elasticsearch.dsl.helper.ElasticSqlMethodInvokeHelper;
-import org.elasticsearch.dsl.listener.ParseActionListener;
-import org.elasticsearch.dsl.parser.query.method.AbstractAtomMethodQueryParser;
 import org.elasticsearch.dsl.parser.query.method.MethodInvocation;
+import org.elasticsearch.dsl.parser.query.method.ParameterizedMethodQueryParser;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -20,39 +15,44 @@ import org.elasticsearch.index.query.QueryBuilders;
 import java.util.List;
 import java.util.Map;
 
-public class MultiMatchAtomQueryParser extends AbstractAtomMethodQueryParser {
+public class MultiMatchAtomQueryParser extends ParameterizedMethodQueryParser {
 
     private static final List<String> MULTI_MATCH_METHOD = ImmutableList.of("multiMatch", "multi_match", "multi_match_query", "multiMatchQuery");
 
-    public MultiMatchAtomQueryParser(ParseActionListener parseActionListener) {
-        super(parseActionListener);
-    }
-
-    public static Boolean isMultiMatch(SQLMethodInvokeExpr methodQueryExpr) {
-        return ElasticSqlMethodInvokeHelper.isMethodOf(MULTI_MATCH_METHOD, methodQueryExpr.getMethodName());
+    @Override
+    public List<String> defineMethodNames() {
+        return MULTI_MATCH_METHOD;
     }
 
     @Override
-    public boolean isMatchMethodInvocation(MethodInvocation invocation) {
-        return false;
+    protected String defineExtraParamString(MethodInvocation invocation) {
+        int extraParamIdx = 2;
+
+        return (invocation.getParameterCount() == extraParamIdx + 1)
+                ? invocation.getParameterAsString(extraParamIdx) : StringUtils.EMPTY;
     }
 
     @Override
-    protected void checkQueryMethod(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        if (Boolean.FALSE == isMultiMatch(methodQueryExpr)) {
-            throw new ElasticSql2DslException(String.format("[syntax error] Expected multiMatch query method name is [multiMatch],but get [%s]", methodQueryExpr.getMethodName()));
+    protected AtomQuery parseMethodQueryWithExtraParams(MethodInvocation invocation, Map<String, String> extraParamMap) throws ElasticSql2DslException {
+        String[] fields = invocation.getParameterAsString(0).split(COMMA);
+        String text = invocation.getParameterAsString(1);
+
+        MultiMatchQueryBuilder multiMatchQuery = QueryBuilders.multiMatchQuery(text, fields);
+        setExtraMatchQueryParam(multiMatchQuery, extraParamMap);
+
+        return new AtomQuery(multiMatchQuery);
+    }
+
+    @Override
+    protected void checkMethodInvokeArgs(MethodInvocation invocation) throws ElasticSql2DslException {
+        if (invocation.getParameterCount() != 2 && invocation.getParameterCount() != 3) {
+            throw new ElasticSql2DslException(
+                    String.format("[syntax error] There's no %s args method named [%s].",
+                            invocation.getParameterCount(), invocation.getMethodName()));
         }
 
-        int paramCount = methodQueryExpr.getParameters().size();
-        if (paramCount != 2 && paramCount != 3) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There's no %s args method: multiMatch", paramCount));
-        }
-
-        SQLExpr fieldsExpr = methodQueryExpr.getParameters().get(0);
-        SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
-
-        String strFields = ElasticSqlArgTransferHelper.transferSqlArg(fieldsExpr, sqlArgs, false).toString();
-        String text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false).toString();
+        String strFields = invocation.getParameterAsString(0);
+        String text = invocation.getParameterAsString(1);
 
         if (StringUtils.isEmpty(strFields)) {
             throw new ElasticSql2DslException("[syntax error] Search fields can not be empty!");
@@ -60,28 +60,6 @@ public class MultiMatchAtomQueryParser extends AbstractAtomMethodQueryParser {
         if (StringUtils.isEmpty(text)) {
             throw new ElasticSql2DslException("[syntax error] Search text can not be blank!");
         }
-    }
-
-    @Override
-    protected AtomQuery parseMethodQueryExpr(SQLMethodInvokeExpr methodQueryExpr, String queryAs, Object[] sqlArgs) {
-        SQLExpr queryFields = methodQueryExpr.getParameters().get(0);
-        SQLExpr textExpr = methodQueryExpr.getParameters().get(1);
-
-        Map<String, String> extraParamMap = null;
-        if (methodQueryExpr.getParameters().size() == 3) {
-            SQLExpr extraParamExpr = methodQueryExpr.getParameters().get(2);
-            String extraParam = ElasticSqlArgTransferHelper.transferSqlArg(extraParamExpr, sqlArgs, false).toString();
-
-            extraParamMap = buildExtraMethodQueryParamsMap(extraParam);
-        }
-
-        String[] fields = ElasticSqlArgTransferHelper.transferSqlArg(queryFields, sqlArgs, false).toString().split(COMMA);
-        Object text = ElasticSqlArgTransferHelper.transferSqlArg(textExpr, sqlArgs, false);
-
-        MultiMatchQueryBuilder multiMatchQuery = QueryBuilders.multiMatchQuery(text, fields);
-        setExtraMatchQueryParam(multiMatchQuery, extraParamMap);
-
-        return new AtomQuery(multiMatchQuery);
     }
 
     private void setExtraMatchQueryParam(MultiMatchQueryBuilder multiMatchQuery, Map<String, String> extraParamMap) {

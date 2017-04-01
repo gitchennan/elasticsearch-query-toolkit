@@ -48,6 +48,6 @@ public class TermLevelAtomQueryParser {
         }
         throw new ElasticSql2DslException(
                 String.format("[syntax error] Can not support method query expr[%s] condition",
-                        methodInvocation.getMatchQueryExpr().getMethodName()));
+                        methodInvocation.getMethodName()));
     }
 }
