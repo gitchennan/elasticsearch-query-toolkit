@@ -2,13 +2,13 @@ elasticsearch-query-tookit
 ====================================
 
 版本
--------------
+------------
 
-toolkit version | ES version
------------|-----------
-master | 2.4.4
-2.4.4.2 | 2.4.4
-1.x    | 1.4.5
+| toolkit version | ES version |
+| --------------- | ---------- |
+| master          | 2.4.4      |
+| 2.4.4.2         | 2.4.4      |
+| 1.x             | 1.4.5      |
 
 介绍
 -------------
@@ -75,8 +75,8 @@ SearchResponse response = searchReq.execute().actionGet();
 2. 指定连接ES的连接串：jdbc:elastic:192.168.0.109:9300/product_cluster
 3. 创建一个SqlMapClient对象，并指定sqlMapConfig.xml路径
 ```bash
-<bean id="elasticDataSource" class="org.elasticsearch.api.ElasticSingleConnectionDataSource" destroy-method="destroy">
-    <property name="driverClassName" value="org.elasticsearch.api.ElasticDriver" />
+<bean id="elasticDataSource" class="org.es.jdbc.api.ElasticSingleConnectionDataSource" destroy-method="destroy">
+    <property name="driverClassName" value="org.es.jdbc.api.ElasticDriver" />
     <property name="url" value="jdbc:elastic:192.168.0.109:9300/lu-search-cluster" />
     <property name="suppressClose" value="true" />
 </bean>
@@ -86,7 +86,7 @@ SearchResponse response = searchReq.execute().actionGet();
     <property name="configLocation" value="classpath:sqlMapConfig.xml"/>
 </bean>
 
-<bean id="sqlMapClientTemplate" class="org.elasticsearch.ElasticSqlMapClientTemplate">
+<bean id="sqlMapClientTemplate" class="org.es.spring.ElasticSqlMapClientTemplate">
     <property name="sqlMapClient" ref="sqlMapClient"/>
 </bean>
 ```
