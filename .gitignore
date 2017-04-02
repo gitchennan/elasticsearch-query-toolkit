@@ -10,12 +10,11 @@
 *.iml
 .classpath
 .gradle*
-build/*
-target/*
+*/build/*
+*/target/*
 out
 .idea
 draft.story
-chromedriver.log
 .classpath
 .gitignore.swp
 .project
