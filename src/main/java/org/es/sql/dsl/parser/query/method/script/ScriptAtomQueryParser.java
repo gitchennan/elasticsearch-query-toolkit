@@ -56,8 +56,8 @@ public class ScriptAtomQueryParser extends ParameterizedMethodQueryParser {
                     return NumberUtils.isNumber(value) ? NumberUtils.createNumber(value) : value;
                 }
             });
-            return new AtomFilter(FilterBuilders.scriptFilter(script).params(scriptParamMap));
+            return new AtomFilter(FilterBuilders.scriptFilter(script).cache(false).params(scriptParamMap));
         }
-        return new AtomFilter(FilterBuilders.scriptFilter(script));
+        return new AtomFilter(FilterBuilders.scriptFilter(script).cache(false));
     }
 }

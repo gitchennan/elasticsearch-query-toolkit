@@ -48,6 +48,6 @@ public class PrefixAtomQueryParser extends AbstractFieldSpecificMethodQueryParse
     @Override
     protected FilterBuilder buildQuery(MethodInvocation invocation, String fieldName, Map<String, String> extraParams) {
         String text = invocation.getParameterAsString(1);
-        return FilterBuilders.prefixFilter(fieldName, text);
+        return FilterBuilders.prefixFilter(fieldName, text).cache(false);
     }
 }

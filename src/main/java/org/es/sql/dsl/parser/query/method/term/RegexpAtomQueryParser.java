@@ -67,7 +67,7 @@ public class RegexpAtomQueryParser extends AbstractFieldSpecificMethodQueryParse
     @Override
     protected FilterBuilder buildQuery(MethodInvocation invocation, String fieldName, Map<String, String> extraParams) {
         String text = invocation.getParameterAsString(1);
-        RegexpFilterBuilder regexpQuery = FilterBuilders.regexpFilter(fieldName, text);
+        RegexpFilterBuilder regexpQuery = FilterBuilders.regexpFilter(fieldName, text).cache(false);
 
         setExtraMatchQueryParam(regexpQuery, extraParams);
         return regexpQuery;
