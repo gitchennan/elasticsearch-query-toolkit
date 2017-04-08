@@ -125,6 +125,7 @@ public class SqlParserWhereConditionTest {
         String sql = "select * from index where a.$b.c.$d.e > 2";
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+        System.out.println(parseResult.toDsl());
     }
 
     @Test
