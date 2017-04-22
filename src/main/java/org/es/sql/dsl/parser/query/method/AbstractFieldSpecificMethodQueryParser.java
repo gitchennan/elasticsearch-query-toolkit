@@ -1,17 +1,17 @@
 package org.es.sql.dsl.parser.query.method;
 
-import com.alibaba.druid.sql.ast.SQLExpr;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.es.sql.dsl.bean.AtomFilter;
 import org.es.sql.dsl.bean.ElasticSqlQueryField;
 import org.es.sql.dsl.enums.QueryFieldType;
 import org.es.sql.dsl.exception.ElasticSql2DslException;
 import org.es.sql.dsl.listener.ParseActionListener;
+import org.es.sql.dsl.parser.query.method.expr.FieldSpecificMethodExpression;
 import org.es.sql.dsl.parser.sql.QueryFieldParser;
 
 import java.util.Map;
 
-public abstract class AbstractFieldSpecificMethodQueryParser extends ParameterizedMethodQueryParser {
+public abstract class AbstractFieldSpecificMethodQueryParser extends ParameterizedMethodQueryParser implements FieldSpecificMethodExpression {
 
     protected ParseActionListener parseActionListener;
 
@@ -20,8 +20,6 @@ public abstract class AbstractFieldSpecificMethodQueryParser extends Parameteriz
     }
 
     protected abstract FilterBuilder buildQuery(MethodInvocation invocation, String fieldName, Map<String, String> extraParams);
-
-    protected abstract SQLExpr defineFieldExpr(MethodInvocation invocation);
 
     @Override
     protected String defineExtraParamString(MethodInvocation invocation) {

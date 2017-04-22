@@ -7,12 +7,14 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.es.sql.dsl.enums.SortOption;
 import org.es.sql.dsl.exception.ElasticSql2DslException;
+import org.es.sql.dsl.parser.query.method.MethodInvocation;
 
 import java.util.List;
 
 public class ElasticSqlMethodInvokeHelper {
     public static final List<String> DATE_METHOD = ImmutableList.of("date", "to_date", "toDate");
     public static final List<String> NVL_METHOD = ImmutableList.of("nvl", "is_null", "isnull");
+    public static final List<String> SCRIPT_SORT_METHOD = ImmutableList.of("script_sort", "scriptSort");
 
     public static final List<String> AGG_TERMS_METHOD = ImmutableList.of("terms", "terms_agg");
     public static final List<String> AGG_RANGE_METHOD = ImmutableList.of("range", "range_agg");
@@ -40,6 +42,10 @@ public class ElasticSqlMethodInvokeHelper {
             return Boolean.FALSE;
         }
         return methodAlias.equalsIgnoreCase(method);
+    }
+
+    public static void checkScriptSortMethod(MethodInvocation scriptSortMethodInvocation) {
+        // todo
     }
 
     public static void checkTermsAggMethod(SQLMethodInvokeExpr aggInvokeExpr) {
@@ -91,18 +97,18 @@ public class ElasticSqlMethodInvokeHelper {
         }
     }
 
-    public static void checkNvlMethod(SQLMethodInvokeExpr nvlInvokeExpr) {
-        if (!isMethodOf(NVL_METHOD, nvlInvokeExpr.getMethodName())) {
+    public static void checkNvlMethod(MethodInvocation nvlMethodInvocation) {
+        if (!isMethodOf(NVL_METHOD, nvlMethodInvocation.getMethodName())) {
             throw new ElasticSql2DslException("[syntax error] Sql sort condition only support nvl method invoke");
         }
 
-        if (CollectionUtils.isEmpty(nvlInvokeExpr.getParameters()) || nvlInvokeExpr.getParameters().size() > 3) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There is no %s args method named nvl",
-                    nvlInvokeExpr.getParameters() != null ? nvlInvokeExpr.getParameters().size() : 0));
+        int methodParameterCount = nvlMethodInvocation.getParameterCount();
+        if (methodParameterCount == 0 || methodParameterCount > 3) {
+            throw new ElasticSql2DslException(String.format("[syntax error] There is no %s args method named nvl", methodParameterCount));
         }
 
-        SQLExpr fieldArg = nvlInvokeExpr.getParameters().get(0);
-        SQLExpr valueArg = nvlInvokeExpr.getParameters().get(1);
+        SQLExpr fieldArg = nvlMethodInvocation.getParameter(0);
+        SQLExpr valueArg = nvlMethodInvocation.getParameter(1);
 
         if (!(fieldArg instanceof SQLPropertyExpr) && !(fieldArg instanceof SQLIdentifierExpr)) {
             throw new ElasticSql2DslException("[syntax error] The first arg of nvl method should be field param name");
@@ -112,8 +118,8 @@ public class ElasticSqlMethodInvokeHelper {
             throw new ElasticSql2DslException("[syntax error] The second arg of nvl method should be number or string");
         }
 
-        if (nvlInvokeExpr.getParameters().size() == 3) {
-            SQLExpr sortModArg = nvlInvokeExpr.getParameters().get(2);
+        if (methodParameterCount == 3) {
+            SQLExpr sortModArg = nvlMethodInvocation.getParameter(2);
             if (!(sortModArg instanceof SQLCharExpr)) {
                 throw new ElasticSql2DslException("[syntax error] The third arg of nvl method should be string");
             }

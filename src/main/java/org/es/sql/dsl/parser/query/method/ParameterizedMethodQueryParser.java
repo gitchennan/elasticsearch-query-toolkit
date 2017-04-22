@@ -1,18 +1,13 @@
 package org.es.sql.dsl.parser.query.method;
 
-import com.google.common.collect.Maps;
-import org.apache.commons.lang.StringUtils;
 import org.es.sql.dsl.bean.AtomFilter;
 import org.es.sql.dsl.exception.ElasticSql2DslException;
+import org.es.sql.dsl.helper.ElasticSqlMethodInvokeHelper;
+import org.es.sql.dsl.parser.query.method.expr.AbstractParameterizedMethodExpression;
 
-import java.util.Collections;
 import java.util.Map;
 
-public abstract class ParameterizedMethodQueryParser extends CheckableMethodQueryParser {
-
-    protected static final String COMMA = ",";
-
-    protected static final String COLON = ":";
+public abstract class ParameterizedMethodQueryParser extends AbstractParameterizedMethodExpression implements MethodQueryParser {
 
     protected abstract String defineExtraParamString(MethodInvocation invocation);
 
@@ -20,41 +15,20 @@ public abstract class ParameterizedMethodQueryParser extends CheckableMethodQuer
             MethodInvocation invocation, Map<String, String> extraParamMap) throws ElasticSql2DslException;
 
     @Override
-    protected AtomFilter parseMethodQueryWithCheck(MethodInvocation invocation) {
-        Map<String, String> extraParamMap = buildExtraParamMap(invocation);
+    public boolean isMatchMethodInvocation(MethodInvocation invocation) {
+        return ElasticSqlMethodInvokeHelper.isMethodOf(defineMethodNames(), invocation.getMethodName());
+    }
+
+    @Override
+    public AtomFilter parseAtomMethodQuery(MethodInvocation invocation) throws ElasticSql2DslException {
+        if (!isMatchMethodInvocation(invocation)) {
+            throw new ElasticSql2DslException(
+                    String.format("[syntax error] Expected method name is one of [%s],but get [%s]",
+                            defineMethodNames(), invocation.getMethodName()));
+        }
+        checkMethodInvocation(invocation);
+
+        Map<String, String> extraParamMap = generateParameterMap(invocation);
         return parseMethodQueryWithExtraParams(invocation, extraParamMap);
-    }
-
-    private Map<String, String> buildExtraParamMap(MethodInvocation invocation) {
-        String extraParamString = defineExtraParamString(invocation);
-
-        if (StringUtils.isBlank(extraParamString)) {
-            return Collections.emptyMap();
-        }
-
-        Map<String, String> extraParamMap = Maps.newHashMap();
-        for (String paramPair : extraParamString.split(COMMA)) {
-            String[] paramPairArr = paramPair.split(COLON);
-            if (paramPairArr.length == 2) {
-                extraParamMap.put(paramPairArr[0].trim(), paramPairArr[1].trim());
-            }
-            else {
-                throw new ElasticSql2DslException("Failed to parse query method extra param string!");
-            }
-        }
-        return extraParamMap;
-    }
-
-    protected Boolean isExtraParamsString(String extraParams) {
-        if (StringUtils.isBlank(extraParams)) {
-            return Boolean.FALSE;
-        }
-        for (String paramPair : extraParams.split(COMMA)) {
-            String[] paramPairArr = paramPair.split(COLON);
-            if (paramPairArr.length != 2) {
-                return Boolean.FALSE;
-            }
-        }
-        return Boolean.TRUE;
     }
 }

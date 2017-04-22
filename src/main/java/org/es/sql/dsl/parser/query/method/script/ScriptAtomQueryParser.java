@@ -1,10 +1,8 @@
 package org.es.sql.dsl.parser.query.method.script;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.es.sql.dsl.bean.AtomFilter;
 import org.es.sql.dsl.exception.ElasticSql2DslException;
@@ -32,7 +30,7 @@ public class ScriptAtomQueryParser extends ParameterizedMethodQueryParser {
     }
 
     @Override
-    protected void checkMethodInvokeArgs(MethodInvocation invocation) throws ElasticSql2DslException {
+    public void checkMethodInvocation(MethodInvocation invocation) throws ElasticSql2DslException {
         if (invocation.getParameterCount() != 1 && invocation.getParameterCount() != 2) {
             throw new ElasticSql2DslException(
                     String.format("[syntax error] There's no %s args method named [%s].",
@@ -50,12 +48,7 @@ public class ScriptAtomQueryParser extends ParameterizedMethodQueryParser {
         String script = invocation.getParameterAsString(0);
 
         if (MapUtils.isNotEmpty(extraParamMap)) {
-            Map<String, Object> scriptParamMap = Maps.transformEntries(extraParamMap, new Maps.EntryTransformer<String, String, Object>() {
-                @Override
-                public Object transformEntry(String key, String value) {
-                    return NumberUtils.isNumber(value) ? NumberUtils.createNumber(value) : value;
-                }
-            });
+            Map<String, Object> scriptParamMap = generateRawTypeParameterMap(invocation);
             return new AtomFilter(FilterBuilders.scriptFilter(script).cache(false).params(scriptParamMap));
         }
         return new AtomFilter(FilterBuilders.scriptFilter(script).cache(false));
