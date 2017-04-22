@@ -63,7 +63,7 @@ public class SqlParserOrderByTest {
     public void testX() {
         ElasticMockClient esClient = new ElasticMockClient();
 
-        String sql = "select * from index.order where status='SUCCESS' order by nvl(pride, 0) asc routing by 'CA','CB' limit 0, 20";
+        String sql = "select * from index.order where status='SUCCESS' order by nvl(pride, 0) asc, script_sort('doc[\"price\"].value * 1.5 / vp', 'number', 'vp:2.1') desc routing by 'CA','CB' limit 0, 20";
 
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         //解析SQL
