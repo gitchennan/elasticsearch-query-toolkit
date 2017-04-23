@@ -1,18 +1,19 @@
 package org.es.sql.dsl.helper;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
-import com.alibaba.druid.sql.ast.expr.*;
+import com.alibaba.druid.sql.ast.expr.SQLAggregateExpr;
+import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
+import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
+import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.es.sql.dsl.enums.SortOption;
 import org.es.sql.dsl.exception.ElasticSql2DslException;
 
 import java.util.List;
 
 public class ElasticSqlMethodInvokeHelper {
     public static final List<String> DATE_METHOD = ImmutableList.of("date", "to_date", "toDate");
-    public static final List<String> NVL_METHOD = ImmutableList.of("nvl", "is_null", "isnull");
 
     public static final List<String> AGG_TERMS_METHOD = ImmutableList.of("terms", "terms_agg");
     public static final List<String> AGG_RANGE_METHOD = ImmutableList.of("range", "range_agg");
@@ -88,40 +89,6 @@ public class ElasticSqlMethodInvokeHelper {
 
         if (!(timeValArg instanceof SQLCharExpr) && !(timeValArg instanceof SQLVariantRefExpr)) {
             throw new ElasticSql2DslException("[syntax error] The second arg of date method should be a string of time");
-        }
-    }
-
-    public static void checkNvlMethod(SQLMethodInvokeExpr nvlInvokeExpr) {
-        if (!isMethodOf(NVL_METHOD, nvlInvokeExpr.getMethodName())) {
-            throw new ElasticSql2DslException("[syntax error] Sql sort condition only support nvl method invoke");
-        }
-
-        if (CollectionUtils.isEmpty(nvlInvokeExpr.getParameters()) || nvlInvokeExpr.getParameters().size() > 3) {
-            throw new ElasticSql2DslException(String.format("[syntax error] There is no %s args method named nvl",
-                    nvlInvokeExpr.getParameters() != null ? nvlInvokeExpr.getParameters().size() : 0));
-        }
-
-        SQLExpr fieldArg = nvlInvokeExpr.getParameters().get(0);
-        SQLExpr valueArg = nvlInvokeExpr.getParameters().get(1);
-
-        if (!(fieldArg instanceof SQLPropertyExpr) && !(fieldArg instanceof SQLIdentifierExpr)) {
-            throw new ElasticSql2DslException("[syntax error] The first arg of nvl method should be field param name");
-        }
-
-        if (!(valueArg instanceof SQLCharExpr) && !(valueArg instanceof SQLIntegerExpr) && !(valueArg instanceof SQLNumberExpr)) {
-            throw new ElasticSql2DslException("[syntax error] The second arg of nvl method should be number or string");
-        }
-
-        if (nvlInvokeExpr.getParameters().size() == 3) {
-            SQLExpr sortModArg = nvlInvokeExpr.getParameters().get(2);
-            if (!(sortModArg instanceof SQLCharExpr)) {
-                throw new ElasticSql2DslException("[syntax error] The third arg of nvl method should be string");
-            }
-            String sortModeText = ((SQLCharExpr) sortModArg).getText();
-            if (!SortOption.AVG.mode().equalsIgnoreCase(sortModeText) && !SortOption.MIN.mode().equalsIgnoreCase(sortModeText)
-                    && !SortOption.MAX.mode().equalsIgnoreCase(sortModeText) && !SortOption.SUM.mode().equalsIgnoreCase(sortModeText)) {
-                throw new ElasticSql2DslException("[syntax error] The third arg of nvl method should be one of the string[min,max,avg,sum]");
-            }
         }
     }
 }

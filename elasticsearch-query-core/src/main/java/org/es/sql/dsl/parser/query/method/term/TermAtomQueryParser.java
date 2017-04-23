@@ -29,7 +29,7 @@ public class TermAtomQueryParser extends AbstractFieldSpecificMethodQueryParser 
     }
 
     @Override
-    protected SQLExpr defineFieldExpr(MethodInvocation invocation) {
+    public SQLExpr defineFieldExpr(MethodInvocation invocation) {
         return invocation.getParameter(0);
     }
 
@@ -42,7 +42,7 @@ public class TermAtomQueryParser extends AbstractFieldSpecificMethodQueryParser 
     }
 
     @Override
-    protected void checkMethodInvokeArgs(MethodInvocation invocation) throws ElasticSql2DslException {
+    public void checkMethodInvocation(MethodInvocation invocation) throws ElasticSql2DslException {
         if (invocation.getParameterCount() != 2 && invocation.getParameterCount() != 3) {
             throw new ElasticSql2DslException(
                     String.format("[syntax error] There's no %s args method named [%s].",

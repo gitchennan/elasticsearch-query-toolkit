@@ -4,13 +4,13 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.elasticsearch.index.query.PrefixQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.es.sql.dsl.exception.ElasticSql2DslException;
 import org.es.sql.dsl.listener.ParseActionListener;
 import org.es.sql.dsl.parser.query.method.AbstractFieldSpecificMethodQueryParser;
 import org.es.sql.dsl.parser.query.method.MethodInvocation;
-import org.elasticsearch.index.query.PrefixQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +29,7 @@ public class PrefixAtomQueryParser extends AbstractFieldSpecificMethodQueryParse
     }
 
     @Override
-    protected SQLExpr defineFieldExpr(MethodInvocation invocation) {
+    public SQLExpr defineFieldExpr(MethodInvocation invocation) {
         return invocation.getParameter(0);
     }
 
@@ -42,7 +42,7 @@ public class PrefixAtomQueryParser extends AbstractFieldSpecificMethodQueryParse
     }
 
     @Override
-    protected void checkMethodInvokeArgs(MethodInvocation invocation) {
+    public void checkMethodInvocation(MethodInvocation invocation) {
         if (invocation.getParameterCount() != 2 && invocation.getParameterCount() != 3) {
             throw new ElasticSql2DslException(
                     String.format("[syntax error] There's no %s args method named [%s].",

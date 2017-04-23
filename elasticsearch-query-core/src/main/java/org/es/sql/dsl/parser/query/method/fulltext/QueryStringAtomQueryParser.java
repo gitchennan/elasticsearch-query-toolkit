@@ -38,18 +38,18 @@ public class QueryStringAtomQueryParser extends ParameterizedMethodQueryParser {
         String queryFields = null;
         if (invocation.getParameterCount() == 3) {
             queryFields = invocation.getParameterAsString(1);
-        }
 
-        if (StringUtils.isNotBlank(queryFields)) {
-            String[] tArr = queryFields.split(COLON);
-            if ("fields".equalsIgnoreCase(tArr[0])) {
-                for (String fieldItem : tArr[1].split(COMMA)) {
-                    queryStringQuery.field(fieldItem);
+            if (StringUtils.isNotBlank(queryFields)) {
+                String[] tArr = queryFields.split(COLON);
+                if ("fields".equalsIgnoreCase(tArr[0])) {
+                    for (String fieldItem : tArr[1].split(COMMA)) {
+                        queryStringQuery.field(fieldItem);
+                    }
                 }
-            }
 
-            if ("default_field".equalsIgnoreCase(tArr[0])) {
-                queryStringQuery.defaultField(tArr[1]);
+                if ("default_field".equalsIgnoreCase(tArr[0])) {
+                    queryStringQuery.defaultField(tArr[1]);
+                }
             }
         }
 
@@ -58,7 +58,7 @@ public class QueryStringAtomQueryParser extends ParameterizedMethodQueryParser {
     }
 
     @Override
-    protected void checkMethodInvokeArgs(MethodInvocation invocation) throws ElasticSql2DslException {
+    public void checkMethodInvocation(MethodInvocation invocation) throws ElasticSql2DslException {
         int paramCount = invocation.getParameterCount();
         if (paramCount != 1 && paramCount != 2 && paramCount != 3) {
             throw new ElasticSql2DslException(
