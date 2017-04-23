@@ -40,7 +40,7 @@ public class MethodInvocation {
         return methodInvokeExpr.getParameters().size();
     }
 
-    public SQLExpr getFirstParameter(int index) {
+    public SQLExpr getFirstParameter() {
         return getParameter(0);
     }
 

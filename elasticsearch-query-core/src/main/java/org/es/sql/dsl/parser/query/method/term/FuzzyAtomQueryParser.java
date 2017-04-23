@@ -30,7 +30,7 @@ public class FuzzyAtomQueryParser extends AbstractFieldSpecificMethodQueryParser
     }
 
     @Override
-    protected SQLExpr defineFieldExpr(MethodInvocation invocation) {
+    public SQLExpr defineFieldExpr(MethodInvocation invocation) {
         return invocation.getParameter(0);
     }
 
@@ -43,7 +43,7 @@ public class FuzzyAtomQueryParser extends AbstractFieldSpecificMethodQueryParser
     }
 
     @Override
-    protected void checkMethodInvokeArgs(MethodInvocation invocation) {
+    public void checkMethodInvocation(MethodInvocation invocation) {
         if (invocation.getParameterCount() != 2 && invocation.getParameterCount() != 3) {
             throw new ElasticSql2DslException(
                     String.format("[syntax error] There's no %s args method named [%s].",

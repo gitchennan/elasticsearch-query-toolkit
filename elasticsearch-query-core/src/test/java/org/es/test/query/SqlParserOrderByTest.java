@@ -1,7 +1,9 @@
 package org.es.test.query;
 
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.es.sql.dsl.bean.ElasticSqlParseResult;
 import org.es.sql.dsl.parser.ElasticSql2DslParser;
+import org.es.sql.utils.ElasticMockClient;
 import org.junit.Test;
 
 
@@ -58,5 +60,27 @@ public class SqlParserOrderByTest {
 //        Assert.assertEquals(parseResult.getOrderBy().get(0).toString(), targetSort.toString());
 //        targetSort = SortBuilders.fieldSort("productTags.sortNo").order(SortOrder.DESC).setNestedPath("productTags");
 //        Assert.assertEquals(parseResult.getOrderBy().get(1).toString(), targetSort.toString());
+    }
+
+    @Test
+    public void testX() {
+        ElasticMockClient esClient = new ElasticMockClient();
+
+        String sql = "select * from index.order where status='SUCCESS' order by nvl(pride, 0) asc, script_sort('doc[\"price\"].value * 1.5 / vp', 'number', 'vp:2.1') desc routing by 'CA','CB' limit 0, 20";
+
+        ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
+        //解析SQL
+        ElasticSqlParseResult parseResult = sql2DslParser.parse(sql);
+
+        //生成DSL,可用于rest api调用
+        String dsl = parseResult.toDsl();
+
+        //toRequest方法接收一个client对象参数，用于生成SearchRequestBuilder
+        SearchRequestBuilder searchReq = parseResult.toRequest(esClient);
+
+        //执行查询
+        //SearchResponse response = searchReq.execute().actionGet();
+
+        System.out.println(dsl);
     }
 }
