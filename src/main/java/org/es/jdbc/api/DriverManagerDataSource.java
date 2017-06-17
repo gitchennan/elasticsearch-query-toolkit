@@ -26,18 +26,6 @@ public class DriverManagerDataSource extends AbstractDriverBasedDataSource {
         setUrl(url);
     }
 
-
-    public void setDriverClassName(String driverClassName) {
-        String driverClassNameToUse = driverClassName.trim();
-        try {
-            Class.forName(driverClassNameToUse, true, getDefaultClassLoader());
-        }
-        catch (ClassNotFoundException ex) {
-            throw new IllegalStateException("Could not load JDBC driver class [" + driverClassNameToUse + "]", ex);
-        }
-    }
-
-
     public static ClassLoader getDefaultClassLoader() {
         ClassLoader cl = null;
         try {
@@ -60,6 +48,16 @@ public class DriverManagerDataSource extends AbstractDriverBasedDataSource {
             }
         }
         return cl;
+    }
+
+    public void setDriverClassName(String driverClassName) {
+        String driverClassNameToUse = driverClassName.trim();
+        try {
+            Class.forName(driverClassNameToUse, true, getDefaultClassLoader());
+        }
+        catch (ClassNotFoundException ex) {
+            throw new IllegalStateException("Could not load JDBC driver class [" + driverClassNameToUse + "]", ex);
+        }
     }
 
     @Override

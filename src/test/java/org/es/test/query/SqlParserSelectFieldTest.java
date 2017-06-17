@@ -1,8 +1,8 @@
 package org.es.test.query;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.es.sql.dsl.bean.ElasticSqlParseResult;
-import org.es.sql.dsl.parser.ElasticSql2DslParser;
+import org.es.sql.bean.ElasticSqlParseResult;
+import org.es.sql.parser.ElasticSql2DslParser;
 import org.junit.Assert;
 import org.junit.Test;
 

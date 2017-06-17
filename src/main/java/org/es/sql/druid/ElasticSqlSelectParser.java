@@ -75,7 +75,8 @@ public class ElasticSqlSelectParser extends SQLSelectParser {
     @Override
     public SQLTableSource parseTableSource() {
         if (lexer.token() != Token.IDENTIFIER) {
-            throw new ParserException("[syntax error] from table source should be a identifier");
+            throw new ParserException(
+                    "[syntax error] from table source is not a identifier");
         }
 
         SQLExprTableSource tableReference = new SQLExprTableSource();

@@ -11,7 +11,7 @@ import org.junit.Test;
 import java.sql.*;
 import java.util.Enumeration;
 
-public class ElasticDriverTest extends BaseJdbcTest{
+public class ElasticDriverTest extends BaseJdbcTest {
 
     @Test
     public void testLoadDriver() throws Exception {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <name>elasticsearch-query-toolkit</name>
     <modelVersion>4.0.0</modelVersion>
@@ -23,7 +23,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <skip.unit.tests>false</skip.unit.tests>
     </properties>
-	
+
     <repositories>
         <repository>
             <id>uk.maven.org</id>
@@ -50,24 +50,24 @@
             <artifactId>log4j-core</artifactId>
             <version>2.8.2</version>
         </dependency>
-		
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-			<version>3.0.5.RELEASE</version>
-		</dependency>
 
-		<dependency>
-			<groupId>org.apache.ibatis</groupId>
-			<artifactId>ibatis-sqlmap</artifactId>
-			<version>2.3.4.726</version>
-		</dependency>
-		
         <dependency>
-			 <groupId>com.alibaba</groupId>
-			 <artifactId>druid</artifactId>
-			 <version>1.0.24</version>
-		</dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>3.0.5.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.ibatis</groupId>
+            <artifactId>ibatis-sqlmap</artifactId>
+            <version>2.3.4.726</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.0.24</version>
+        </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -100,7 +100,6 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>transport</artifactId>
@@ -114,7 +113,7 @@
             <version>2.3</version>
         </dependency>
 
-		<dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>

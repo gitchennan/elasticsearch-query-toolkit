@@ -4,11 +4,10 @@ import java.sql.*;
 import java.util.Properties;
 
 public abstract class AbstractConnection extends AbstractFeatureNotSupportedConnection {
-    private boolean closed = false;
-    private int transactionIsolation;
-
     protected String url;
     protected Properties info;
+    private boolean closed = false;
+    private int transactionIsolation;
 
     public AbstractConnection(String url, Properties info) {
         this.url = url;
@@ -70,10 +69,9 @@ public abstract class AbstractConnection extends AbstractFeatureNotSupportedConn
         return false;
     }
 
-
     @Override
-    public void setTransactionIsolation(int level) throws SQLException {
-        this.transactionIsolation = level;
+    public void setAutoCommit(boolean autoCommit) throws SQLException {
+        // ignore
     }
 
     @Override
@@ -82,8 +80,18 @@ public abstract class AbstractConnection extends AbstractFeatureNotSupportedConn
     }
 
     @Override
+    public void setTransactionIsolation(int level) throws SQLException {
+        this.transactionIsolation = level;
+    }
+
+    @Override
     public boolean isReadOnly() throws SQLException {
         return true;
+    }
+
+    @Override
+    public void setReadOnly(boolean readOnly) throws SQLException {
+        // ignore
     }
 
     @Override
@@ -97,22 +105,12 @@ public abstract class AbstractConnection extends AbstractFeatureNotSupportedConn
     }
 
     @Override
-    public void setReadOnly(boolean readOnly) throws SQLException {
-        // ignore
-    }
-
-    @Override
     public void commit() throws SQLException {
         // ignore
     }
 
     @Override
     public void rollback() throws SQLException {
-        // ignore
-    }
-
-    @Override
-    public void setAutoCommit(boolean autoCommit) throws SQLException {
         // ignore
     }
 

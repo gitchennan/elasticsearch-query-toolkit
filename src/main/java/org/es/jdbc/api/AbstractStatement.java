@@ -64,13 +64,13 @@ public abstract class AbstractStatement extends AbstractFeatureNotSupportedState
     }
 
     @Override
-    public void setFetchSize(int rows) throws SQLException {
-        // ignore
+    public int getFetchSize() throws SQLException {
+        return 0;
     }
 
     @Override
-    public int getFetchSize() throws SQLException {
-        return 0;
+    public void setFetchSize(int rows) throws SQLException {
+        // ignore
     }
 
     @Override
@@ -99,15 +99,14 @@ public abstract class AbstractStatement extends AbstractFeatureNotSupportedState
         return isClosed;
     }
 
+    @Override
+    public boolean isPoolable() throws SQLException {
+        return false;
+    }
 
     @Override
     public void setPoolable(boolean poolable) throws SQLException {
         // ignore
-    }
-
-    @Override
-    public boolean isPoolable() throws SQLException {
-        return false;
     }
 
     @Override

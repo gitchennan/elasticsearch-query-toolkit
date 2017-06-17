@@ -1,7 +1,10 @@
 package org.es.jdbc.api;
 
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Statement;
 
 public abstract class AbstractFeatureNotSupportedStatement implements Statement {
 

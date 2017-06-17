@@ -134,6 +134,11 @@ public abstract class AbstractFeatureNotSupportedConnection implements Connectio
     }
 
     @Override
+    public final void setClientInfo(final Properties properties) throws SQLClientInfoException {
+        throw new UnsupportedOperationException("setClientInfo properties");
+    }
+
+    @Override
     public final String getClientInfo(final String name) throws SQLException {
         throw new SQLFeatureNotSupportedException("getClientInfo name");
     }
@@ -141,10 +146,5 @@ public abstract class AbstractFeatureNotSupportedConnection implements Connectio
     @Override
     public final void setClientInfo(final String name, final String value) throws SQLClientInfoException {
         throw new UnsupportedOperationException("setClientInfo name value");
-    }
-
-    @Override
-    public final void setClientInfo(final Properties properties) throws SQLClientInfoException {
-        throw new UnsupportedOperationException("setClientInfo properties");
     }
 }

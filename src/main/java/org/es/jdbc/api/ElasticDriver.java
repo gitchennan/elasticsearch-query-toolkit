@@ -12,10 +12,6 @@ public class ElasticDriver implements Driver {
 
     private static final String ELASTIC_SEARCH_DRIVER_PREFIX = "jdbc:elastic:";
 
-    private ElasticClientProxy elasticClientProxy = null;
-
-    private ElasticClientProvider elasticClientProvider;
-
     static {
         try {
             DriverManager.registerDriver(new ElasticDriver());
@@ -24,6 +20,9 @@ public class ElasticDriver implements Driver {
             // ignore
         }
     }
+
+    private ElasticClientProxy elasticClientProxy = null;
+    private ElasticClientProvider elasticClientProvider;
 
     private ElasticDriver() {
 

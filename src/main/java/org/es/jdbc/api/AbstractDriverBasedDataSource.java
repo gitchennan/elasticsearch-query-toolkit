@@ -10,20 +10,20 @@ public abstract class AbstractDriverBasedDataSource extends AbstractDataSource {
 
     private Properties connectionProperties;
 
-    public void setUrl(String url) {
-        this.url = url.trim();
-    }
-
     public String getUrl() {
         return this.url;
     }
 
-    public void setConnectionProperties(Properties connectionProperties) {
-        this.connectionProperties = connectionProperties;
+    public void setUrl(String url) {
+        this.url = url.trim();
     }
 
     public Properties getConnectionProperties() {
         return this.connectionProperties;
+    }
+
+    public void setConnectionProperties(Properties connectionProperties) {
+        this.connectionProperties = connectionProperties;
     }
 
     public Connection getConnection() throws SQLException {

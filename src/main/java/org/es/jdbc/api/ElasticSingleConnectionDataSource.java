@@ -13,17 +13,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class ElasticSingleConnectionDataSource extends DriverManagerDataSource implements SmartDataSource {
-    private boolean suppressClose;
-
-    private Connection target;
-
-    private Connection connection;
-
-    private Client client;
-
-    private ElasticClientProvider elasticClientProvider;
-
     private final Object connectionMonitor = new Object();
+    private boolean suppressClose;
+    private Connection target;
+    private Connection connection;
+    private Client client;
+    private ElasticClientProvider elasticClientProvider;
 
     public ElasticSingleConnectionDataSource() {
 
@@ -38,12 +33,12 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
         this.elasticClientProvider = elasticClientProvider;
     }
 
-    public void setSuppressClose(boolean suppressClose) {
-        this.suppressClose = suppressClose;
-    }
-
     protected boolean isSuppressClose() {
         return this.suppressClose;
+    }
+
+    public void setSuppressClose(boolean suppressClose) {
+        this.suppressClose = suppressClose;
     }
 
     @Override
@@ -154,6 +149,13 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
                 new CloseSuppressingInvocationHandler(target));
     }
 
+    protected Boolean getAutoCommitValue() {
+        return Boolean.FALSE;
+    }
+
+    public void setAutoCommit(boolean autoCommit) {
+        // ignore
+    }
 
     private static class CloseSuppressingInvocationHandler implements InvocationHandler {
         private final Connection target;
@@ -203,13 +205,5 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
                 throw ex.getTargetException();
             }
         }
-    }
-
-    protected Boolean getAutoCommitValue() {
-        return Boolean.FALSE;
-    }
-
-    public void setAutoCommit(boolean autoCommit) {
-        // ignore
     }
 }

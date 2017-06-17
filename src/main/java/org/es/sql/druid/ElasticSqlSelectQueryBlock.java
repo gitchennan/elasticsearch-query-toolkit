@@ -55,7 +55,7 @@ public class ElasticSqlSelectQueryBlock extends SQLSelectQueryBlock implements S
 
         @Override
         protected void accept0(SQLASTVisitor visitor) {
-            throw new UnsupportedOperationException("ElasticSql un-support method : accept0(SQLASTVisitor visitor)");
+            throw new UnsupportedOperationException("accept0(SQLASTVisitor visitor)");
         }
 
         public List<SQLExpr> getRoutingValues() {
@@ -91,7 +91,7 @@ public class ElasticSqlSelectQueryBlock extends SQLSelectQueryBlock implements S
 
         @Override
         protected void accept0(SQLASTVisitor visitor) {
-            throw new UnsupportedOperationException("ElasticSql un-support method : accept0(SQLASTVisitor visitor)");
+            throw new UnsupportedOperationException("accept0(SQLASTVisitor visitor)");
         }
 
     }

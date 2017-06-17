@@ -38,11 +38,11 @@ public class ProductAggResult {
         this.minAdvicePrice = minAdvicePrice;
     }
 
-    public void setProviderLevel(Long providerLevel) {
-        this.providerLevel = providerLevel;
-    }
-
     public Long getProviderLevel() {
         return providerLevel;
+    }
+
+    public void setProviderLevel(Long providerLevel) {
+        this.providerLevel = providerLevel;
     }
 }

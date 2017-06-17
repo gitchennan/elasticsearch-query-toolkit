@@ -38,7 +38,6 @@ public class ProductIndexQueryTest {
     }
 
 
-
     @Test
     public void testProductQuery() throws Exception {
         List<Product> productList = getProductByCodeAndMatchWord("iphone 6s", "IP_6S");

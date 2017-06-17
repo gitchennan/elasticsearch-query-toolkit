@@ -1,10 +1,10 @@
 package org.es.test.query;
 
-import org.es.sql.dsl.bean.ElasticSqlParseResult;
-import org.es.sql.dsl.bean.ElasticSqlQueryField;
-import org.es.sql.dsl.enums.SQLConditionOperator;
-import org.es.sql.dsl.listener.ParseActionListenerAdapter;
-import org.es.sql.dsl.parser.ElasticSql2DslParser;
+import org.es.sql.bean.ElasticSqlParseResult;
+import org.es.sql.bean.ElasticSqlQueryField;
+import org.es.sql.enums.SQLConditionOperator;
+import org.es.sql.listener.ParseActionListenerAdapter;
+import org.es.sql.parser.ElasticSql2DslParser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ public class SqlParserListenerTest {
         ElasticSql2DslParser sql2DslParser = new ElasticSql2DslParser();
         ElasticSqlParseResult parseResult = sql2DslParser.parse(sql, new ParseActionListenerAdapter() {
             @Override
-            public void onAtomExactQueryConditionParse(ElasticSqlQueryField paramName, Object[] paramValues, SQLConditionOperator operator) {
+            public void onAtomExactQueryConditionParse(ElasticSqlQueryField paramName, Object[] params, SQLConditionOperator operator) {
                 if (SQLConditionOperator.Equality == operator) {
                     Assert.assertEquals("status", paramName.getQueryFieldFullName());
                 }
