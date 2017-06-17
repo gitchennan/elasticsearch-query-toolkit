@@ -1,12 +1,13 @@
 package org.es.sql.utils;
 
 
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class Logger {
+public class PersistLogger {
     public static void warn(Object obj, String message, Throwable e) {
 
-        org.slf4j.Logger log = LoggerFactory.getLogger(obj.getClass().getName());
+        Logger log = LogManager.getLogger(obj.getClass().getName());
         if (log.isWarnEnabled()) {
             if (e == null) {
                 log.warn(message);
@@ -30,7 +31,7 @@ public class Logger {
     }
 
     public static void error(Object obj, String message, Throwable e) {
-        org.slf4j.Logger log = LoggerFactory.getLogger(obj instanceof Class ? ((Class) obj).getName() : obj.getClass().getName());
+        Logger log = LogManager.getLogger(obj instanceof Class ? ((Class) obj).getName() : obj.getClass().getName());
         if (log.isErrorEnabled()) {
             if (e == null) {
                 log.error(message);
@@ -46,7 +47,7 @@ public class Logger {
     }
 
     public static void info(Class clz, String message) {
-        org.slf4j.Logger log = LoggerFactory.getLogger(clz.getName());
+        Logger log = LogManager.getLogger(clz.getName());
         if (log.isInfoEnabled()) {
             log.info(message);
         }
@@ -63,7 +64,7 @@ public class Logger {
     }
 
     private static void trace(Class clz, String message) {
-        org.slf4j.Logger log = LoggerFactory.getLogger(clz.getName());
+        Logger log = LogManager.getLogger(clz.getName());
         if (log.isTraceEnabled()) {
             log.trace(message);
         }
@@ -74,7 +75,7 @@ public class Logger {
     }
 
     public static void debug(Class clz, String message) {
-        org.slf4j.Logger log = LoggerFactory.getLogger(clz.getName());
+        Logger log = LogManager.getLogger(clz.getName());
         if (log.isDebugEnabled()) {
             log.debug(message);
         }

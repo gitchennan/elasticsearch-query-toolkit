@@ -5,6 +5,7 @@ import com.alibaba.druid.sql.ast.expr.*;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
+import org.apache.lucene.search.join.ScoreMode;
 import org.es.sql.dsl.bean.AtomQuery;
 import org.es.sql.dsl.bean.SQLCondition;
 import org.es.sql.dsl.enums.SQLBoolOperator;
@@ -16,7 +17,7 @@ import org.es.sql.dsl.parser.query.exact.BinaryAtomQueryParser;
 import org.es.sql.dsl.parser.query.exact.InListAtomQueryParser;
 import org.es.sql.dsl.parser.query.method.MethodInvocation;
 import org.es.sql.dsl.parser.query.method.fulltext.FullTextAtomQueryParser;
-import org.es.sql.dsl.parser.query.method.script.ScriptAtomQueryParser;
+//import org.es.sql.dsl.parser.query.method.script.ScriptAtomQueryParser;
 import org.es.sql.dsl.parser.query.method.term.TermLevelAtomQueryParser;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -27,7 +28,7 @@ import java.util.List;
 public abstract class AbstractQueryConditionParser implements QueryParser {
 
     private final TermLevelAtomQueryParser termLevelAtomQueryParser;
-    private final ScriptAtomQueryParser scriptAtomQueryParser;
+//    private final ScriptAtomQueryParser scriptAtomQueryParser;
     private final FullTextAtomQueryParser fullTextAtomQueryParser;
     private final BinaryAtomQueryParser binaryQueryParser;
     private final InListAtomQueryParser inListQueryParser;
@@ -40,7 +41,7 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
         inListQueryParser = new InListAtomQueryParser(parseActionListener);
         betweenAndQueryParser = new BetweenAndAtomQueryParser(parseActionListener);
 
-        scriptAtomQueryParser = new ScriptAtomQueryParser();
+//        scriptAtomQueryParser = new ScriptAtomQueryParser();
     }
 
     protected BoolQueryBuilder parseQueryConditionExpr(SQLExpr conditionExpr, String queryAs, Object[] sqlArgs) {
@@ -94,9 +95,9 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
 
             MethodInvocation methodInvocation = new MethodInvocation(methodQueryExpr, queryAs, sqlArgs);
 
-            if (scriptAtomQueryParser.isMatchMethodInvocation(methodInvocation)) {
-                return scriptAtomQueryParser.parseAtomMethodQuery(methodInvocation);
-            }
+//            if (scriptAtomQueryParser.isMatchMethodInvocation(methodInvocation)) {
+//                return scriptAtomQueryParser.parseAtomMethodQuery(methodInvocation);
+//            }
 
             if (fullTextAtomQueryParser.isFulltextAtomQuery(methodInvocation)) {
                 return fullTextAtomQueryParser.parseFullTextAtomQuery(methodQueryExpr, queryAs, sqlArgs);
@@ -152,10 +153,10 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
 
             if (nestedQueryList.size() == 1) {
                 if (operator == SQLBoolOperator.AND) {
-                    subBoolQuery.must(QueryBuilders.nestedQuery(nestedDocPrefix, nestedQueryList.get(0)));
+                    subBoolQuery.must(QueryBuilders.nestedQuery(nestedDocPrefix, nestedQueryList.get(0), ScoreMode.None));
                 }
                 if (operator == SQLBoolOperator.OR) {
-                    subBoolQuery.should(QueryBuilders.nestedQuery(nestedDocPrefix, nestedQueryList.get(0)));
+                    subBoolQuery.should(QueryBuilders.nestedQuery(nestedDocPrefix, nestedQueryList.get(0), ScoreMode.None));
                 }
                 continue;
             }
@@ -171,10 +172,10 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
             }
 
             if (operator == SQLBoolOperator.AND) {
-                subBoolQuery.must(QueryBuilders.nestedQuery(nestedDocPrefix, boolNestedQuery));
+                subBoolQuery.must(QueryBuilders.nestedQuery(nestedDocPrefix, boolNestedQuery, ScoreMode.None));
             }
             if (operator == SQLBoolOperator.OR) {
-                subBoolQuery.should(QueryBuilders.nestedQuery(nestedDocPrefix, boolNestedQuery));
+                subBoolQuery.should(QueryBuilders.nestedQuery(nestedDocPrefix, boolNestedQuery, ScoreMode.None));
             }
 
         }

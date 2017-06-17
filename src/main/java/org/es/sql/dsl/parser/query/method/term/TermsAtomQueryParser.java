@@ -89,14 +89,14 @@ public class TermsAtomQueryParser extends AbstractFieldSpecificMethodQueryParser
             String val = extraParamMap.get("boost");
             termsQuery.boost(Float.valueOf(val));
         }
-        if (extraParamMap.containsKey("minimum_should_match")) {
-            String val = extraParamMap.get("minimum_should_match");
-            termsQuery.minimumShouldMatch(val);
-        }
-        if (extraParamMap.containsKey("disable_coord")) {
-            String val = extraParamMap.get("disable_coord");
-            termsQuery.disableCoord(Boolean.parseBoolean(val));
-        }
+//        if (extraParamMap.containsKey("minimum_should_match")) {
+//            String val = extraParamMap.get("minimum_should_match");
+//            termsQuery.minimumShouldMatch(val);
+//        }
+//        if (extraParamMap.containsKey("disable_coord")) {
+//            String val = extraParamMap.get("disable_coord");
+//            termsQuery.disableCoord(Boolean.parseBoolean(val));
+//        }
 
 
     }

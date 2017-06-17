@@ -5,6 +5,13 @@ import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.statement.SQLSelectGroupByClause;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.range.AbstractRangeBuilder;
+import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.es.sql.druid.ElasticSqlSelectQueryBlock;
 import org.es.sql.dsl.bean.ElasticDslContext;
 import org.es.sql.dsl.bean.ElasticSqlQueryField;
@@ -14,19 +21,10 @@ import org.es.sql.dsl.exception.ElasticSql2DslException;
 import org.es.sql.dsl.helper.ElasticSqlArgTransferHelper;
 import org.es.sql.dsl.helper.ElasticSqlMethodInvokeHelper;
 import org.es.sql.dsl.listener.ParseActionListener;
-import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.range.AbstractRangeBuilder;
-import org.elasticsearch.search.aggregations.bucket.range.RangeBuilder;
-import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeBuilder;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.util.Date;
 import java.util.List;
 
 public class QueryGroupByParser implements QueryParser {
@@ -41,10 +39,10 @@ public class QueryGroupByParser implements QueryParser {
         this.parseActionListener = parseActionListener;
     }
 
-    public static Date getDateRangeVal(String date) {
+    public static DateTime getDateRangeVal(String date) {
         final String dateRangeValPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
         DateTimeFormatter formatter = DateTimeFormat.forPattern(dateRangeValPattern);
-        return formatter.parseDateTime(date).toDate();
+        return formatter.parseDateTime(date);
     }
 
     @Override
@@ -55,7 +53,7 @@ public class QueryGroupByParser implements QueryParser {
         if (sqlGroupBy != null && CollectionUtils.isNotEmpty(sqlGroupBy.getItems())) {
             String queryAs = dslContext.getParseResult().getQueryAs();
 
-            List<AbstractAggregationBuilder> aggregationList = Lists.newArrayList();
+            List<AggregationBuilder> aggregationList = Lists.newArrayList();
             for (SQLExpr groupByItem : sqlGroupBy.getItems()) {
                 if (!(groupByItem instanceof SQLMethodInvokeExpr)) {
                     throw new ElasticSql2DslException("[syntax error] group by item must be an agg method call");
@@ -135,14 +133,14 @@ public class QueryGroupByParser implements QueryParser {
         return rangeSegmentList;
     }
 
-    private TermsBuilder createTermsBuilder(String termsFieldName, int termBuckets) {
+    private TermsAggregationBuilder createTermsBuilder(String termsFieldName, int termBuckets) {
         return AggregationBuilders.terms(AGG_BUCKET_KEY_PREFIX + termsFieldName)
                 .field(termsFieldName)
                 .minDocCount(1).shardMinDocCount(1)
                 .shardSize(termBuckets << 1).size(termBuckets).order(Terms.Order.count(false));
     }
 
-    private TermsBuilder createTermsBuilder(String termsFieldName) {
+    private TermsAggregationBuilder createTermsBuilder(String termsFieldName) {
         return createTermsBuilder(termsFieldName, MAX_GROUP_BY_SIZE);
     }
 
@@ -151,7 +149,7 @@ public class QueryGroupByParser implements QueryParser {
         RangeSegment.SegmentType segType = rangeSegments.get(0).getSegmentType();
 
         if (segType == RangeSegment.SegmentType.Numeric) {
-            RangeBuilder numericRangeBuilder = AggregationBuilders.range(AGG_BUCKET_KEY_PREFIX + rangeFieldName).field(rangeFieldName);
+            RangeAggregationBuilder numericRangeBuilder = AggregationBuilders.range(AGG_BUCKET_KEY_PREFIX + rangeFieldName).field(rangeFieldName);
             for (RangeSegment segment : rangeSegments) {
                 String key = String.format("%s-%s", segment.getFrom().toString(), segment.getTo().toString());
                 numericRangeBuilder.addRange(key, Double.valueOf(segment.getFrom().toString()), Double.valueOf(segment.getTo().toString()));
@@ -160,21 +158,21 @@ public class QueryGroupByParser implements QueryParser {
         }
 
         if (segType == RangeSegment.SegmentType.Date) {
-            DateRangeBuilder dateRangeBuilder = AggregationBuilders.dateRange(AGG_BUCKET_KEY_PREFIX + rangeFieldName).field(rangeFieldName);
+            DateRangeAggregationBuilder dateRangeBuilder = AggregationBuilders.dateRange(AGG_BUCKET_KEY_PREFIX + rangeFieldName).field(rangeFieldName);
             for (RangeSegment segment : rangeSegments) {
 
-                Date fromDate = getDateRangeVal(segment.getFrom().toString());
-                Date toDate = getDateRangeVal(segment.getTo().toString());
+                DateTime fromDate = getDateRangeVal(segment.getFrom().toString());
+                DateTime toDate = getDateRangeVal(segment.getTo().toString());
 
                 String key = String.format("[%s]-[%s]", formatDateRangeAggKey(fromDate), formatDateRangeAggKey(toDate));
-                dateRangeBuilder.addRange(key, segment.getFrom(), segment.getTo());
+                dateRangeBuilder.addRange(key, fromDate, toDate);
             }
             rangeBuilder = dateRangeBuilder;
         }
         return rangeBuilder;
     }
 
-    private String formatDateRangeAggKey(Date date) {
+    private String formatDateRangeAggKey(DateTime date) {
         final String dateRangeKeyPattern = "yyyy-MM-dd HH:mm:ss";
         return new DateTime(date).toString(dateRangeKeyPattern);
     }

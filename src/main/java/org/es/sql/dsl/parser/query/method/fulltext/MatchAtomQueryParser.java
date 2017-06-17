@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.index.query.Operator;
+import org.elasticsearch.index.search.MatchQuery;
 import org.es.sql.dsl.exception.ElasticSql2DslException;
 import org.es.sql.dsl.listener.ParseActionListener;
 import org.es.sql.dsl.parser.query.method.AbstractFieldSpecificMethodQueryParser;
@@ -79,23 +81,23 @@ public class MatchAtomQueryParser extends AbstractFieldSpecificMethodQueryParser
         if (extraParamMap.containsKey("type")) {
             String val = extraParamMap.get("type");
             if ("BOOLEAN".equalsIgnoreCase(val)) {
-                matchQuery.type(MatchQueryBuilder.Type.BOOLEAN);
+                matchQuery.type(MatchQuery.Type.BOOLEAN);
             }
             if ("PHRASE".equalsIgnoreCase(val)) {
-                matchQuery.type(MatchQueryBuilder.Type.PHRASE);
+                matchQuery.type(MatchQuery.Type.PHRASE);
             }
             if ("PHRASE_PREFIX".equalsIgnoreCase(val)) {
-                matchQuery.type(MatchQueryBuilder.Type.PHRASE_PREFIX);
+                matchQuery.type(MatchQuery.Type.PHRASE_PREFIX);
             }
         }
 
         if (extraParamMap.containsKey("operator")) {
             String val = extraParamMap.get("operator");
             if ("AND".equalsIgnoreCase(val)) {
-                matchQuery.operator(MatchQueryBuilder.Operator.AND);
+                matchQuery.operator(Operator.AND);
             }
             if ("OR".equalsIgnoreCase(val)) {
-                matchQuery.operator(MatchQueryBuilder.Operator.OR);
+                matchQuery.operator(Operator.OR);
             }
         }
 
@@ -148,10 +150,10 @@ public class MatchAtomQueryParser extends AbstractFieldSpecificMethodQueryParser
         if (extraParamMap.containsKey("zero_terms_query")) {
             String val = extraParamMap.get("zero_terms_query");
             if ("NONE".equalsIgnoreCase(val)) {
-                matchQuery.zeroTermsQuery(MatchQueryBuilder.ZeroTermsQuery.NONE);
+                matchQuery.zeroTermsQuery(MatchQuery.ZeroTermsQuery.NONE);
             }
             if ("ALL".equalsIgnoreCase(val)) {
-                matchQuery.zeroTermsQuery(MatchQueryBuilder.ZeroTermsQuery.ALL);
+                matchQuery.zeroTermsQuery(MatchQuery.ZeroTermsQuery.ALL);
             }
         }
 

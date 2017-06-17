@@ -1,5 +1,6 @@
 package org.es.test.query;
 
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchAction;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.index.query.NestedQueryBuilder;
@@ -7,7 +8,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.es.sql.dsl.bean.ElasticSqlParseResult;
 import org.es.sql.dsl.parser.ElasticSql2DslParser;
 import org.es.sql.utils.ElasticMockClient;
@@ -40,19 +41,19 @@ public class SqlParserWhereConditionTest {
 
         sql = "select id,status from index.order t where $product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.termQuery("product.price", "123.4")));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.termQuery("product.price", "123.4"), ScoreMode.None));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
         System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where t.$product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.termQuery("product.price", "123.4")));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.termQuery("product.price", "123.4"), ScoreMode.None));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
         System.out.println(parseResult.toDsl());
 
         sql = "select id,status from index.order t where abc.t.$product.price='123.4'";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("abc.t.product", QueryBuilders.termQuery("abc.t.product.price", "123.4")));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("abc.t.product", QueryBuilders.termQuery("abc.t.product.price", "123.4"), ScoreMode.None));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
         System.out.println(parseResult.toDsl());
 
@@ -82,7 +83,7 @@ public class SqlParserWhereConditionTest {
 
         sql = "select id,status from index.order t where $product.price > 123.4";
         parseResult = sql2DslParser.parse(sql);
-        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.rangeQuery("product.price").gt(123.4)));
+        targetFilter = QueryBuilders.boolQuery().must(QueryBuilders.nestedQuery("product", QueryBuilders.rangeQuery("product.price").gt(123.4), ScoreMode.None));
         Assert.assertEquals(parseResult.getWhereCondition().toString(), targetFilter.toString());
         System.out.println(parseResult.toDsl());
     }
@@ -146,10 +147,10 @@ public class SqlParserWhereConditionTest {
     public void testCreateSearchDsl() {
         SearchRequestBuilder searchReq = new SearchRequestBuilder(new ElasticMockClient(), SearchAction.INSTANCE);
 
-        NestedQueryBuilder categoryNameTerm = QueryBuilders.nestedQuery("bookCategories", QueryBuilders.termQuery("bookCategories.categoryName", "ART"));
-        NestedQueryBuilder bookAuthorNestedFilter = QueryBuilders.nestedQuery("bookCategories.books", QueryBuilders.termQuery("bookCategories.books.bookAuthor", "bibicx"));
-        NestedQueryBuilder bookPublisherCodeNestedFilter = QueryBuilders.nestedQuery("bookCategories.books", QueryBuilders.termQuery("bookCategories.books.bookPublisher.publisherCode", "PUB_03"));
-        NestedQueryBuilder bookProviderNameNestedFilter = QueryBuilders.nestedQuery("bookCategories.books.bookPublisher.bookProvider", QueryBuilders.termQuery("bookCategories.books.bookPublisher.bookProvider.providerName", "PVD_01"));
+        NestedQueryBuilder categoryNameTerm = QueryBuilders.nestedQuery("bookCategories", QueryBuilders.termQuery("bookCategories.categoryName", "ART"), ScoreMode.None);
+        NestedQueryBuilder bookAuthorNestedFilter = QueryBuilders.nestedQuery("bookCategories.books", QueryBuilders.termQuery("bookCategories.books.bookAuthor", "bibicx"), ScoreMode.None);
+        NestedQueryBuilder bookPublisherCodeNestedFilter = QueryBuilders.nestedQuery("bookCategories.books", QueryBuilders.termQuery("bookCategories.books.bookPublisher.publisherCode", "PUB_03"), ScoreMode.None);
+        NestedQueryBuilder bookProviderNameNestedFilter = QueryBuilders.nestedQuery("bookCategories.books.bookPublisher.bookProvider", QueryBuilders.termQuery("bookCategories.books.bookPublisher.bookProvider.providerName", "PVD_01"), ScoreMode.None);
 
         QueryBuilder topFilter = QueryBuilders.boolQuery().must(categoryNameTerm).must(bookAuthorNestedFilter).must(bookPublisherCodeNestedFilter).must(bookProviderNameNestedFilter);
 
@@ -163,8 +164,8 @@ public class SqlParserWhereConditionTest {
         searchReq.setSize(0);
 
         //NestedQueryBuilder categoryNameTerm = QueryBuilders.nestedQuery("bookCategories", QueryBuilders.termQuery("bookCategories.categoryName", "ART"));
-        TermsBuilder categoryNameAgg = AggregationBuilders.terms("agg_bookCategories.categoryName").field("bookCategories.categoryName");
-        AbstractAggregationBuilder topAgg = AggregationBuilders.nested("nested_bookCategories.categoryName").path("bookCategories").subAggregation(categoryNameAgg);
+        TermsAggregationBuilder categoryNameAgg = AggregationBuilders.terms("agg_bookCategories.categoryName").field("bookCategories.categoryName");
+        AbstractAggregationBuilder topAgg = AggregationBuilders.nested("nested_bookCategories.categoryName", "bookCategories").subAggregation(categoryNameAgg);
 
         AbstractAggregationBuilder rtnAgg = AggregationBuilders.reverseNested("rtn_root").subAggregation(AggregationBuilders.terms("agg_name").field("name"));
         categoryNameAgg.subAggregation(rtnAgg);

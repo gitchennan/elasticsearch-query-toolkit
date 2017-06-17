@@ -3,7 +3,7 @@ package org.es.jdbc.api;
 
 import org.elasticsearch.client.Client;
 import org.es.jdbc.es.ElasticClientProvider;
-import org.es.sql.utils.Logger;
+import org.es.sql.utils.PersistLogger;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -132,7 +132,7 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
                 this.target.close();
             }
             catch (Throwable ex) {
-                Logger.warn(this, "Could not close shared JDBC Connection", ex);
+                PersistLogger.warn(this, "Could not close shared JDBC Connection", ex);
             }
         }
 
@@ -141,7 +141,7 @@ public class ElasticSingleConnectionDataSource extends DriverManagerDataSource i
                 client.close();
             }
             catch (Exception ex) {
-                Logger.error(this, "Could not close elasticsearch client", ex);
+                PersistLogger.error(this, "Could not close elasticsearch client", ex);
             }
         }
     }

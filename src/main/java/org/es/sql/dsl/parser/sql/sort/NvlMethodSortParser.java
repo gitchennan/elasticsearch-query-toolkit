@@ -3,10 +3,7 @@ package org.es.sql.dsl.parser.sql.sort;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
 import com.google.common.collect.ImmutableList;
-import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.SortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.search.sort.*;
 import org.es.sql.dsl.bean.ElasticSqlQueryField;
 import org.es.sql.dsl.enums.SortOption;
 import org.es.sql.dsl.exception.ElasticSql2DslException;
@@ -78,7 +75,7 @@ public class NvlMethodSortParser extends AbstractMethodSortParser {
 
                 if (sortMethodInvocation.getParameterCount() == 3) {
                     String sortModeText = sortMethodInvocation.getParameterAsString(2);
-                    fieldSortBuilder.sortMode(SortOption.get(sortModeText).mode());
+                    fieldSortBuilder.sortMode(SortMode.fromString(sortModeText));
                 }
                 return fieldSortBuilder;
             }

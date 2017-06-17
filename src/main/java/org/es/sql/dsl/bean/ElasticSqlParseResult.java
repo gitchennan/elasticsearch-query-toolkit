@@ -39,7 +39,7 @@ public class ElasticSqlParseResult {
 
     private transient boolean isTopStatsAgg = false;
 
-    private transient List<AbstractAggregationBuilder> groupBy;
+    private transient List<AggregationBuilder> groupBy;
 
     public List<String> getQueryFieldList() {
         return queryFieldList;
@@ -121,11 +121,11 @@ public class ElasticSqlParseResult {
         this.routingBy = routingBy;
     }
 
-    public List<AbstractAggregationBuilder> getGroupBy() {
+    public List<AggregationBuilder> getGroupBy() {
         return groupBy;
     }
 
-    public void setGroupBy(List<AbstractAggregationBuilder> groupBy) {
+    public void setGroupBy(List<AggregationBuilder> groupBy) {
         this.groupBy = groupBy;
     }
 
@@ -183,7 +183,7 @@ public class ElasticSqlParseResult {
         if (CollectionUtils.isNotEmpty(groupBy)) {
             if (!getIsTopStatsAgg()) {
                 AggregationBuilder preAgg = null;
-                for (AbstractAggregationBuilder aggItem : groupBy) {
+                for (AggregationBuilder aggItem : groupBy) {
                     if (preAgg == null) {
                         preAgg = (AggregationBuilder) aggItem;
                         continue;
@@ -194,7 +194,7 @@ public class ElasticSqlParseResult {
                 requestBuilder.addAggregation(groupBy.get(0));
             }
             else {
-                for (AbstractAggregationBuilder aggItem : groupBy) {
+                for (AggregationBuilder aggItem : groupBy) {
                     requestBuilder.addAggregation(aggItem);
                 }
             }

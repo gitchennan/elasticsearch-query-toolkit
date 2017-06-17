@@ -6,6 +6,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.es.jdbc.exception.BuildElasticClientException;
 import org.es.sql.utils.Constants;
 
@@ -46,7 +47,7 @@ public class ElasticClientProxyProviderImpl implements ElasticClientProvider {
     private ElasticClientProxy internalBuildElasticClient(String url) {
         String ipUrl = url.substring(ELASTIC_SEARCH_DRIVER_PREFIX.length());
 
-        Settings.Builder settingBuilder = Settings.settingsBuilder();
+        Settings.Builder settingBuilder = Settings.builder();
         settingBuilder.put("client.transport.sniff", true);
 
         String hostListString = ipUrl;
@@ -71,7 +72,8 @@ public class ElasticClientProxyProviderImpl implements ElasticClientProvider {
             }
         }
 
-        TransportClient transportClient = TransportClient.builder().settings(settingBuilder).build()
+
+        TransportClient transportClient = new PreBuiltTransportClient(settingBuilder.build())
                 .addTransportAddresses(addressList.toArray(new InetSocketTransportAddress[addressList.size()]));
 
         return (ElasticClientProxy) Proxy.newProxyInstance(ElasticClientProxy.class.getClassLoader(),

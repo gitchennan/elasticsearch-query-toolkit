@@ -1,7 +1,7 @@
 package org.es.jdbc.es;
 
 import org.elasticsearch.action.*;
-import org.es.sql.utils.Logger;
+import org.es.sql.utils.PersistLogger;
 
 public class JdbcSearchActionExecutor {
 
@@ -44,13 +44,13 @@ public class JdbcSearchActionExecutor {
         return new ActionListener<Response>() {
             @Override
             public void onResponse(Response response) {
-                Logger.debug(this, String.format("[Search_Request] %s", requestBuilder.toString()));
-                Logger.debug(this, String.format("[Search_Response] %s", response.toString()));
+                PersistLogger.debug(this, String.format("[Search_Request] %s", requestBuilder.toString()));
+                PersistLogger.debug(this, String.format("[Search_Response] %s", response.toString()));
             }
 
             @Override
             public void onFailure(Exception ex) {
-                Logger.error(this, "Execute es req error!", ex);
+                PersistLogger.error(this, "Execute es req error!", ex);
             }
         };
     }

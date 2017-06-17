@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.elasticsearch.index.query.Operator;
 import org.es.sql.dsl.bean.AtomQuery;
 import org.es.sql.dsl.exception.ElasticSql2DslException;
 import org.es.sql.dsl.parser.query.method.MethodInvocation;
@@ -105,10 +106,10 @@ public class SimpleQueryStringAtomQueryParser extends ParameterizedMethodQueryPa
             simpleStringQuery.analyzer(val);
         }
 
-        if (extraParamMap.containsKey("lowercase_expanded_terms")) {
-            String val = extraParamMap.get("lowercase_expanded_terms");
-            simpleStringQuery.lowercaseExpandedTerms(Boolean.parseBoolean(val));
-        }
+//        if (extraParamMap.containsKey("lowercase_expanded_terms")) {
+//            String val = extraParamMap.get("lowercase_expanded_terms");
+//            simpleStringQuery.lowercaseExpandedTerms(Boolean.parseBoolean(val));
+//        }
 
         if (extraParamMap.containsKey("boost")) {
             String val = extraParamMap.get("boost");
@@ -120,10 +121,10 @@ public class SimpleQueryStringAtomQueryParser extends ParameterizedMethodQueryPa
             simpleStringQuery.analyzeWildcard(Boolean.parseBoolean(val));
         }
 
-        if (extraParamMap.containsKey("locale")) {
-            String val = extraParamMap.get("locale");
-            simpleStringQuery.locale(Locale.forLanguageTag(val));
-        }
+//        if (extraParamMap.containsKey("locale")) {
+//            String val = extraParamMap.get("locale");
+//            simpleStringQuery.locale(Locale.forLanguageTag(val));
+//        }
 
         if (extraParamMap.containsKey("flags")) {
             String[] flags = extraParamMap.get("flags").split("\\|");
@@ -139,10 +140,10 @@ public class SimpleQueryStringAtomQueryParser extends ParameterizedMethodQueryPa
             String val = extraParamMap.get("default_operator");
 
             if ("AND".equalsIgnoreCase(val)) {
-                simpleStringQuery.defaultOperator(SimpleQueryStringBuilder.Operator.AND);
+                simpleStringQuery.defaultOperator(Operator.AND);
             }
             if ("OR".equalsIgnoreCase(val)) {
-                simpleStringQuery.defaultOperator(SimpleQueryStringBuilder.Operator.OR);
+                simpleStringQuery.defaultOperator(Operator.OR);
             }
         }
     }

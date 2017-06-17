@@ -34,7 +34,7 @@ public class QuerySelectFieldListParser implements QueryParser {
         QueryFieldParser queryFieldParser = new QueryFieldParser();
         String queryAs = dslContext.getParseResult().getQueryAs();
 
-        List<AbstractAggregationBuilder> aggregations = Lists.newLinkedList();
+        List<AggregationBuilder> aggregations = Lists.newLinkedList();
         for (SQLSelectItem selectField : queryBlock.getSelectList()) {
 
             // agg method
@@ -61,11 +61,11 @@ public class QuerySelectFieldListParser implements QueryParser {
         }
 
         if (CollectionUtils.isNotEmpty(aggregations)) {
-            List<AbstractAggregationBuilder> groupByList = dslContext.getParseResult().getGroupBy();
+            List<AggregationBuilder> groupByList = dslContext.getParseResult().getGroupBy();
 
             if (CollectionUtils.isNotEmpty(groupByList)) {
                 AggregationBuilder lastLevelAggItem = (AggregationBuilder) groupByList.get(groupByList.size() - 1);
-                for (AbstractAggregationBuilder aggItem : aggregations) {
+                for (AggregationBuilder aggItem : aggregations) {
                     lastLevelAggItem.subAggregation(aggItem);
                 }
             }

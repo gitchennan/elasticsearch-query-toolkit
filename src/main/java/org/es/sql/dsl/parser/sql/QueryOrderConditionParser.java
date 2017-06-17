@@ -1,31 +1,26 @@
 package org.es.sql.dsl.parser.sql;
 
-import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLOrderBy;
 import com.alibaba.druid.sql.ast.SQLOrderingSpecification;
-import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
-import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
-import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.statement.SQLSelectOrderByItem;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
-import org.es.sql.druid.ElasticSqlSelectQueryBlock;
-import org.es.sql.dsl.bean.ElasticDslContext;
-import org.es.sql.dsl.bean.ElasticSqlQueryField;
-import org.es.sql.dsl.enums.QueryFieldType;
-import org.es.sql.dsl.enums.SortOption;
-import org.es.sql.dsl.exception.ElasticSql2DslException;
-import org.es.sql.dsl.helper.ElasticSqlArgTransferHelper;
-import org.es.sql.dsl.helper.ElasticSqlMethodInvokeHelper;
-import org.es.sql.dsl.listener.ParseActionListener;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.es.sql.druid.ElasticSqlSelectQueryBlock;
+import org.es.sql.dsl.bean.ElasticDslContext;
+import org.es.sql.dsl.bean.ElasticSqlQueryField;
+import org.es.sql.dsl.exception.ElasticSql2DslException;
+import org.es.sql.dsl.listener.ParseActionListener;
 import org.es.sql.dsl.parser.query.method.MethodInvocation;
-import org.es.sql.dsl.parser.sql.sort.*;
+import org.es.sql.dsl.parser.sql.sort.ConditionSortBuilder;
+import org.es.sql.dsl.parser.sql.sort.MethodSortParser;
+import org.es.sql.dsl.parser.sql.sort.NvlMethodSortParser;
+import org.es.sql.dsl.parser.sql.sort.ParseSortBuilderHelper;
 
 import java.util.List;
 
@@ -39,8 +34,8 @@ public class QueryOrderConditionParser implements QueryParser {
         this.parseActionListener = parseActionListener;
 
         methodSortParsers = ImmutableList.of(
-                new NvlMethodSortParser(),
-                new ScriptMethodSortParser()
+                new NvlMethodSortParser()
+//                , new ScriptMethodSortParser()
         );
     }
 

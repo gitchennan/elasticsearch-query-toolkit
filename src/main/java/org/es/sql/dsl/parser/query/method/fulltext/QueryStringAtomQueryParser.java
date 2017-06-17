@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.index.query.Operator;
 import org.es.sql.dsl.bean.AtomQuery;
 import org.es.sql.dsl.exception.ElasticSql2DslException;
 import org.es.sql.dsl.parser.query.method.MethodInvocation;
@@ -125,10 +126,10 @@ public class QueryStringAtomQueryParser extends ParameterizedMethodQueryParser {
             queryStringQuery.allowLeadingWildcard(Boolean.parseBoolean(val));
         }
 
-        if (extraParamMap.containsKey("lowercase_expanded_terms")) {
-            String val = extraParamMap.get("lowercase_expanded_terms");
-            queryStringQuery.lowercaseExpandedTerms(Boolean.parseBoolean(val));
-        }
+//        if (extraParamMap.containsKey("lowercase_expanded_terms")) {
+//            String val = extraParamMap.get("lowercase_expanded_terms");
+//            queryStringQuery.lowercaseExpandedTerms(Boolean.parseBoolean(val));
+//        }
 
         if (extraParamMap.containsKey("enable_position_increments")) {
             String val = extraParamMap.get("enable_position_increments");
@@ -195,19 +196,19 @@ public class QueryStringAtomQueryParser extends ParameterizedMethodQueryParser {
             queryStringQuery.escape(Boolean.parseBoolean(val));
         }
 
-        if (extraParamMap.containsKey("locale")) {
-            String val = extraParamMap.get("locale");
-            queryStringQuery.locale(Locale.forLanguageTag(val));
-        }
+//        if (extraParamMap.containsKey("locale")) {
+//            String val = extraParamMap.get("locale");
+//            queryStringQuery.locale(Locale.forLanguageTag(val));
+//        }
 
         if (extraParamMap.containsKey("default_operator")) {
             String val = extraParamMap.get("default_operator");
 
             if ("AND".equalsIgnoreCase(val)) {
-                queryStringQuery.defaultOperator(QueryStringQueryBuilder.Operator.AND);
+                queryStringQuery.defaultOperator(Operator.AND);
             }
             if ("OR".equalsIgnoreCase(val)) {
-                queryStringQuery.defaultOperator(QueryStringQueryBuilder.Operator.OR);
+                queryStringQuery.defaultOperator(Operator.OR);
             }
         }
 
