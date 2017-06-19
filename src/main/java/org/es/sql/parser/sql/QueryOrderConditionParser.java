@@ -13,15 +13,12 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.es.sql.bean.ElasticDslContext;
 import org.es.sql.bean.ElasticSqlQueryField;
-import org.es.sql.bean.SQLArgs;
+import org.es.sql.bean.SQLArgsx;
 import org.es.sql.druid.ElasticSqlSelectQueryBlock;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.listener.ParseActionListener;
 import org.es.sql.parser.query.method.MethodInvocation;
-import org.es.sql.parser.sql.sort.ConditionSortBuilder;
-import org.es.sql.parser.sql.sort.MethodSortParser;
-import org.es.sql.parser.sql.sort.NvlMethodSortParser;
-import org.es.sql.parser.sql.sort.ParseSortBuilderHelper;
+import org.es.sql.parser.sql.sort.*;
 
 import java.util.List;
 
@@ -35,8 +32,8 @@ public class QueryOrderConditionParser implements QueryParser {
         this.parseActionListener = parseActionListener;
 
         methodSortParsers = ImmutableList.of(
-                new NvlMethodSortParser()
-//                , new ScriptMethodSortParser()
+                new NvlMethodSortParser(),
+                new ScriptMethodSortParser()
         );
     }
 
@@ -56,7 +53,7 @@ public class QueryOrderConditionParser implements QueryParser {
         }
     }
 
-    private SortBuilder parseOrderCondition(SQLSelectOrderByItem orderByItem, String queryAs, SQLArgs SQLArgs) {
+    private SortBuilder parseOrderCondition(SQLSelectOrderByItem orderByItem, String queryAs, SQLArgsx SQLArgs) {
 
         SortOrder order = orderByItem.getType() == SQLOrderingSpecification.ASC ? SortOrder.ASC : SortOrder.DESC;
 

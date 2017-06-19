@@ -2,7 +2,7 @@ package org.es.sql.parser.query.method;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
-import org.es.sql.bean.SQLArgs;
+import org.es.sql.bean.SQLArgsx;
 import org.es.sql.helper.ElasticSqlArgConverter;
 
 import java.util.List;
@@ -10,9 +10,9 @@ import java.util.List;
 public class MethodInvocation {
     private final SQLMethodInvokeExpr methodInvokeExpr;
     private final String queryAs;
-    private final SQLArgs SQLArgs;
+    private final SQLArgsx SQLArgs;
 
-    public MethodInvocation(SQLMethodInvokeExpr methodInvokeExpr, String queryAs, SQLArgs SQLArgs) {
+    public MethodInvocation(SQLMethodInvokeExpr methodInvokeExpr, String queryAs, SQLArgsx SQLArgs) {
         if (methodInvokeExpr == null) {
             throw new IllegalArgumentException("method invoke expression can not be null");
         }
@@ -25,7 +25,7 @@ public class MethodInvocation {
         return queryAs;
     }
 
-    public SQLArgs getSQLArgs() {
+    public SQLArgsx getSQLArgs() {
         return SQLArgs;
     }
 

@@ -5,7 +5,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.es.sql.bean.AtomQuery;
-import org.es.sql.bean.SQLArgs;
+import org.es.sql.bean.SQLArgsx;
 import org.es.sql.enums.SQLConditionOperator;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.helper.ElasticSqlArgConverter;
@@ -17,7 +17,7 @@ public class InListAtomQueryParser extends AbstractAtomExactQueryParser {
         super(parseActionListener);
     }
 
-    public AtomQuery parseInListQuery(SQLInListExpr inListQueryExpr, String queryAs, SQLArgs SQLArgs) {
+    public AtomQuery parseInListQuery(SQLInListExpr inListQueryExpr, String queryAs, SQLArgsx SQLArgs) {
         if (CollectionUtils.isEmpty(inListQueryExpr.getTargetList())) {
             throw new ElasticSql2DslException("[syntax error] In list expr target list cannot be blank");
         }

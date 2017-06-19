@@ -2,7 +2,7 @@ package org.es.sql.helper;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.*;
-import org.es.sql.bean.SQLArgs;
+import org.es.sql.bean.SQLArgsx;
 import org.es.sql.exception.ElasticSql2DslException;
 
 import java.util.List;
@@ -13,7 +13,7 @@ public class ElasticSqlArgConverter {
 
     }
 
-    public static Object[] convertSqlArgs(List<SQLExpr> exprList, SQLArgs SQLArgs) {
+    public static Object[] convertSqlArgs(List<SQLExpr> exprList, SQLArgsx SQLArgs) {
         Object[] values = new Object[exprList.size()];
         for (int idx = 0; idx < exprList.size(); idx++) {
             values[idx] = convertSqlArg(exprList.get(idx), SQLArgs, true);
@@ -21,11 +21,11 @@ public class ElasticSqlArgConverter {
         return values;
     }
 
-    public static Object convertSqlArg(SQLExpr expr, SQLArgs SQLArgs) {
+    public static Object convertSqlArg(SQLExpr expr, SQLArgsx SQLArgs) {
         return convertSqlArg(expr, SQLArgs, true);
     }
 
-    public static Object convertSqlArg(SQLExpr expr, SQLArgs SQLArgs, boolean recognizeDateArg) {
+    public static Object convertSqlArg(SQLExpr expr, SQLArgsx SQLArgs, boolean recognizeDateArg) {
         if (expr instanceof SQLVariantRefExpr) {
             SQLVariantRefExpr varRefExpr = (SQLVariantRefExpr) expr;
             //parse date
