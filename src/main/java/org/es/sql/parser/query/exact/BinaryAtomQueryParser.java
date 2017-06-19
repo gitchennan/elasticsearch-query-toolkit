@@ -7,7 +7,7 @@ import org.elasticsearch.index.query.ExistsQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.es.sql.bean.AtomQuery;
-import org.es.sql.bean.SQLArgsx;
+import org.es.sql.bean.SQLArgs;
 import org.es.sql.enums.SQLConditionOperator;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.helper.ElasticSqlArgConverter;
@@ -19,7 +19,7 @@ public class BinaryAtomQueryParser extends AbstractAtomExactQueryParser {
         super(parseActionListener);
     }
 
-    public AtomQuery parseBinaryQuery(SQLBinaryOpExpr binQueryExpr, String queryAs, SQLArgsx SQLArgs) {
+    public AtomQuery parseBinaryQuery(SQLBinaryOpExpr binQueryExpr, String queryAs, SQLArgs SQLArgs) {
         SQLBinaryOperator binaryOperator = binQueryExpr.getOperator();
 
         //EQ NEQ

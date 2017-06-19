@@ -4,7 +4,7 @@ import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
 import com.alibaba.druid.sql.ast.expr.SQLVariantRefExpr;
 import org.es.sql.bean.ElasticDslContext;
-import org.es.sql.bean.SQLArgsx;
+import org.es.sql.bean.SQLArgs;
 import org.es.sql.druid.ElasticSqlSelectQueryBlock;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.helper.ElasticSqlArgConverter;
@@ -36,7 +36,7 @@ public class QueryLimitSizeParser implements QueryParser {
         }
     }
 
-    public Integer parseLimitInteger(SQLExpr limitInt, SQLArgsx args) {
+    public Integer parseLimitInteger(SQLExpr limitInt, SQLArgs args) {
         if (limitInt instanceof SQLIntegerExpr) {
             return ((SQLIntegerExpr) limitInt).getNumber().intValue();
         }

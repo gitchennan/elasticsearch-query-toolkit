@@ -6,17 +6,17 @@ public class ElasticDslContext {
     //SQL
     private SQLQueryExpr queryExpr;
     //SQL Args
-    private SQLArgsx SQLArgs;
+    private org.es.sql.bean.SQLArgs SQLArgs;
     //Result
     private ElasticSqlParseResult parseResult;
 
-    public ElasticDslContext(SQLQueryExpr queryExpr, SQLArgsx SQLArgs) {
+    public ElasticDslContext(SQLQueryExpr queryExpr, org.es.sql.bean.SQLArgs SQLArgs) {
         this.queryExpr = queryExpr;
         this.SQLArgs = SQLArgs;
         parseResult = new ElasticSqlParseResult();
     }
 
-    public SQLArgsx getSQLArgs() {
+    public org.es.sql.bean.SQLArgs getSQLArgs() {
         return SQLArgs;
     }
 

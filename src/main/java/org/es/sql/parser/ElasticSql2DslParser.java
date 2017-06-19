@@ -7,7 +7,7 @@ import com.alibaba.druid.sql.parser.Token;
 import com.google.common.collect.ImmutableList;
 import org.es.sql.bean.ElasticDslContext;
 import org.es.sql.bean.ElasticSqlParseResult;
-import org.es.sql.bean.SQLArgsx;
+import org.es.sql.bean.SQLArgs;
 import org.es.sql.druid.ElasticSqlExprParser;
 import org.es.sql.druid.ElasticSqlSelectQueryBlock;
 import org.es.sql.exception.ElasticSql2DslException;
@@ -45,9 +45,9 @@ public class ElasticSql2DslParser {
             throw new ElasticSql2DslException(ex);
         }
 
-        SQLArgsx sqlParamValues = null;
+        SQLArgs sqlParamValues = null;
         if (sqlArgs != null && sqlArgs.length > 0) {
-            sqlParamValues = new SQLArgsx(sqlArgs);
+            sqlParamValues = new SQLArgs(sqlArgs);
         }
 
         ElasticDslContext elasticDslContext = new ElasticDslContext(queryExpr, sqlParamValues);

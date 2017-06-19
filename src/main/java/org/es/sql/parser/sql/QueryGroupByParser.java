@@ -15,7 +15,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilde
 import org.es.sql.bean.ElasticDslContext;
 import org.es.sql.bean.ElasticSqlQueryField;
 import org.es.sql.bean.RangeSegment;
-import org.es.sql.bean.SQLArgsx;
+import org.es.sql.bean.SQLArgs;
 import org.es.sql.druid.ElasticSqlSelectQueryBlock;
 import org.es.sql.enums.QueryFieldType;
 import org.es.sql.exception.ElasticSql2DslException;
@@ -91,7 +91,7 @@ public class QueryGroupByParser implements QueryParser {
 
     }
 
-    private AggregationBuilder parseTermsAggregation(String queryAs, SQLArgsx args, SQLExpr termsFieldExpr, SQLExpr shardSizeExpr) {
+    private AggregationBuilder parseTermsAggregation(String queryAs, SQLArgs args, SQLExpr termsFieldExpr, SQLExpr shardSizeExpr) {
         QueryFieldParser queryFieldParser = new QueryFieldParser();
 
         ElasticSqlQueryField queryField = queryFieldParser.parseConditionQueryField(termsFieldExpr, queryAs);
@@ -118,7 +118,7 @@ public class QueryGroupByParser implements QueryParser {
         return createRangeBuilder(queryField.getQueryFieldFullName(), rangeSegments);
     }
 
-    private List<RangeSegment> parseRangeSegments(SQLMethodInvokeExpr rangeMethodExpr, SQLArgsx args) {
+    private List<RangeSegment> parseRangeSegments(SQLMethodInvokeExpr rangeMethodExpr, SQLArgs args) {
         List<RangeSegment> rangeSegmentList = Lists.newArrayList();
         for (int pIdx = 1; pIdx < rangeMethodExpr.getParameters().size(); pIdx++) {
             SQLMethodInvokeExpr segMethodExpr = (SQLMethodInvokeExpr) rangeMethodExpr.getParameters().get(pIdx);

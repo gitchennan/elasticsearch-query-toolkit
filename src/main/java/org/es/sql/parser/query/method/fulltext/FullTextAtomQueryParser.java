@@ -3,7 +3,7 @@ package org.es.sql.parser.query.method.fulltext;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.google.common.collect.ImmutableList;
 import org.es.sql.bean.AtomQuery;
-import org.es.sql.bean.SQLArgsx;
+import org.es.sql.bean.SQLArgs;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.listener.ParseActionListener;
 import org.es.sql.parser.query.method.MethodInvocation;
@@ -34,7 +34,7 @@ public class FullTextAtomQueryParser {
         });
     }
 
-    public AtomQuery parseFullTextAtomQuery(SQLMethodInvokeExpr methodQueryExpr, String queryAs, SQLArgsx SQLArgs) {
+    public AtomQuery parseFullTextAtomQuery(SQLMethodInvokeExpr methodQueryExpr, String queryAs, SQLArgs SQLArgs) {
         MethodInvocation methodInvocation = new MethodInvocation(methodQueryExpr, queryAs, SQLArgs);
         MethodQueryParser matchAtomQueryParser = getQueryParser(methodInvocation);
         return matchAtomQueryParser.parseAtomMethodQuery(methodInvocation);

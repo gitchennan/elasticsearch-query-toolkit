@@ -1,11 +1,11 @@
 package org.es.sql.bean;
 
 
-public class SQLArgsx {
+public class SQLArgs {
 
     private Object[] args;
 
-    public SQLArgsx(Object[] args) {
+    public SQLArgs(Object[] args) {
         this.args = args;
 
         ensureAllNotNull();

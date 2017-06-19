@@ -10,7 +10,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.es.sql.bean.AtomQuery;
-import org.es.sql.bean.SQLArgsx;
+import org.es.sql.bean.SQLArgs;
 import org.es.sql.bean.SQLCondition;
 import org.es.sql.enums.SQLBoolOperator;
 import org.es.sql.enums.SQLConditionType;
@@ -45,7 +45,7 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
         scriptAtomQueryParser = new ScriptAtomQueryParser();
     }
 
-    protected BoolQueryBuilder parseQueryConditionExpr(SQLExpr conditionExpr, String queryAs, SQLArgsx SQLArgs) {
+    protected BoolQueryBuilder parseQueryConditionExpr(SQLExpr conditionExpr, String queryAs, SQLArgs SQLArgs) {
         SQLCondition SQLCondition = recursiveParseQueryCondition(conditionExpr, queryAs, SQLArgs);
         SQLBoolOperator operator = SQLCondition.getOperator();
 
@@ -55,7 +55,7 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
         return mergeAtomQuery(SQLCondition.getQueryList(), operator);
     }
 
-    private SQLCondition recursiveParseQueryCondition(SQLExpr conditionExpr, String queryAs, SQLArgsx SQLArgs) {
+    private SQLCondition recursiveParseQueryCondition(SQLExpr conditionExpr, String queryAs, SQLArgs SQLArgs) {
         if (conditionExpr instanceof SQLBinaryOpExpr) {
             SQLBinaryOpExpr binOpExpr = (SQLBinaryOpExpr) conditionExpr;
             SQLBinaryOperator binOperator = binOpExpr.getOperator();
@@ -90,7 +90,7 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
         return new SQLCondition(parseAtomQueryCondition(conditionExpr, queryAs, SQLArgs), SQLConditionType.Atom);
     }
 
-    private AtomQuery parseAtomQueryCondition(SQLExpr sqlConditionExpr, String queryAs, SQLArgsx SQLArgs) {
+    private AtomQuery parseAtomQueryCondition(SQLExpr sqlConditionExpr, String queryAs, SQLArgs SQLArgs) {
         if (sqlConditionExpr instanceof SQLMethodInvokeExpr) {
             SQLMethodInvokeExpr methodQueryExpr = (SQLMethodInvokeExpr) sqlConditionExpr;
 

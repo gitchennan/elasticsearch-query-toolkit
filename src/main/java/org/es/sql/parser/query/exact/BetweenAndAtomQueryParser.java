@@ -4,7 +4,7 @@ import com.alibaba.druid.sql.ast.expr.SQLBetweenExpr;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.es.sql.bean.AtomQuery;
-import org.es.sql.bean.SQLArgsx;
+import org.es.sql.bean.SQLArgs;
 import org.es.sql.enums.SQLConditionOperator;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.helper.ElasticSqlArgConverter;
@@ -16,7 +16,7 @@ public class BetweenAndAtomQueryParser extends AbstractAtomExactQueryParser {
         super(parseActionListener);
     }
 
-    public AtomQuery parseBetweenAndQuery(SQLBetweenExpr betweenAndExpr, String queryAs, SQLArgsx SQLArgs) {
+    public AtomQuery parseBetweenAndQuery(SQLBetweenExpr betweenAndExpr, String queryAs, SQLArgs SQLArgs) {
         Object from = ElasticSqlArgConverter.convertSqlArg(betweenAndExpr.getBeginExpr(), SQLArgs);
         Object to = ElasticSqlArgConverter.convertSqlArg(betweenAndExpr.getEndExpr(), SQLArgs);
 

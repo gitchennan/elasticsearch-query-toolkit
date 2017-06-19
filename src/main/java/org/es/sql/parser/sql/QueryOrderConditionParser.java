@@ -13,7 +13,7 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.es.sql.bean.ElasticDslContext;
 import org.es.sql.bean.ElasticSqlQueryField;
-import org.es.sql.bean.SQLArgsx;
+import org.es.sql.bean.SQLArgs;
 import org.es.sql.druid.ElasticSqlSelectQueryBlock;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.listener.ParseActionListener;
@@ -53,7 +53,7 @@ public class QueryOrderConditionParser implements QueryParser {
         }
     }
 
-    private SortBuilder parseOrderCondition(SQLSelectOrderByItem orderByItem, String queryAs, SQLArgsx SQLArgs) {
+    private SortBuilder parseOrderCondition(SQLSelectOrderByItem orderByItem, String queryAs, SQLArgs SQLArgs) {
 
         SortOrder order = orderByItem.getType() == SQLOrderingSpecification.ASC ? SortOrder.ASC : SortOrder.DESC;
 
