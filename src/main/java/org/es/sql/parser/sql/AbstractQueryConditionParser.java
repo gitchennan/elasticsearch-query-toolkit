@@ -10,8 +10,8 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.es.sql.bean.AtomQuery;
-import org.es.sql.bean.SQLCondition;
 import org.es.sql.bean.SQLArgs;
+import org.es.sql.bean.SQLCondition;
 import org.es.sql.enums.SQLBoolOperator;
 import org.es.sql.enums.SQLConditionType;
 import org.es.sql.exception.ElasticSql2DslException;
@@ -21,16 +21,15 @@ import org.es.sql.parser.query.exact.BinaryAtomQueryParser;
 import org.es.sql.parser.query.exact.InListAtomQueryParser;
 import org.es.sql.parser.query.method.MethodInvocation;
 import org.es.sql.parser.query.method.fulltext.FullTextAtomQueryParser;
+import org.es.sql.parser.query.method.script.ScriptAtomQueryParser;
 import org.es.sql.parser.query.method.term.TermLevelAtomQueryParser;
 
 import java.util.List;
 
-//import org.es.sql.parser.query.method.script.ScriptAtomQueryParser;
-
 public abstract class AbstractQueryConditionParser implements QueryParser {
 
     private final TermLevelAtomQueryParser termLevelAtomQueryParser;
-    //    private final ScriptAtomQueryParser scriptAtomQueryParser;
+    private final ScriptAtomQueryParser scriptAtomQueryParser;
     private final FullTextAtomQueryParser fullTextAtomQueryParser;
     private final BinaryAtomQueryParser binaryQueryParser;
     private final InListAtomQueryParser inListQueryParser;
@@ -43,7 +42,7 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
         inListQueryParser = new InListAtomQueryParser(parseActionListener);
         betweenAndQueryParser = new BetweenAndAtomQueryParser(parseActionListener);
 
-//        scriptAtomQueryParser = new ScriptAtomQueryParser();
+        scriptAtomQueryParser = new ScriptAtomQueryParser();
     }
 
     protected BoolQueryBuilder parseQueryConditionExpr(SQLExpr conditionExpr, String queryAs, SQLArgs SQLArgs) {
@@ -97,9 +96,9 @@ public abstract class AbstractQueryConditionParser implements QueryParser {
 
             MethodInvocation methodInvocation = new MethodInvocation(methodQueryExpr, queryAs, SQLArgs);
 
-//            if (scriptAtomQueryParser.isMatchMethodInvocation(methodInvocation)) {
-//                return scriptAtomQueryParser.parseAtomMethodQuery(methodInvocation);
-//            }
+            if (scriptAtomQueryParser.isMatchMethodInvocation(methodInvocation)) {
+                return scriptAtomQueryParser.parseAtomMethodQuery(methodInvocation);
+            }
 
             if (fullTextAtomQueryParser.isFulltextAtomQuery(methodInvocation)) {
                 return fullTextAtomQueryParser.parseFullTextAtomQuery(methodQueryExpr, queryAs, SQLArgs);

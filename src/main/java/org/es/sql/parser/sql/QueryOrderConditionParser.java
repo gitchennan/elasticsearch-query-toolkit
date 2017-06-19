@@ -18,10 +18,7 @@ import org.es.sql.druid.ElasticSqlSelectQueryBlock;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.listener.ParseActionListener;
 import org.es.sql.parser.query.method.MethodInvocation;
-import org.es.sql.parser.sql.sort.ConditionSortBuilder;
-import org.es.sql.parser.sql.sort.MethodSortParser;
-import org.es.sql.parser.sql.sort.NvlMethodSortParser;
-import org.es.sql.parser.sql.sort.ParseSortBuilderHelper;
+import org.es.sql.parser.sql.sort.*;
 
 import java.util.List;
 
@@ -35,8 +32,8 @@ public class QueryOrderConditionParser implements QueryParser {
         this.parseActionListener = parseActionListener;
 
         methodSortParsers = ImmutableList.of(
-                new NvlMethodSortParser()
-//                , new ScriptMethodSortParser()
+                new NvlMethodSortParser(),
+                new ScriptMethodSortParser()
         );
     }
 
