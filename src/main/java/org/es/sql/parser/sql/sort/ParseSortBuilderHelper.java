@@ -10,6 +10,7 @@ import org.es.sql.bean.ElasticSqlQueryField;
 import org.es.sql.enums.QueryFieldType;
 import org.es.sql.exception.ElasticSql2DslException;
 
+
 public class ParseSortBuilderHelper {
 
     public static boolean isFieldExpr(SQLExpr expr) {

@@ -9,6 +9,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RegexpFlag;
 import org.elasticsearch.index.query.RegexpQueryBuilder;
+
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.listener.ParseActionListener;
 import org.es.sql.parser.query.method.AbstractFieldSpecificMethodQueryParser;

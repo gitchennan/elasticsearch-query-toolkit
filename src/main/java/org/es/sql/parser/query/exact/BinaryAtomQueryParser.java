@@ -19,12 +19,12 @@ public class BinaryAtomQueryParser extends AbstractAtomExactQueryParser {
         super(parseActionListener);
     }
 
-    public AtomQuery parseBinaryQuery(SQLBinaryOpExpr binQueryExpr, String queryAs, SQLArgs SQLArgs) {
+    public AtomQuery parseBinaryQuery(SQLBinaryOpExpr binQueryExpr, String queryAs, SQLArgs sqlArgs) {
         SQLBinaryOperator binaryOperator = binQueryExpr.getOperator();
 
         //EQ NEQ
         if (SQLBinaryOperator.Equality == binaryOperator || SQLBinaryOperator.LessThanOrGreater == binaryOperator || SQLBinaryOperator.NotEqual == binaryOperator) {
-            Object targetVal = ElasticSqlArgConverter.convertSqlArg(binQueryExpr.getRight(), SQLArgs);
+            Object targetVal = ElasticSqlArgConverter.convertSqlArg(binQueryExpr.getRight(), sqlArgs);
 
             SQLConditionOperator operator = SQLBinaryOperator.Equality == binaryOperator ? SQLConditionOperator.Equality : SQLConditionOperator.NotEqual;
 
@@ -60,7 +60,7 @@ public class BinaryAtomQueryParser extends AbstractAtomExactQueryParser {
                 operator = SQLConditionOperator.LessThanOrEqual;
             }
 
-            Object targetVal = ElasticSqlArgConverter.convertSqlArg(binQueryExpr.getRight(), SQLArgs);
+            Object targetVal = ElasticSqlArgConverter.convertSqlArg(binQueryExpr.getRight(), sqlArgs);
             return parseCondition(binQueryExpr.getLeft(), operator, new Object[]{targetVal}, queryAs, new IConditionExactQueryBuilder() {
                 @Override
                 public QueryBuilder buildQuery(String queryFieldName, SQLConditionOperator operator, Object[] rightParamValues) {

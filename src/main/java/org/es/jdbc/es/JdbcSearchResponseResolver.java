@@ -100,7 +100,7 @@ public class JdbcSearchResponseResolver {
     protected JdbcSearchResponse<String> parseSearchResponseGson(String searchRespGson) {
         JdbcSearchResponse<String> searchRespStrGson;
         try {
-            searchRespStrGson = new Gson().fromJson(oriSearchResponseGson, new TypeToken<JdbcSearchResponse<String>>() {
+            searchRespStrGson = new Gson().fromJson(searchRespGson, new TypeToken<JdbcSearchResponse<String>>() {
             }.getType());
         }
         catch (Exception exp) {

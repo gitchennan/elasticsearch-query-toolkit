@@ -15,6 +15,7 @@ import org.es.sql.listener.ParseActionListener;
 import org.es.sql.listener.ParseActionListenerAdapter;
 import org.es.sql.parser.sql.*;
 
+
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.List;
@@ -45,19 +46,16 @@ public class ElasticSql2DslParser {
             throw new ElasticSql2DslException(ex);
         }
 
-        SQLArgs sqlParamValues = null;
-        if (sqlArgs != null && sqlArgs.length > 0) {
-            sqlParamValues = new SQLArgs(sqlArgs);
-        }
-
+        SQLArgs sqlParamValues = (sqlArgs != null && sqlArgs.length > 0) ? new SQLArgs(sqlArgs) : null;
         ElasticDslContext elasticDslContext = new ElasticDslContext(queryExpr, sqlParamValues);
+
         if (queryExpr.getSubQuery().getQuery() instanceof ElasticSqlSelectQueryBlock) {
             for (QueryParser sqlParser : buildSqlParserChain(parseActionListener)) {
                 sqlParser.parse(elasticDslContext);
             }
         }
         else {
-            throw new ElasticSql2DslException("[syntax error] only support Select Sql");
+            throw new ElasticSql2DslException("[syntax error] Sql only support Select Sql");
         }
         return elasticDslContext.getParseResult();
     }

@@ -11,6 +11,7 @@ import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.helper.ElasticSqlArgConverter;
 import org.es.sql.listener.ParseActionListener;
 
+
 public class InListAtomQueryParser extends AbstractAtomExactQueryParser {
 
     public InListAtomQueryParser(ParseActionListener parseActionListener) {

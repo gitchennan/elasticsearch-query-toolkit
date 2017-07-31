@@ -48,7 +48,7 @@ public abstract class AbstractFieldSpecificMethodQueryParser extends Parameteriz
                     String.format("[syntax error] query field can not support type[%s]", queryField.getQueryFieldType()));
         }
 
-        parseActionListener.onAtomMethodQueryConditionParse(queryField, invocation.getSQLArgs().getArgs());
+        parseActionListener.onAtomMethodQueryConditionParse(queryField, invocation.getSqlArgs().getArgs());
 
         return atomQuery;
     }
