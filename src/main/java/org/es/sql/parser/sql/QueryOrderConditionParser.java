@@ -20,6 +20,7 @@ import org.es.sql.listener.ParseActionListener;
 import org.es.sql.parser.query.method.MethodInvocation;
 import org.es.sql.parser.sql.sort.*;
 
+
 import java.util.List;
 
 public class QueryOrderConditionParser implements QueryParser {
@@ -33,7 +34,8 @@ public class QueryOrderConditionParser implements QueryParser {
 
         methodSortParsers = ImmutableList.of(
                 new NvlMethodSortParser(),
-                new ScriptMethodSortParser()
+                new ScriptMethodSortParser(),
+                new NestedSortMethodParser()
         );
     }
 
@@ -43,8 +45,12 @@ public class QueryOrderConditionParser implements QueryParser {
         SQLOrderBy sqlOrderBy = queryBlock.getOrderBy();
         if (sqlOrderBy != null && CollectionUtils.isNotEmpty(sqlOrderBy.getItems())) {
             List<SortBuilder> orderByList = Lists.newLinkedList();
+
+            String queryAs = dslContext.getParseResult().getQueryAs();
+            SQLArgs sqlArgs = dslContext.getSQLArgs();
+
             for (SQLSelectOrderByItem orderByItem : sqlOrderBy.getItems()) {
-                SortBuilder orderBy = parseOrderCondition(orderByItem, dslContext.getParseResult().getQueryAs(), dslContext.getSQLArgs());
+                SortBuilder orderBy = parseOrderCondition(orderByItem, queryAs, sqlArgs);
                 if (orderBy != null) {
                     orderByList.add(orderBy);
                 }

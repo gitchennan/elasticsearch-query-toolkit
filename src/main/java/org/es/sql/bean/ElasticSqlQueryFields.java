@@ -1,5 +1,6 @@
 package org.es.sql.bean;
 
+
 import org.es.sql.enums.QueryFieldType;
 
 public class ElasticSqlQueryFields {

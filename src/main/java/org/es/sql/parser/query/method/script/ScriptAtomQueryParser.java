@@ -50,9 +50,9 @@ public class ScriptAtomQueryParser extends ParameterizedMethodQueryParser {
 
         if (MapUtils.isNotEmpty(extraParamMap)) {
             Map<String, Object> scriptParamMap = generateRawTypeParameterMap(invocation);
-            Script scriptObject = new Script(Script.DEFAULT_SCRIPT_TYPE, Script.DEFAULT_SCRIPT_LANG, script, scriptParamMap);
-
-            return new AtomQuery(QueryBuilders.scriptQuery(scriptObject));
+            return new AtomQuery(QueryBuilders.scriptQuery(
+                    new Script(Script.DEFAULT_SCRIPT_TYPE, Script.DEFAULT_SCRIPT_LANG, script, scriptParamMap))
+            );
         }
         return new AtomQuery(QueryBuilders.scriptQuery(new Script(script)));
     }

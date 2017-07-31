@@ -12,6 +12,7 @@ import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilde
 import org.elasticsearch.search.aggregations.bucket.range.date.DateRangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+
 import org.es.sql.bean.ElasticDslContext;
 import org.es.sql.bean.ElasticSqlQueryField;
 import org.es.sql.bean.RangeSegment;

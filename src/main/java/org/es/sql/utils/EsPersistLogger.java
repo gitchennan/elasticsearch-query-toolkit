@@ -4,7 +4,7 @@ package org.es.sql.utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class PersistLogger {
+public class EsPersistLogger {
     public static void warn(Object obj, String message, Throwable e) {
 
         Logger log = LogManager.getLogger(obj.getClass().getName());

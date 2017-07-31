@@ -32,10 +32,7 @@ public class QueryRoutingValParser implements QueryParser {
                 }
                 else if (routingVal instanceof SQLVariantRefExpr) {
                     Object targetVal = ElasticSqlArgConverter.convertSqlArg(routingVal, dslContext.getSQLArgs());
-                    if (!(targetVal instanceof String)) {
-                        throw new ElasticSql2DslException("[syntax error] Index routing val must be a string");
-                    }
-                    routingStringValues.add((String) targetVal);
+                    routingStringValues.add(targetVal.toString());
                 }
                 else {
                     throw new ElasticSql2DslException("[syntax error] Index routing val must be a string");

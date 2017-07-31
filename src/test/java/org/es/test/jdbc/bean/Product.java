@@ -1,11 +1,18 @@
 package org.es.test.jdbc.bean;
 
+import org.es.mapping.annotations.TypeSetting;
+import org.es.mapping.annotations.enums.StringType;
+import org.es.mapping.annotations.fieldtype.StringField;
+
 import java.math.BigDecimal;
 import java.util.List;
 
+@TypeSetting(_type = "product")
 public class Product {
+
     private String productName;
 
+    @StringField(type = StringType.Keyword)
     private String productCode;
 
     private BigDecimal minPrice;

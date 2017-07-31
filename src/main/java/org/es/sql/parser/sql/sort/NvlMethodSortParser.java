@@ -5,14 +5,21 @@ import com.alibaba.druid.sql.ast.expr.*;
 import com.google.common.collect.ImmutableList;
 import org.elasticsearch.search.sort.*;
 import org.es.sql.bean.ElasticSqlQueryField;
-import org.es.sql.enums.SortOption;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.parser.query.method.MethodInvocation;
 import org.es.sql.parser.sql.QueryFieldParser;
 
+
 import java.util.List;
 import java.util.Map;
 
+/**
+ * nvl(rootDocField, defaultValue)
+ * <p>
+ * order by nvl(price, 0) asc
+ *
+ * @author chennan
+ */
 public class NvlMethodSortParser extends AbstractMethodSortParser {
 
     public static final List<String> NVL_METHOD = ImmutableList.of("nvl", "is_null", "isnull");
@@ -29,7 +36,7 @@ public class NvlMethodSortParser extends AbstractMethodSortParser {
         }
 
         int methodParameterCount = nvlMethodInvocation.getParameterCount();
-        if (methodParameterCount == 0 || methodParameterCount > 3) {
+        if (methodParameterCount == 0 || methodParameterCount >= 3) {
             throw new ElasticSql2DslException(String.format("[syntax error] There is no %s args method named nvl", methodParameterCount));
         }
 
@@ -43,22 +50,10 @@ public class NvlMethodSortParser extends AbstractMethodSortParser {
         if (!(valueArg instanceof SQLCharExpr) && !(valueArg instanceof SQLIntegerExpr) && !(valueArg instanceof SQLNumberExpr)) {
             throw new ElasticSql2DslException("[syntax error] The second arg of nvl method should be number or string");
         }
-
-        if (methodParameterCount == 3) {
-            SQLExpr sortModArg = nvlMethodInvocation.getParameter(2);
-            if (!(sortModArg instanceof SQLCharExpr)) {
-                throw new ElasticSql2DslException("[syntax error] The third arg of nvl method should be string");
-            }
-            String sortModeText = ((SQLCharExpr) sortModArg).getText();
-            if (!SortOption.AVG.mode().equalsIgnoreCase(sortModeText) && !SortOption.MIN.mode().equalsIgnoreCase(sortModeText)
-                    && !SortOption.MAX.mode().equalsIgnoreCase(sortModeText) && !SortOption.SUM.mode().equalsIgnoreCase(sortModeText)) {
-                throw new ElasticSql2DslException("[syntax error] The third arg of nvl method should be one of the string[min,max,avg,sum]");
-            }
-        }
     }
 
     @Override
-    protected SortBuilder parseMethodSortBuilderWithExtraParams(
+    protected SortBuilder parseMethodSortBuilder(
             MethodInvocation sortMethodInvocation, SortOrder order, Map<String, Object> extraParamMap) throws ElasticSql2DslException {
 
         String queryAs = sortMethodInvocation.getQueryAs();

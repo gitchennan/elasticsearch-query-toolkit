@@ -10,6 +10,7 @@ import org.es.sql.parser.query.method.MethodInvocation;
 import org.es.sql.parser.query.method.MethodQueryParser;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public class TermLevelAtomQueryParser {
 
@@ -27,16 +28,16 @@ public class TermLevelAtomQueryParser {
     }
 
     public Boolean isTermLevelAtomQuery(MethodInvocation invocation) {
-        for (MethodQueryParser methodQueryParserItem : methodQueryParsers) {
-            if (methodQueryParserItem.isMatchMethodInvocation(invocation)) {
-                return Boolean.TRUE;
+        return methodQueryParsers.stream().anyMatch(new Predicate<MethodQueryParser>() {
+            @Override
+            public boolean test(MethodQueryParser methodQueryParser) {
+                return methodQueryParser.isMatchMethodInvocation(invocation);
             }
-        }
-        return Boolean.TRUE;
+        });
     }
 
-    public AtomQuery parseTermLevelAtomQuery(SQLMethodInvokeExpr methodQueryExpr, String queryAs, SQLArgs SQLArgs) {
-        MethodInvocation methodInvocation = new MethodInvocation(methodQueryExpr, queryAs, SQLArgs);
+    public AtomQuery parseTermLevelAtomQuery(SQLMethodInvokeExpr methodQueryExpr, String queryAs, SQLArgs sqlArgs) {
+        MethodInvocation methodInvocation = new MethodInvocation(methodQueryExpr, queryAs, sqlArgs);
         MethodQueryParser matchAtomQueryParser = getQueryParser(methodInvocation);
         return matchAtomQueryParser.parseAtomMethodQuery(methodInvocation);
     }

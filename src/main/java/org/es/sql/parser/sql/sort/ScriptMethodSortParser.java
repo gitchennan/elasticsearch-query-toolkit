@@ -11,6 +11,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.parser.query.method.MethodInvocation;
 
+
 import java.util.List;
 import java.util.Map;
 
@@ -44,20 +45,19 @@ public class ScriptMethodSortParser extends AbstractMethodSortParser {
     }
 
     @Override
-    protected SortBuilder parseMethodSortBuilderWithExtraParams(
+    protected SortBuilder parseMethodSortBuilder(
             MethodInvocation scriptSortMethodInvocation, SortOrder order, Map<String, Object> extraParamMap) throws ElasticSql2DslException {
 
-        String script = scriptSortMethodInvocation.getParameterAsString(0);
+        String strScript = scriptSortMethodInvocation.getParameterAsString(0);
         String type = scriptSortMethodInvocation.getParameterAsString(1);
         ScriptSortBuilder.ScriptSortType scriptSortType = ScriptSortBuilder.ScriptSortType.fromString(type);
 
         if (MapUtils.isNotEmpty(extraParamMap)) {
             Map<String, Object> scriptParamMap = generateRawTypeParameterMap(scriptSortMethodInvocation);
-            Script scriptObject = new Script(Script.DEFAULT_SCRIPT_TYPE, Script.DEFAULT_SCRIPT_LANG, script, scriptParamMap);
-
+            Script scriptObject = new Script(Script.DEFAULT_SCRIPT_TYPE, Script.DEFAULT_SCRIPT_LANG, strScript, scriptParamMap);
             return SortBuilders.scriptSort(scriptObject, scriptSortType).order(order);
         }
 
-        return SortBuilders.scriptSort(new Script(script), scriptSortType).order(order);
+        return SortBuilders.scriptSort(new Script(strScript), scriptSortType).order(order);
     }
 }

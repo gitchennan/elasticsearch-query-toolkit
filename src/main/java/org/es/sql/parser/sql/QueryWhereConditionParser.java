@@ -5,7 +5,7 @@ import org.es.sql.bean.ElasticDslContext;
 import org.es.sql.druid.ElasticSqlSelectQueryBlock;
 import org.es.sql.listener.ParseActionListener;
 
-public class QueryWhereConditionParser extends AbstractQueryConditionParser {
+public class QueryWhereConditionParser extends BoolExpressionParser implements QueryParser{
 
     public QueryWhereConditionParser(ParseActionListener parseActionListener) {
         super(parseActionListener);
@@ -18,7 +18,7 @@ public class QueryWhereConditionParser extends AbstractQueryConditionParser {
         if (queryBlock.getWhere() != null) {
             String queryAs = dslContext.getParseResult().getQueryAs();
 
-            BoolQueryBuilder whereQuery = parseQueryConditionExpr(queryBlock.getWhere(), queryAs, dslContext.getSQLArgs());
+            BoolQueryBuilder whereQuery = parseBoolQueryExpr(queryBlock.getWhere(), queryAs, dslContext.getSQLArgs());
 
             dslContext.getParseResult().setWhereCondition(whereQuery);
         }

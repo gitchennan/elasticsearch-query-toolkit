@@ -12,7 +12,7 @@ import java.util.Map;
 
 public abstract class AbstractMethodSortParser extends AbstractParameterizedMethodExpression implements MethodSortParser {
 
-    protected abstract SortBuilder parseMethodSortBuilderWithExtraParams(
+    protected abstract SortBuilder parseMethodSortBuilder(
             MethodInvocation invocation, SortOrder order, Map<String, Object> extraParamMap) throws ElasticSql2DslException;
 
     @Override
@@ -40,6 +40,6 @@ public abstract class AbstractMethodSortParser extends AbstractParameterizedMeth
         checkMethodInvocation(invocation);
 
         Map<String, Object> extraParamMap = generateRawTypeParameterMap(invocation);
-        return parseMethodSortBuilderWithExtraParams(invocation, order, extraParamMap);
+        return parseMethodSortBuilder(invocation, order, extraParamMap);
     }
 }

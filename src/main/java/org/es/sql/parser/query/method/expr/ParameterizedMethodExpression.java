@@ -1,5 +1,6 @@
 package org.es.sql.parser.query.method.expr;
 
+
 import org.es.sql.parser.query.method.MethodInvocation;
 
 import java.util.Map;

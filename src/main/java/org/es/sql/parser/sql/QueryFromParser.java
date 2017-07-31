@@ -9,6 +9,7 @@ import org.es.sql.druid.ElasticSqlSelectQueryBlock;
 import org.es.sql.exception.ElasticSql2DslException;
 import org.es.sql.listener.ParseActionListener;
 
+
 public class QueryFromParser implements QueryParser {
 
     private ParseActionListener parseActionListener;
