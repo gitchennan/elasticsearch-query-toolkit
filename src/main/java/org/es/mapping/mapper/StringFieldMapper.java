@@ -93,11 +93,11 @@ public class StringFieldMapper {
             }
 
             if (StringUtils.isNotBlank(stringField.search_analyzer())) {
-                mappingBuilder.field("analyzer", stringField.search_analyzer());
+                mappingBuilder.field("search_analyzer", stringField.search_analyzer());
             }
 
             if (StringUtils.isNotBlank(stringField.search_quote_analyzer())) {
-                mappingBuilder.field("analyzer", stringField.search_quote_analyzer());
+                mappingBuilder.field("search_quote_analyzer", stringField.search_quote_analyzer());
             }
 
             if (stringField.position_increment_gap() != 100) {
