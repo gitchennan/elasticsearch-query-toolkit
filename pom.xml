@@ -1,99 +1,116 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>org.elasticsearch</groupId>
-    <artifactId>elasticsearch-query</artifactId>
-    <version>2.4.4</version>
-    <packaging>pom</packaging>
-	<name>${project.artifactId}</name>
-	
-	<modules>
-        <module>elasticsearch-query-core</module>
-        <module>elasticsearch-query-jdbc</module>
-		<module>elasticsearch-query-spring</module>
-    </modules>
-	
-	<properties>
-		<maven.compiler.target>1.8</maven.compiler.target>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xmlns="http://maven.apache.org/POM/4.0.0"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<name>elasticsearch-query-toolkit</name>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.es</groupId>
+	<artifactId>elasticsearch-query-toolkit</artifactId>
+	<version>${elasticsearch.version}</version>
+	<packaging>jar</packaging>
+	<description>elasticsearch-query-toolkit</description>
+	<inceptionYear>2017</inceptionYear>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-        <elasticsearch.version>2.4.4</elasticsearch.version>
-        <druid.version>1.0.24</druid.version>
-		<guava.version>18.0</guava.version>
-		<gson.version>2.3.1</gson.version>
-		<spring.version>3.0.5.RELEASE</spring.version>
-		<joda.time.version>2.3</joda.time.version>
-		<ibatis.version>2.3.4.726</ibatis.version>
+	<properties>
+		<elasticsearch.version>2.4.4</elasticsearch.version>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<skip.unit.tests>false</skip.unit.tests>
 		<junit.version>4.12</junit.version>
 		<slf4j.version>1.6.1</slf4j.version>
 		<common.lang.version>2.6</common.lang.version>
 		<common.colletion.version>3.2.1</common.colletion.version>
+	</properties>
 
-    </properties>
-	
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.apache.ibatis</groupId>
-				<artifactId>ibatis-sqlmap</artifactId>
-				<version>${ibatis.version}</version>
-			</dependency>
+	<repositories>
+		<repository>
+			<id>uk.maven.org</id>
+			<name>UK MAVEN</name>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<url>http://uk.maven.org/maven2/</url>
+		</repository>
+	</repositories>
 
-			<dependency>
-				<groupId>org.elasticsearch</groupId>
-				<artifactId>elasticsearch</artifactId>
-				<version>${elasticsearch.version}</version>
-				<scope>compile</scope>
-			</dependency>
-		
-			<dependency>
-				 <groupId>com.alibaba</groupId>
-				 <artifactId>druid</artifactId>
-				 <version>${druid.version}</version>
-			</dependency>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
 
-			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>${guava.version}</version>
-			</dependency>
+		<dependency>
+			<groupId>org.apache.ibatis</groupId>
+			<artifactId>ibatis-sqlmap</artifactId>
+			<version>2.3.4.726</version>
+		</dependency>
 
-			<dependency>
-				<groupId>com.google.code.gson</groupId>
-				<artifactId>gson</artifactId>
-				<version>${gson.version}</version>
-			</dependency>
-			
-			<dependency>
-				<groupId>joda-time</groupId>
-				<artifactId>joda-time</artifactId>
-				<version>${joda.time.version}</version>
-			</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid</artifactId>
+			<version>1.0.24</version>
+		</dependency>
 
-			<dependency>
-				<groupId>commons-collections</groupId>
-				<artifactId>commons-collections</artifactId>
-				<version>${common.colletion.version}</version>
-			</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>18.0</version>
+		</dependency>
 
-			<dependency>
-				<groupId>commons-lang</groupId>
-				<artifactId>commons-lang</artifactId>
-				<version>${common.lang.version}</version>
-			</dependency>
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>2.3</version>
+		</dependency>
 
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-log4j12</artifactId>
-				<version>${slf4j.version}</version>
-			</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.3.1</version>
+		</dependency>
 
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${junit.version}</version>
-				<scope>test</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>${elasticsearch.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
     <build>
 		<pluginManagement>
@@ -135,42 +152,4 @@
 			</plugins>
 		</pluginManagement>
     </build>
-	
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <repositories>
-        <repository>
-            <id>uk.maven.org</id>
-            <name>UK MAVEN</name>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>http://uk.maven.org/maven2/</url>
-        </repository>
-    </repositories>
-
-	<mailingLists>
-        <mailingList>
-            <name>chennan</name>
-            <post>465360798@qq.com</post>
-        </mailingList>
-    </mailingLists>
-    
-    <developers>
-        <developer>
-            <id>chennan</id>
-            <name>chennan</name>
-            <email>465360798@qq.com</email>
-            <timezone>8</timezone>
-        </developer>
-    </developers>
 </project>
