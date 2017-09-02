@@ -10,7 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class ElasticsearchClusterManager {
-    private volatile AtomicInteger requestCount = new AtomicInteger(0);
+
+    private AtomicInteger requestCount = new AtomicInteger(0);
 
     @Autowired
     @Qualifier("cluster01")
