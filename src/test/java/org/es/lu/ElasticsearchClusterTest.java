@@ -37,9 +37,13 @@ public class ElasticsearchClusterTest {
     @Test
     public void test_getReadableCluster() throws Exception {
         for (int i = 0; i < 500; i++) {
-            ElasticsearchCluster cluster = clusterManager.getReadableCluster("index");
+            ElasticsearchCluster cluster = clusterManager.getReadableCluster(".custom-dictionary");
+            if (cluster == null) {
+                System.out.println("cluster is null, continue.");
+                TimeUnit.SECONDS.sleep(1);
+                continue;
+            }
             System.out.println(cluster.getClusterKey());
-
             TimeUnit.SECONDS.sleep(1);
         }
     }

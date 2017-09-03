@@ -56,7 +56,7 @@ public class ElasticsearchClusterManager {
             for (String indexName : indices) {
                 IndexState indexState = configuredActiveCluster.indexState(indexName);
                 if (indexState.getIndexStatus() != IndexState.IndexStatus.GREEN
-                        && indexState.getIndexStatus() == IndexState.IndexStatus.YELLOW) {
+                        && indexState.getIndexStatus() != IndexState.IndexStatus.YELLOW) {
                     isIndexReadable = false;
                     break;
                 }

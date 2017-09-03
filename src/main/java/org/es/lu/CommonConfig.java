@@ -10,7 +10,7 @@ public class CommonConfig {
         }
 
         if ("YP".equalsIgnoreCase(clusterKey)) {
-            return false;
+            return true;
         }
         return false;
     }
