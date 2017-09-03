@@ -23,7 +23,7 @@ public class ElasticsearchClusterTest {
 
     @Test
     public void test_initCluster() throws Exception {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 500; i++) {
             ElasticsearchCluster cluster = clusterManager.getCluster("BX");
             IndexState indexState = cluster.indexState("index");
             System.out.println(cluster.getClusterKey() + " ===========>" + indexState);
@@ -38,10 +38,14 @@ public class ElasticsearchClusterTest {
 
     @Test
     public void test_getReadableCluster() throws Exception {
-        for (int i = 0; i < 5; i++) {
-            ElasticsearchCluster cluster = clusterManager.getReadableCluster();
+        for (int i = 0; i < 500000; i++) {
+            ElasticsearchCluster cluster = clusterManager.getReadableCluster(".custom-dictionary");
+            if (cluster == null) {
+                System.out.println("cluster is null, continue.");
+                TimeUnit.SECONDS.sleep(1);
+                continue;
+            }
             System.out.println(cluster.getClusterKey());
-
             TimeUnit.SECONDS.sleep(1);
         }
     }

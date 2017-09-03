@@ -4,13 +4,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CommonConfig {
-    public boolean getClusterReadable(String clusterKey) {
+    public boolean isConfiguredClusterActive(String clusterKey) {
         if ("BX".equalsIgnoreCase(clusterKey)) {
             return true;
         }
 
         if ("YP".equalsIgnoreCase(clusterKey)) {
-            return false;
+            return true;
         }
         return false;
     }

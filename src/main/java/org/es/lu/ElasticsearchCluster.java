@@ -53,8 +53,8 @@ public class ElasticsearchCluster implements InitializingBean, DisposableBean {
         return client;
     }
 
-    public boolean isClusterReadable() {
-        return commonConfig.getClusterReadable(this.clusterKey);
+    public boolean isConfiguredClusterActive() {
+        return commonConfig.isConfiguredClusterActive(this.clusterKey);
     }
 
     public void setCommonConfig(CommonConfig commonConfig) {

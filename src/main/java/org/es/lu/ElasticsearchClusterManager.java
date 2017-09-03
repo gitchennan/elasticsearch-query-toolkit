@@ -21,13 +21,13 @@ public class ElasticsearchClusterManager {
     @Qualifier("cluster02")
     private ElasticsearchCluster cluster02;
 
-    public ElasticsearchCluster[] getReadableClusters() {
+    public ElasticsearchCluster[] getConfiguredActiveClusters() {
         List<ElasticsearchCluster> clusterList = Lists.newArrayList();
-        if (cluster01.isClusterReadable()) {
+        if (cluster01.isConfiguredClusterActive()) {
             clusterList.add(cluster01);
         }
 
-        if (cluster02.isClusterReadable()) {
+        if (cluster02.isConfiguredClusterActive()) {
             clusterList.add(cluster02);
         }
         return clusterList.toArray(new ElasticsearchCluster[clusterList.size()]);
@@ -44,13 +44,34 @@ public class ElasticsearchClusterManager {
         return null;
     }
 
-    public ElasticsearchCluster getReadableCluster() {
-        ElasticsearchCluster[] clusters = getReadableClusters();
-        if (clusters.length == 0) {
+    public ElasticsearchCluster getReadableCluster(String... indices) {
+        ElasticsearchCluster[] configuredActiveClusters = getConfiguredActiveClusters();
+        if (configuredActiveClusters.length == 0 || indices == null || indices.length == 0) {
             return null;
         }
-        if (clusters.length == 1) {
-            return clusters[0];
+
+        List<ElasticsearchCluster> readableClusterList = Lists.newArrayList();
+        for (ElasticsearchCluster configuredActiveCluster : configuredActiveClusters) {
+            boolean isIndexReadable = true;
+            for (String indexName : indices) {
+                IndexState indexState = configuredActiveCluster.indexState(indexName);
+                if (indexState.getIndexStatus() != IndexState.IndexStatus.GREEN
+                        && indexState.getIndexStatus() != IndexState.IndexStatus.YELLOW) {
+                    isIndexReadable = false;
+                    break;
+                }
+            }
+
+            if (isIndexReadable) {
+                readableClusterList.add(configuredActiveCluster);
+            }
+        }
+
+        if (readableClusterList.size() == 0) {
+            return null;
+        }
+        if (readableClusterList.size() == 1) {
+            return readableClusterList.get(0);
         }
 
         int index = requestCount.incrementAndGet();
@@ -58,7 +79,6 @@ public class ElasticsearchClusterManager {
             index = 0;
             requestCount.set(index);
         }
-        return clusters[index % clusters.length];
+        return readableClusterList.get(index % readableClusterList.size());
     }
-
 }
