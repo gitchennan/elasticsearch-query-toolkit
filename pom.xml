@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <name>elasticsearch-sql2dsl</name>
+    <name>elasticsearch-query-toolkit</name>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.elasticsearch</groupId>
-    <artifactId>elasticsearch-sql2dsl</artifactId>
+    <artifactId>elasticsearch-query-toolkit</artifactId>
     <version>${elasticsearch.version}</version>
     <packaging>jar</packaging>
-    <description>elasticsearch-sql2dsl</description>
+    <description>elasticsearch-query-toolkit</description>
     <inceptionYear>2016</inceptionYear>
     <licenses>
         <license>
@@ -39,6 +39,12 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>3.0.5.RELEASE</version>
+        </dependency>
+
         <dependency>
 			 <groupId>com.alibaba</groupId>
 			 <artifactId>druid</artifactId>

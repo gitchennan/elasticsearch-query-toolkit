@@ -1,4 +1,4 @@
-package org.es;
+package org.es.sql;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.es.sql.dsl.bean.ElasticSqlParseResult;

@@ -1,4 +1,4 @@
-package org.es;
+package org.es.sql;
 
 import org.es.sql.dsl.parser.ElasticSql2DslParser;
 import org.es.sql.dsl.bean.ElasticSqlParseResult;

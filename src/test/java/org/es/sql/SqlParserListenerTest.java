@@ -1,4 +1,4 @@
-package org.es;
+package org.es.sql;
 
 import org.es.sql.dsl.bean.ElasticSqlQueryField;
 import org.es.sql.dsl.enums.SQLConditionOperator;
