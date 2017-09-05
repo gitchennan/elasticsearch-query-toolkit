@@ -4,6 +4,7 @@ import org.es.lu.ElasticsearchCluster;
 import org.es.lu.ElasticsearchClusterManager;
 import org.es.lu.IndexState;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -22,8 +23,9 @@ public class ElasticsearchClusterTest {
     }
 
     @Test
+    @Ignore
     public void test_initCluster() throws Exception {
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 1; i++) {
             ElasticsearchCluster cluster = clusterManager.getCluster("BX");
             IndexState indexState = cluster.indexState("index");
             System.out.println(cluster.getClusterKey() + " ===========>" + indexState);
@@ -37,8 +39,9 @@ public class ElasticsearchClusterTest {
     }
 
     @Test
+    @Ignore
     public void test_getReadableCluster() throws Exception {
-        for (int i = 0; i < 500000; i++) {
+        for (int i = 0; i < 1; i++) {
             ElasticsearchCluster cluster = clusterManager.getReadableCluster(".custom-dictionary");
             if (cluster == null) {
                 System.out.println("cluster is null, continue.");
